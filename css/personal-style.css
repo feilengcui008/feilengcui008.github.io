@@ -1,0 +1,38 @@
+.personal_content {
+  width: 500px;
+  margin: 40px auto 80px;
+  border-left: 0px solid #f9f9f9;
+  /* padding-left: 60px; */
+}
+
+.icon-zhihu {
+  background-color: blue;
+}
+
+.category-box .category-list {
+  margin-left: 0px;
+}
+
+.page-header {
+  margin-bottom: 30px;
+  margin-left: -22px;
+}
+
+.tag-box .tag-list {
+  margin-left: 0px;
+}
+
+.about_personal_content {
+  width: 500px;
+  margin: 40px auto 80px;
+  border-left: 0px solid #f9f9f9;
+  /* padding-left: 60px; */
+}
+
+.about_personal_content .page-header {
+  margin-left: -1px;
+}
+
+.about_personal_content .content {
+  border-left: 0px;
+}

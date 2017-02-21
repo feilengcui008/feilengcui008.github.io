@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Distributed Systems-再谈2PC和3PC | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="2PC,3PC,一致性算法,分布式系统," />
+  
+
+  <meta name="description" content="之前的一篇文章感觉分析得不太完整，所以再记录点东西。
+故障组合情况对于多个节点且每个节点有多个可能状态参与的分布式系统来说，假设在有限的某个时间点上发生故障的概率为0，对于coordinator(proposer/master/leader等)，在发送接收的一轮交互中，可能在发送消息前(t &amp;lt; t1)，发送部分消息(t1 &amp;lt; t &amp;lt; t2)，发送所有消息后并且接收消息前(t2 &amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distributed Systems-再谈2PC和3PC">
+<meta property="og:url" content="/2016/01/22/Distributed-Systems-再谈2PC和3PC/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="之前的一篇文章感觉分析得不太完整，所以再记录点东西。
+故障组合情况对于多个节点且每个节点有多个可能状态参与的分布式系统来说，假设在有限的某个时间点上发生故障的概率为0，对于coordinator(proposer/master/leader等)，在发送接收的一轮交互中，可能在发送消息前(t &amp;lt; t1)，发送部分消息(t1 &amp;lt; t &amp;lt; t2)，发送所有消息后并且接收消息前(t2 &amp;">
+<meta property="og:image" content="http://img.blog.csdn.net/20160122164323500">
+<meta property="og:image" content="http://img.blog.csdn.net/20160122164133621">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Distributed Systems-再谈2PC和3PC">
+<meta name="twitter:description" content="之前的一篇文章感觉分析得不太完整，所以再记录点东西。
+故障组合情况对于多个节点且每个节点有多个可能状态参与的分布式系统来说，假设在有限的某个时间点上发生故障的概率为0，对于coordinator(proposer/master/leader等)，在发送接收的一轮交互中，可能在发送消息前(t &amp;lt; t1)，发送部分消息(t1 &amp;lt; t &amp;lt; t2)，发送所有消息后并且接收消息前(t2 &amp;">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#u6545_u969C_u7EC4_u5408_u60C5_u51B5"><span class="toc-text">故障组合情况</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u6545_u969C_u6A21_u578B"><span class="toc-text">故障模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2PC_u6545_u969C_u6062_u590D_u5206_u6790"><span class="toc-text">2PC故障恢复分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3PC_u6545_u969C_u6062_u590D_u5206_u6790"><span class="toc-text">3PC故障恢复分析</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u603B_u7ED3"><span class="toc-text">总结</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Distributed-Systems-再谈2PC和3PC" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Distributed Systems-再谈2PC和3PC</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.01.22</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Distributed-Systems-再谈2PC和3PC"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>之前的<a href="http://www.threading.cn/threading/2016/01/21/2PC-and-3PC/" target="_blank" rel="external">一篇文章</a>感觉分析得不太完整，所以再记录点东西。</p>
+<h4 id="u6545_u969C_u7EC4_u5408_u60C5_u51B5"><a href="#u6545_u969C_u7EC4_u5408_u60C5_u51B5" class="headerlink" title="故障组合情况"></a>故障组合情况</h4><p>对于多个节点且每个节点有多个可能状态参与的分布式系统来说，假设在有限的某个时间点上发生故障的概率为0，对于coordinator(proposer/master/leader等)，在发送接收的一轮交互中，可能在发送消息前(t &lt; t1)，发送部分消息(t1 &lt; t &lt; t2)，发送所有消息后并且接收消息前(t2 &lt; t &lt; t3)，接收到部分消息(t3 &lt; t &lt; t4)，接收到所有消息后发生故障(t &gt; t4)；对于每个participant(acceptor/follower/slave)来说，在接收发送的一轮交互中，可能在接收消息前(t’ &lt; t1’)，接收到消息且未发送应答(t1’ &lt; t’ &lt; t2’)，发送应答后(t’ &gt; t2’)发生故障。 </p>
+<p>coordinator和participants在不同的时间段发生故障的组合会有不同的能够保持全局事务状态一致的故障发生时行为以及恢复策略，而且可能不存在能保持全局事务状态一致的相应行为以及恢复策略。对于发生故障时的行为，在程序实现上我们必须用上面提到的时间段来分析，而且假定coordinator广播消息这个动作的过程中不会出现故障(这其实是比较合理的，因为即使只发送了部分消息也可以看做是有一部分participants没有收到消息，这两种情况对于最终的系统全局状态是一样的)，这样程序实现上相应能简化不少。而对于故障恢复的策略以及正确性，我们可以从有节点发生故障后最终整个系统可能处于的全局状态来详细分析论证，虽然对于n个参与节点来说，其状态组合指数级增长，但是其中大多数状态可以用全称量词和存在量词描述，因为很多状态对于恢复策略是一样的。下面以2PC和3PC为例来分析，从中可以比较容易地看出2PC存在的问题，以及3PC为什么能够解决这个问题。2PC和3PC的正常流程可以参考相应的资料，这里不赘述。<br><img src="http://img.blog.csdn.net/20160122164323500" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160122164133621" alt="这里写图片描述"></p>
+<hr>
+<h4 id="u6545_u969C_u6A21_u578B"><a href="#u6545_u969C_u6A21_u578B" class="headerlink" title="故障模型"></a>故障模型</h4><p>首先我们这里只考虑fail-recover的故障模型</p>
+<p>我们只考虑在有coordinator以及participant挂掉的情况，而且coordinator本身不具有participant的身份。对于没有participant挂掉但是coordinator挂掉的情况，只需要选择新的coordinator并向所有存活的participant发送最后一条日志记录的请求就可以确定发生故障时全局事务的状态，从而恢复，所以比较简单。对于有paticipant挂掉以及coordinator没有挂掉的情况，由于coordinator知道所有participants的响应消息，所以可以决定此次事务的最终状态，可能会阻塞等待participant的恢复，但不会造成不一致。</p>
+<p>举一个coordinator没有故障但是paticipant故障的例子：对于2PC的阶段一(即有部分participant还未收到coordinator的proposal消息)，如果coordinator未发生故障，但是有participant发生故障，这种情况下，只需要取消此次proposal即可，等到故障的participant恢复后询问coordinator要相应的日志记录，不会造成最终全局事务状态的不一致。(这里关于整个系统能不能progress可能有不同说法，如果我们将故障的participant移除coordinator活跃列表那么接下来的事务(如果这里的事务只是单纯的replication)可以正常进行，但是如果分布式事务本身必须要故障的participant参与，那么整个系统必须阻塞直到participant恢复，但总之不会造成恢复后系统全局状态的不一致)。</p>
+<hr>
+<h4 id="2PC_u6545_u969C_u6062_u590D_u5206_u6790"><a href="#2PC_u6545_u969C_u6062_u590D_u5206_u6790" class="headerlink" title="2PC故障恢复分析"></a>2PC故障恢复分析</h4><p>下面考虑coordinator和participant故障的情况： </p>
+<ul>
+<li><p>1.对于2PC的阶段一(即有部分participant还未收到coordinator的proposal消息)</p>
+<ul>
+<li>此时新选出的coordinator询问剩余存活节点的消息后可以直接cancel，因为不可能有节点commit</li>
+</ul>
+</li>
+<li><p>2.对于2PC的阶段二，情况稍微复杂，故障发生时，所有剩余存活节点可能的状态只能是accept/refuse/commit/abort中的一个，并且只有以下组合</p>
+<ul>
+<li><p>(1).存活节点中返回accept的数量满足0 &lt;= n &lt; N(存活节点总数)   </p>
+<ul>
+<li><p>a. n中除去accept的剩余全是commit  =&gt; commit </p>
+</li>
+<li><p>b. n中除去accept的剩余全是abort  =&gt; abort </p>
+</li>
+<li><p>c. n中除去accept的全是refuse  =&gt; abort </p>
+</li>
+<li><p>d. n中除去accept的剩余部分是refuse，部分是abort =&gt; abort </p>
+</li>
+</ul>
+</li>
+<li><p><strong>以上几种情况下新的coordinator的abort/commit选择在故障节点恢复后都不会造成不一致。</strong></p>
+</li>
+<li><p>(2).存活节点全部返回accept，即n == N</p>
+<ul>
+<li><p>此时故障的participant可能处于的状态有：</p>
+<ul>
+<li><p>a. accept</p>
+</li>
+<li><p>b. refuse</p>
+</li>
+<li><p>c. commit</p>
+</li>
+<li><p>d. abort </p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>可以看出，无论新的coordiantor选择commit还是abort，最终participant恢复时有可能是abort或者commit，这样会导致不一致，所以整个系统只有等故障participant恢复之后，新的coordinator才可能继续，整个系统才可能progress。这也是导致2PC缺陷的根本原因。</strong></p>
+</li>
+<li><p><strong>综合(1)(2)两种情况，在(2)中由于故障的节点可能成为唯一接收到commit/abort消息的节点，所以从剩余节点中我们没办法知道整个系统的状态。因此3PC引入了prepare-commit阶段，在真正提交(commit阶段)之前，让所有节点都能知道整个系统的状态是可以提交(即coordinator收到所有accept)还是cancel(abort，即coordinator没有收到所有accept)，然后在commit阶段，如果有节点挂掉了，也可以通过其他其他节点得知整个系统此次事务投票的状态，从而progress。</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="3PC_u6545_u969C_u6062_u590D_u5206_u6790"><a href="#3PC_u6545_u969C_u6062_u590D_u5206_u6790" class="headerlink" title="3PC故障恢复分析"></a>3PC故障恢复分析</h4><ul>
+<li><p>1.对于3PC的阶段一(即有部分participant还未收到coordinator的proposal消息)</p>
+<ul>
+<li>此时新选出的coordinator询问剩余存活节点的消息后可以直接cancel，因为不可能有节点commit</li>
+</ul>
+</li>
+<li><p>2.对于3PC的阶段二和阶段三，情况比较复杂，故障发生时，所有剩余存活节点可能的状态只能是accept/refuse/prepare-commit/cancel/commit中的一个，并且只有以下组合</p>
+<ul>
+<li><p>(1).存活节点中返回accept的数量满足0 &lt;= n &lt; N(存活节点总数)</p>
+<ul>
+<li><p>a. n中除去accept的全是refuse  =&gt; abort</p>
+</li>
+<li><p>b. n中除去accept的全是cancel  =&gt; abort  </p>
+</li>
+<li><p>c. n中除去accept的部分是refuse，部分是cancel =&gt; abort</p>
+</li>
+<li><p>d. n(==0)中除去accept的全是prepare-commit  =&gt; commit</p>
+</li>
+<li><p>e. n(==0)中除去accept的全是commit  =&gt; commit </p>
+</li>
+<li><p>f. n(==0)中除去accept的部分是commit，部分是prepare-commit  =&gt; commit   </p>
+</li>
+</ul>
+</li>
+<li><p><strong>可以看出，上述所有情况，新的coordinator都可以有确定的abort/commit选择，不会造成故障节点恢复后整个系统的不一致。</strong></p>
+</li>
+<li><p>(2).存活节点全部返回accept，即n == N</p>
+<ul>
+<li>此时故障节点可能处于的状态有:<ul>
+<li>a. accept</li>
+<li>b. refuse </li>
+<li>c. prepare-commit</li>
+<li>d. cancel </li>
+<li>e. 不可能有commit(如果是commit那么必然所有存活的都是prepare-commit，这样就避免了2PC存在的问题!)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>可以看出，3PC引入prepare-commit阶段后，(2)中解决了2PC的问题。(2)中a,b,c,d四种可能情况下由于不可能出现故障节点commit的情况，所以新的coordinator都可以采取abort，从而在故障节点恢复后不会造成不一致状态。但是3PC的一个局限在于无法容忍网络分区：比如如果发生了网络分区，其中一部分的coordinator收到那一部分所有存活节点都是prepare-commit，那么会决定commit；但是另外一部分的coordinator收到的存活节点中全是accept，那么会决定abort。这样导致了整个系统状态的不一致。</strong></p>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h4 id="u603B_u7ED3"><a href="#u603B_u7ED3" class="headerlink" title="总结"></a>总结</h4><p>本文对于每种恢复情况都做了一定考虑，对于只有一个coordinator和participant的情况，我们可以画出系统的全局状态图，从而判断不同故障组合是否会导致状态转换的不确定结果，即最终的全局状态既有commit又有abort，上述的分析本质上也是将一些状态分了类。但是对于多节点的组合，感觉始终没有太严格地形式证明，在思考代码实现的时候也是总感觉不具有百分之百的说服力…状态组合爆炸也是并发与分布式的一个比较难的问题吧。</p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Distributed-Systems-再谈2PC和3PC" 
+      data-title="Distributed Systems-再谈2PC和3PC" data-url="/2016/01/22/Distributed-Systems-再谈2PC和3PC/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

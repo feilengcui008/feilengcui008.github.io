@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux内核-容器之namespace | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="namespace,容器," />
+  
+
+  <meta name="description" content="1. 介绍简单玩了下Linux kernel为容器技术提供的基础设施之一namespace(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核). 这东西主要用来做资源的隔离，我感觉本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的东西是:
+
+clone
+setns
+unshare
+/proc/pid/ns, /proc/pid/ui">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核-容器之namespace">
+<meta property="og:url" content="/2016/06/10/Linux内核-容器之namespace/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="1. 介绍简单玩了下Linux kernel为容器技术提供的基础设施之一namespace(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核). 这东西主要用来做资源的隔离，我感觉本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的东西是:
+
+clone
+setns
+unshare
+/proc/pid/ns, /proc/pid/ui">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195657440">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195625033">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195759722">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195104140">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195121984">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195931224">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610195943928">
+<meta property="og:image" content="http://img.blog.csdn.net/20160611113340645">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610200726446">
+<meta property="og:image" content="http://img.blog.csdn.net/20160610200741422">
+<meta property="og:image" content="http://img.blog.csdn.net/20160611113354859">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux内核-容器之namespace">
+<meta name="twitter:description" content="1. 介绍简单玩了下Linux kernel为容器技术提供的基础设施之一namespace(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核). 这东西主要用来做资源的隔离，我感觉本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的东西是:
+
+clone
+setns
+unshare
+/proc/pid/ns, /proc/pid/ui">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-__u4ECB_u7ECD"><span class="toc-text">1. 介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-__u6D4B_u8BD5_u6D41_u7A0B_u53CA_u4EE3_u7801"><span class="toc-text">2. 测试流程及代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-__u6D4B_u8BD5_u6548_u679C"><span class="toc-text">3. 测试效果</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-__u5185_u6838_u91CCnamespace_u7684_u5B9E_u73B0"><span class="toc-text">4. 内核里namespace的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#281_29__u4E3B_u8981_u6570_u636E_u7ED3_u6784"><span class="toc-text">(1) 主要数据结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#282_29_namespace_u5982_u4F55_u4EA7_u751F_u5F71_u54CD_28_u4EE5uts_u548Cpid_namespace_u4E3A_u4F8B_29"><span class="toc-text">(2) namespace如何产生影响(以uts和pid namespace为例)</span></a></li></ol></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Linux内核-容器之namespace" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux内核-容器之namespace</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.06.10</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Linux内核-容器之namespace"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h3 id="1-__u4ECB_u7ECD"><a href="#1-__u4ECB_u7ECD" class="headerlink" title="1. 介绍"></a>1. 介绍</h3><p>简单玩了下Linux kernel为容器技术提供的基础设施之一namespace(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核). 这东西主要用来做资源的隔离，我感觉本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的东西是:</p>
+<ul>
+<li>clone</li>
+<li>setns</li>
+<li>unshare</li>
+<li>/proc/pid/ns, /proc/pid/uid_map, /proc/pid/gid_map等</li>
+</ul>
+<p>后面会简单分析一下内核源码里面是怎么实现这几个namespace以及以几个简单系统调用为例，看看namespace怎么产生影响的，然后简单分析下setns和unshare的实现</p>
+<hr>
+<h3 id="2-__u6D4B_u8BD5_u6D41_u7A0B_u53CA_u4EE3_u7801"><a href="#2-__u6D4B_u8BD5_u6D41_u7A0B_u53CA_u4EE3_u7801" class="headerlink" title="2. 测试流程及代码"></a>2. 测试流程及代码</h3><p>下面是一些简单的例子，主要测试uts/pid/user/mnt四个namespace的效果，测试代码主要用到三个进程，一个是clone系统调用执行/bin/bash后的进程，也是生成新的子namespace的初始进程，然后是打开/proc/pid/ns下的namespace链接文件，用setns将第二个可执行文件的进程加入/bin/bash的进程的namespace(容器)，并让其fork出一个子进程，测试pid namespace的差异。值得注意的几个点:</p>
+<ul>
+<li>不同版本的内核setns和unshare对namespace的支持不一样，较老的内核可能只支持ipc/net/uts三个namespace</li>
+<li>某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&gt;pid_namespace_for_children) </li>
+<li>用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/…的错误</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 代码1: 开一些新的namespace(启动新容器)</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> _GNU_SOURCE</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/wait.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> errExit(msg)  do &#123; perror(msg); exit(EXIT_FAILURE); \</span><br><span class="line">&#125; while (<span class="number">0</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Start function for cloned child */</span></span><br><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">int</span> <span class="title">childFunc</span><span class="params">(<span class="keyword">void</span> *arg)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *binary = <span class="string">"/bin/bash"</span>;</span><br><span class="line">  <span class="keyword">char</span> *<span class="keyword">const</span> argv[] = &#123;</span><br><span class="line">    <span class="string">"/bin/bash"</span>,</span><br><span class="line">    <span class="literal">NULL</span></span><br><span class="line">  &#125;;</span><br><span class="line">  <span class="keyword">char</span> *<span class="keyword">const</span> envp[] = &#123; <span class="literal">NULL</span> &#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">/* wrappers for execve */</span></span><br><span class="line">  <span class="comment">// has const char * as argument list</span></span><br><span class="line">  <span class="comment">// execl </span></span><br><span class="line">  <span class="comment">// execle  =&gt; has envp</span></span><br><span class="line">  <span class="comment">// execlp  =&gt; need search PATH </span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">// has char *const arr[] as argument list </span></span><br><span class="line">  <span class="comment">// execv </span></span><br><span class="line">  <span class="comment">// execvpe =&gt; need search PATH and has envp</span></span><br><span class="line">  <span class="comment">// execvp  =&gt; need search PATH </span></span><br><span class="line">  </span><br><span class="line">  <span class="comment">//int ret = execve(binary, argv, envp);</span></span><br><span class="line">  <span class="keyword">int</span> ret = execv(binary, argv);</span><br><span class="line">  <span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">    errExit(<span class="string">"execve error"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> STACK_SIZE (<span class="number">1024</span> * <span class="number">1024</span>)    <span class="comment">/* Stack size for cloned child */</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *<span class="built_in">stack</span>; </span><br><span class="line">  <span class="keyword">char</span> *stackTop;                 </span><br><span class="line">  <span class="keyword">pid_t</span> pid;</span><br><span class="line">  <span class="built_in">stack</span> = <span class="built_in">malloc</span>(STACK_SIZE);</span><br><span class="line">  <span class="keyword">if</span> (<span class="built_in">stack</span> == <span class="literal">NULL</span>)</span><br><span class="line">    errExit(<span class="string">"malloc"</span>);</span><br><span class="line">  stackTop = <span class="built_in">stack</span> + STACK_SIZE;  <span class="comment">/* Assume stack grows downward */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">//pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL);</span></span><br><span class="line">  pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, <span class="literal">NULL</span>);</span><br><span class="line"><span class="comment">//pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL);</span></span><br><span class="line">  <span class="keyword">if</span> (pid == -<span class="number">1</span>)</span><br><span class="line">    errExit(<span class="string">"clone"</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"clone() returned %ld\n"</span>, (<span class="keyword">long</span>) pid);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (waitpid(pid, <span class="literal">NULL</span>, <span class="number">0</span>) == -<span class="number">1</span>)  </span><br><span class="line">    errExit(<span class="string">"waitpid"</span>);</span><br><span class="line">  <span class="built_in">printf</span>(<span class="string">"child has terminated\n"</span>);</span><br><span class="line"></span><br><span class="line">  <span class="built_in">exit</span>(EXIT_SUCCESS);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 代码2: 使用setns加入新进程</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> _GNU_SOURCE  <span class="comment">// ?</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;errno.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/utsname.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/types.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sched.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;fcntl.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;wait.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// mainly setns and unshare system calls</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* int setns(int fd, int nstype); */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 不同版本内核/proc/pid/ns下namespace文件情况</span></span><br><span class="line"><span class="comment">/*</span><br><span class="line">   CLONE_NEWCGROUP (since Linux 4.6)</span><br><span class="line">   fd must refer to a cgroup namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWIPC (since Linux 3.0)</span><br><span class="line">   fd must refer to an IPC namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWNET (since Linux 3.0)</span><br><span class="line">   fd must refer to a network namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWNS (since Linux 3.8)</span><br><span class="line">   fd must refer to a mount namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWPID (since Linux 3.8)</span><br><span class="line">   fd must refer to a descendant PID namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWUSER (since Linux 3.8)</span><br><span class="line">   fd must refer to a user namespace.</span><br><span class="line"></span><br><span class="line">   CLONE_NEWUTS (since Linux 3.0)</span><br><span class="line">   fd must refer to a UTS namespace.</span><br><span class="line">   */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* // 特殊的pid namespace </span><br><span class="line">   CLONE_NEWPID behaves somewhat differently from the other nstype</span><br><span class="line">values: reassociating the calling thread with a PID namespace changes</span><br><span class="line">only the PID namespace that child processes of the caller will be</span><br><span class="line">created in; it does not change the PID namespace of the caller</span><br><span class="line">itself.  Reassociating with a PID namespace is allowed only if the</span><br><span class="line">PID namespace specified by fd is a descendant (child, grandchild,</span><br><span class="line">etc.)  of the PID namespace of the caller.  For further details on</span><br><span class="line">PID namespaces, see pid_namespaces(7).</span><br><span class="line">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">/*</span><br><span class="line">int unshare(int flags);</span><br><span class="line">CLONE_FILES | CLONE_FS | CLONE_NEWCGROUP | CLONE_NEWIPC | CLONE_NEWNET </span><br><span class="line">| CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWUTS | CLONE_SYSVSEM</span><br><span class="line">*/</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> MAX_PROCPATH_LEN <span class="number">1024</span></span></span><br><span class="line"></span><br><span class="line"><span class="preprocessor">#<span class="keyword">define</span> errorExit(msg) \</span><br><span class="line">  do &#123; fprintf(stderr, <span class="string">"%s in file %s in line %d\n"</span>, msg, __FILE__, __LINE__);\</span><br><span class="line">    exit(EXIT_FAILURE); &#125; while (<span class="number">0</span>)</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printInfo</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">openAndSetns</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (argc &lt; <span class="number">2</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"usage : execname pid(find namespaces of this process)\n"</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for uts ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> uts[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(uts, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/uts"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(uts);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for user ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> user[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(user, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/user"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(user);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 注意pid namespace的不同行为，只有后续创建的子进程进入setns设置</span></span><br><span class="line">  <span class="comment">// 的新的pid namespace，本进程不会改变</span></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for pid ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> pidpath[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(pidpath, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/pid"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(pidpath);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for ipc ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> ipc[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(ipc, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/ipc"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(ipc);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for net ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> net[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(net, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/net"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(net);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 注意mnt namespace需要放在其他后面，避免mnt namespace改变后</span></span><br><span class="line">  <span class="comment">// 找不到/proc/pid/ns下的文件</span></span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"---- setns for mount ----\n"</span>);</span><br><span class="line">  <span class="keyword">char</span> mount[MAX_PROCPATH_LEN];</span><br><span class="line">  <span class="built_in">snprintf</span>(mount, MAX_PROCPATH_LEN, <span class="string">"/proc/%s/ns/mnt"</span>, argv[<span class="number">1</span>]);</span><br><span class="line">  openAndSetns(mount);</span><br><span class="line">  printInfo();</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 测试子进程的pid namespace</span></span><br><span class="line">  <span class="keyword">int</span> ret = fork();</span><br><span class="line">  <span class="keyword">if</span> (-<span class="number">1</span> == ret) &#123;</span><br><span class="line">    errorExit(<span class="string">"failed to fork"</span>);</span><br><span class="line">  &#125; <span class="keyword">else</span> <span class="keyword">if</span> (ret == <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"********\n"</span>);</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"in child process\n"</span>);</span><br><span class="line">    printInfo();</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"********\n"</span>);</span><br><span class="line">    <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">      sleep(<span class="number">5</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"child pid : %d\n"</span>, ret);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> (;;) &#123;</span><br><span class="line">    sleep(<span class="number">5</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  waitpid(ret, <span class="literal">NULL</span>, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">printInfo</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">pid_t</span> pid;</span><br><span class="line">  <span class="keyword">struct</span> utsname uts;</span><br><span class="line">  <span class="keyword">uid_t</span> uid;</span><br><span class="line">  <span class="keyword">gid_t</span> gid;</span><br><span class="line">  <span class="comment">// pid namespace </span></span><br><span class="line">  pid = getpid();</span><br><span class="line">  <span class="comment">// user namespace </span></span><br><span class="line">  uid = getuid();</span><br><span class="line">  gid = getgid();</span><br><span class="line">  <span class="comment">// uts namespace </span></span><br><span class="line">  uname(&amp;uts);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"pid : %d\n"</span>, pid);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"uid : %d\n"</span>, uid);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"gid : %d\n"</span>, gid);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"hostname : %s\n"</span>, uts.nodename);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">openAndSetns</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *path)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> ret = open(path, O_RDONLY, <span class="number">0</span>);</span><br><span class="line">  <span class="keyword">if</span> (-<span class="number">1</span> == ret) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"%s\n"</span>, strerror(errno));</span><br><span class="line">    errorExit(<span class="string">"failed to open fd"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (-<span class="number">1</span> == (ret = setns(ret, <span class="number">0</span>))) &#123;</span><br><span class="line">    <span class="built_in">fprintf</span>(<span class="built_in">stderr</span>, <span class="string">"%s\n"</span>, strerror(errno));</span><br><span class="line">    errorExit(<span class="string">"failed to setns"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="3-__u6D4B_u8BD5_u6548_u679C"><a href="#3-__u6D4B_u8BD5_u6548_u679C" class="headerlink" title="3. 测试效果"></a>3. 测试效果</h3><ul>
+<li>user的效果 : 通过/proc/pid/uid_map和/proc/pid/gid_map设置container外用户id和容器内用户id的映射关系(把这放前面是因为后面hostname和mount需要权限…)<br><img src="http://img.blog.csdn.net/20160610195657440" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160610195625033" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160610195759722" alt="这里写图片描述"></li>
+</ul>
+<ul>
+<li>uts的效果 : 改变container中的hostname不会影响container外面的hostname<br><img src="http://img.blog.csdn.net/20160610195104140" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160610195121984" alt="这里写图片描述"></li>
+</ul>
+<ul>
+<li><p>pid和mnt的效果 : container中进程id被重新映射，在container中重新挂载/proc filesystem不会影响容器外的/proc<br><img src="http://img.blog.csdn.net/20160610195931224" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160610195943928" alt="这里写图片描述"></p>
+</li>
+<li><p>setns的测试</p>
+<ul>
+<li><p>依次为init进程，container init进程(6个namespace的flag都指定了)，新加入container的进程以及其fork出的子进程的namespace情况，可以看到container init进程与init进程的namespace完全不同了，新加入container的进程除了pid与init相同外，其他namespace与container init进程相同，而新加入container的进程fork出的子进程的namespace则与container init进程完全相同<br><img src="http://img.blog.csdn.net/20160611113340645" alt="这里写图片描述"></p>
+</li>
+<li><p>新加入container init进程pid namespace的子进程<br><img src="http://img.blog.csdn.net/20160610200726446" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160610200741422" alt="这里写图片描述"></p>
+<ul>
+<li>程序2输出<br><img src="http://img.blog.csdn.net/20160611113354859" alt="这里写图片描述"></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-__u5185_u6838_u91CCnamespace_u7684_u5B9E_u73B0"><a href="#4-__u5185_u6838_u91CCnamespace_u7684_u5B9E_u73B0" class="headerlink" title="4. 内核里namespace的实现"></a>4. 内核里namespace的实现</h3><h4 id="281_29__u4E3B_u8981_u6570_u636E_u7ED3_u6784"><a href="#281_29__u4E3B_u8981_u6570_u636E_u7ED3_u6784" class="headerlink" title="(1) 主要数据结构"></a>(1) 主要数据结构</h4><ul>
+<li><p>源码主要位置:</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// net_namespace为啥不链接个头文件到include/linux...</span></span><br><span class="line"><span class="keyword">include</span>/<span class="keyword">net</span>/net_namespace.<span class="literal">h</span></span><br><span class="line"><span class="keyword">include</span>/linux/mnt_namespace.<span class="keyword">h</span>与fs/mount.<span class="literal">h</span></span><br><span class="line"><span class="keyword">include</span>/linux/ipc_namespace.<span class="literal">h</span></span><br><span class="line"><span class="keyword">include</span>/linux/pid_namespace.<span class="literal">h</span></span><br><span class="line"><span class="keyword">include</span>/linux/user_namespace.<span class="literal">h</span></span><br><span class="line"><span class="comment">// 这个命名估计是历史原因...</span></span><br><span class="line"><span class="keyword">include</span>/linux/utsname.<span class="literal">h</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>几个namespace结构<br>注意其他namespace都内嵌了user_namespace</p>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> user_namespace &#123;</span><br><span class="line">  <span class="comment">// uid_map </span></span><br><span class="line">	<span class="keyword">struct</span> uid_gid_map	uid_map;</span><br><span class="line">  <span class="comment">// gid_map</span></span><br><span class="line">	<span class="keyword">struct</span> uid_gid_map	gid_map;</span><br><span class="line">	<span class="keyword">struct</span> uid_gid_map	projid_map;</span><br><span class="line">	<span class="keyword">atomic_t</span>		count;</span><br><span class="line">  <span class="comment">// 父user_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> user_namespace	*parent;</span><br><span class="line">	<span class="keyword">int</span>			level;</span><br><span class="line">	<span class="keyword">kuid_t</span>			owner;</span><br><span class="line">	<span class="keyword">kgid_t</span>			group;</span><br><span class="line">	<span class="keyword">struct</span> ns_common	ns;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		flags;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* Register of per-UID persistent keyrings for this namespace */</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> CONFIG_PERSISTENT_KEYRINGS</span></span><br><span class="line">	<span class="keyword">struct</span> key		*persistent_keyring_register;</span><br><span class="line">	<span class="keyword">struct</span> rw_semaphore	persistent_keyring_register_sem;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// uts_namespace</span></span><br><span class="line"><span class="keyword">struct</span> uts_namespace &#123;</span><br><span class="line">	<span class="keyword">struct</span> kref kref;</span><br><span class="line">	<span class="keyword">struct</span> new_utsname name;</span><br><span class="line">	<span class="keyword">struct</span> user_namespace *user_ns;</span><br><span class="line">	<span class="comment">// 封装ns的一些通用操作钩子函数</span></span><br><span class="line">	<span class="keyword">struct</span> ns_common ns;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// pid_namespace </span></span><br><span class="line"><span class="keyword">struct</span> pid_namespace &#123;</span><br><span class="line">	<span class="keyword">struct</span> kref kref;</span><br><span class="line">  <span class="comment">// pid映射</span></span><br><span class="line">	<span class="keyword">struct</span> pidmap pidmap[PIDMAP_ENTRIES];</span><br><span class="line">	<span class="keyword">struct</span> rcu_head rcu;</span><br><span class="line">	<span class="keyword">int</span> last_pid;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> nr_hashed;</span><br><span class="line">  <span class="comment">// pid_namespace里面，子进程挂掉会由此进程rape</span></span><br><span class="line">	<span class="keyword">struct</span> task_struct *child_reaper;</span><br><span class="line">	<span class="keyword">struct</span> kmem_cache *pid_cachep;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> level;</span><br><span class="line">  <span class="comment">// 父pid_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> pid_namespace *parent;</span><br><span class="line">  <span class="comment">// 当前namespace在proc fs中的位置</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> CONFIG_PROC_FS</span></span><br><span class="line">	<span class="keyword">struct</span> vfsmount *proc_mnt;</span><br><span class="line">	<span class="keyword">struct</span> dentry *proc_self;</span><br><span class="line">	<span class="keyword">struct</span> dentry *proc_thread_self;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> CONFIG_BSD_PROCESS_ACCT</span></span><br><span class="line">	<span class="keyword">struct</span> bsd_acct_struct *bacct;</span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line">  <span class="comment">// pid_namespace依赖user_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> user_namespace *user_ns;</span><br><span class="line">  <span class="comment">// 工作队列workqueue相关</span></span><br><span class="line">	<span class="keyword">struct</span> work_struct proc_work;</span><br><span class="line">	<span class="keyword">kgid_t</span> pid_gid;</span><br><span class="line">	<span class="keyword">int</span> hide_pid;</span><br><span class="line">	<span class="keyword">int</span> reboot;	<span class="comment">/* group exit code if this pidns was rebooted */</span></span><br><span class="line">  <span class="comment">// 封装ns的一些通用操作钩子函数</span></span><br><span class="line">	<span class="keyword">struct</span> ns_common ns;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// mount namespace</span></span><br><span class="line"><span class="keyword">struct</span> mnt_namespace &#123;</span><br><span class="line">	<span class="keyword">atomic_t</span>		count;</span><br><span class="line">	<span class="keyword">struct</span> ns_common	ns;</span><br><span class="line">    <span class="comment">// 新的mount namespace的根挂载点</span></span><br><span class="line">	<span class="keyword">struct</span> mount *	root;</span><br><span class="line">	<span class="keyword">struct</span> list_head	<span class="built_in">list</span>;</span><br><span class="line">	<span class="comment">// 内嵌的user_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> user_namespace	*user_ns;</span><br><span class="line">	u64			seq;	<span class="comment">/* Sequence number to prevent loops */</span></span><br><span class="line">	<span class="keyword">wait_queue_head_t</span> poll;</span><br><span class="line">	u64 event;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> ipc_namespace &#123;</span><br><span class="line">	<span class="keyword">atomic_t</span>	count;</span><br><span class="line">	<span class="keyword">struct</span> ipc_ids	ids[<span class="number">3</span>];</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span>		sem_ctls[<span class="number">4</span>];</span><br><span class="line">	<span class="keyword">int</span>		used_sems;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>	msg_ctlmax;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>	msg_ctlmnb;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>	msg_ctlmni;</span><br><span class="line">	<span class="keyword">atomic_t</span>	msg_bytes;</span><br><span class="line">	<span class="keyword">atomic_t</span>	msg_hdrs;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">size_t</span>		shm_ctlmax;</span><br><span class="line">	<span class="keyword">size_t</span>		shm_ctlall;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>	shm_tot;</span><br><span class="line">	<span class="keyword">int</span>		shm_ctlmni;</span><br><span class="line">	<span class="comment">/*</span><br><span class="line">	 * Defines whether IPC_RMID is forced for _all_ shm segments regardless</span><br><span class="line">	 * of shmctl()</span><br><span class="line">	 */</span></span><br><span class="line">	<span class="keyword">int</span>		shm_rmid_forced;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">struct</span> notifier_block ipcns_nb;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* The kern_mount of the mqueuefs sb.  We take a ref on it */</span></span><br><span class="line">	<span class="keyword">struct</span> vfsmount	*mq_mnt;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* # queues in this ns, protected by mq_lock */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_queues_count;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* next fields are set through sysctl */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_queues_max;   <span class="comment">/* initialized to DFLT_QUEUESMAX */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_msg_max;      <span class="comment">/* initialized to DFLT_MSGMAX */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_msgsize_max;  <span class="comment">/* initialized to DFLT_MSGSIZEMAX */</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_msg_default;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>    mq_msgsize_default;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/* user_ns which owns the ipc ns */</span></span><br><span class="line">	<span class="keyword">struct</span> user_namespace *user_ns;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">struct</span> ns_common ns;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> net &#123;</span><br><span class="line">	<span class="keyword">atomic_t</span>		passive;	<span class="comment">/* To decided when the network</span><br><span class="line">						 * namespace should be freed.</span><br><span class="line">						 */</span></span><br><span class="line">	<span class="keyword">atomic_t</span>		count;		<span class="comment">/* To decided when the network</span><br><span class="line">						 *  namespace should be shut down.</span><br><span class="line">						 */</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">ifdef</span> NETNS_REFCNT_DEBUG</span></span><br><span class="line">	<span class="keyword">atomic_t</span>		use_count;	<span class="comment">/* To track references we</span><br><span class="line">						 * destroy on demand</span><br><span class="line">						 */</span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">endif</span></span></span><br><span class="line">	<span class="keyword">spinlock_t</span>		rules_mod_lock;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// net_namespace链表</span></span><br><span class="line">	<span class="keyword">struct</span> list_head	<span class="built_in">list</span>;		<span class="comment">/* list of network namespaces */</span></span><br><span class="line">	<span class="keyword">struct</span> list_head	cleanup_list;	<span class="comment">/* namespaces on death row */</span></span><br><span class="line">	<span class="keyword">struct</span> list_head	exit_list;	<span class="comment">/* Use only net_mutex */</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 内嵌的user_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> user_namespace   *user_ns;	<span class="comment">/* Owning user namespace */</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">struct</span> ns_common	ns;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">struct</span> proc_dir_entry 	*proc_net;</span><br><span class="line">	<span class="keyword">struct</span> proc_dir_entry 	*proc_net_stat;</span><br><span class="line"><span class="comment">/*... 省略 ...*/</span></span><br></pre></td></tr></table></figure>
+<h4 id="282_29_namespace_u5982_u4F55_u4EA7_u751F_u5F71_u54CD_28_u4EE5uts_u548Cpid_namespace_u4E3A_u4F8B_29"><a href="#282_29_namespace_u5982_u4F55_u4EA7_u751F_u5F71_u54CD_28_u4EE5uts_u548Cpid_namespace_u4E3A_u4F8B_29" class="headerlink" title="(2) namespace如何产生影响(以uts和pid namespace为例)"></a>(2) namespace如何产生影响(以uts和pid namespace为例)</h4><ul>
+<li>uts_namespace, 以uname系统调用为例<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// syscall uname</span></span><br><span class="line">SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">int</span> <span class="keyword">error</span> = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!name)</span><br><span class="line">		<span class="keyword">return</span> -EFAULT;</span><br><span class="line"></span><br><span class="line">	down_read(&amp;uts_sem);</span><br><span class="line">	<span class="comment">// utsname()</span></span><br><span class="line">	<span class="keyword">if</span> (copy_to_user(name, utsname(), sizeof(*name)))</span><br><span class="line">		<span class="keyword">error</span> = -EFAULT;</span><br><span class="line">	up_read(&amp;uts_sem);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!<span class="keyword">error</span> &amp;&amp; override_release(name-&gt;release, sizeof(name-&gt;release)))</span><br><span class="line">		<span class="keyword">error</span> = -EFAULT;</span><br><span class="line">	<span class="keyword">if</span> (!<span class="keyword">error</span> &amp;&amp; override_architecture(name))</span><br><span class="line">		<span class="keyword">error</span> = -EFAULT;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">error</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">struct</span> new_utsname *<span class="title">utsname</span><span class="params">(<span class="keyword">void</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">	<span class="comment">// 到当前进程uts namespace中查找utsname</span></span><br><span class="line">	<span class="keyword">return</span> &amp;current-&gt;nsproxy-&gt;uts_ns-&gt;name;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>pid namespace，以getpid系统调用为例<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**</span><br><span class="line"> * sys_getpid - return the thread group id of the current process</span><br><span class="line"> *</span><br><span class="line"> * Note, despite the name, this returns the tgid not the pid.  The tgid and</span><br><span class="line"> * the pid are identical unless CLONE_THREAD was specified on clone() in</span><br><span class="line"> * which case the tgid is the same in all threads of the same group.</span><br><span class="line"> *</span><br><span class="line"> * This is SMP safe as current-&gt;tgid does not change.</span><br><span class="line"> */</span></span><br><span class="line"><span class="function">SYSCALL_DEFINE0</span>(getpid)</span><br><span class="line">&#123;</span><br><span class="line">	return <span class="function">task_tgid_vnr</span>(current);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="value">static</span> <span class="value">inline</span> pid_t <span class="function">task_tgid_vnr</span>(struct task_struct *tsk)</span><br><span class="line">&#123;</span><br><span class="line">	return <span class="function">pid_vnr</span>(<span class="function">task_tgid</span>(tsk));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pid_t</span> pid_vnr(<span class="keyword">struct</span> pid *pid)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">return</span> pid_nr_ns(pid, task_active_pid_ns(current));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 从pid namespace中获取真正的pid number nr</span></span><br><span class="line"><span class="keyword">pid_t</span> pid_nr_ns(<span class="keyword">struct</span> pid *pid, <span class="keyword">struct</span> pid_namespace *ns)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">struct</span> upid *upid; </span><br><span class="line">	<span class="keyword">pid_t</span> nr = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">if</span> (pid &amp;&amp; ns-&gt;level &lt;= pid-&gt;level) &#123;</span><br><span class="line">		upid = &amp;pid-&gt;numbers[ns-&gt;level];</span><br><span class="line">		<span class="keyword">if</span> (upid-&gt;ns == ns)</span><br><span class="line">			nr = upid-&gt;nr;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> nr;</span><br><span class="line">&#125;</span><br><span class="line">EXPORT_SYMBOL_GPL(pid_nr_ns);</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> upid &#123;</span><br><span class="line">	<span class="comment">/* Try to keep pid_chain in the same cacheline as nr for find_vpid */</span></span><br><span class="line">  <span class="comment">// 真正的pid</span></span><br><span class="line">	<span class="keyword">int</span> nr;</span><br><span class="line">  <span class="comment">// pid_namespace</span></span><br><span class="line">	<span class="keyword">struct</span> pid_namespace *ns;</span><br><span class="line">	<span class="keyword">struct</span> hlist_node pid_chain;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 带有namespace和pid</span></span><br><span class="line"><span class="keyword">struct</span> pid</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">atomic_t</span> count;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> level;</span><br><span class="line">	<span class="comment">/* lists of tasks that use this pid */</span></span><br><span class="line">  <span class="comment">// 多个线程共享一个pid</span></span><br><span class="line">	<span class="keyword">struct</span> hlist_head tasks[PIDTYPE_MAX];</span><br><span class="line">	<span class="keyword">struct</span> rcu_head rcu;</span><br><span class="line">	<span class="keyword">struct</span> upid numbers[<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>setns系统调用的实现<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">SYSCALL_DEFINE2(setns, int, fd, int, nstype)</span><br><span class="line">&#123;</span><br><span class="line">	struct task_struct *tsk = current;</span><br><span class="line">	struct nsproxy *new_nsproxy;</span><br><span class="line">	struct <span class="keyword">file</span> *<span class="keyword">file</span>;</span><br><span class="line">	struct ns_common *ns;</span><br><span class="line">	int <span class="keyword">err</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">file</span> = proc_ns_fget(fd);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR(<span class="keyword">file</span>))</span><br><span class="line">		<span class="keyword">return</span> PTR_ERR(<span class="keyword">file</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">err</span> = -EINVAL;</span><br><span class="line">	ns = get_proc_ns(file_inode(<span class="keyword">file</span>));</span><br><span class="line">	<span class="keyword">if</span> (nstype &amp;&amp; (ns-&gt;ops-&gt;<span class="keyword">type</span> != nstype))</span><br><span class="line">		goto <span class="keyword">out</span>;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 直接为当前进程创建新的nsproxy，然后copy当前进程的namespace到</span></span><br><span class="line">  <span class="comment">// 新创建的nsproxy，最后视引用技术情况将原来的nsproxy放回</span></span><br><span class="line">  <span class="comment">// kmem_cache，是否不太高效？不能直接在原来的nsproxy上</span></span><br><span class="line">  <span class="comment">// install新的ns，没变的namespace不需要更改?不过貌似namespace</span></span><br><span class="line">  <span class="comment">// 不会经常变化，所以对性能要求也不需要很高?</span></span><br><span class="line">	new_nsproxy = create_new_namespaces(0, tsk, current_user_ns(), tsk-&gt;fs);</span><br><span class="line">	<span class="keyword">if</span> (IS_ERR(new_nsproxy)) &#123;</span><br><span class="line">		<span class="keyword">err</span> = PTR_ERR(new_nsproxy);</span><br><span class="line">		goto <span class="keyword">out</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">err</span> = ns-&gt;ops-&gt;install(new_nsproxy, ns);</span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">err</span>) &#123;</span><br><span class="line">		free_nsproxy(new_nsproxy);</span><br><span class="line">		goto <span class="keyword">out</span>;</span><br><span class="line">	&#125;</span><br><span class="line">  <span class="comment">// 切换当前进程的nsproxy，并可能释放nsproxy</span></span><br><span class="line">	switch_task_namespaces(tsk, new_nsproxy);</span><br><span class="line"><span class="keyword">out</span>:</span><br><span class="line">	fput(<span class="keyword">file</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">err</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">static struct nsproxy *create_new_namespaces<span class="list">(<span class="keyword">unsigned</span> long flags,</span><br><span class="line">	struct task_struct <span class="variable">*tsk, struct user_namespace *</span>user_ns,</span><br><span class="line">	struct fs_struct <span class="variable">*new_fs)</span><br><span class="line">&#123;</span><br><span class="line">	struct nsproxy *</span>new_nsp<span class="comment">;</span></span><br><span class="line">	int err<span class="comment">;</span></span><br><span class="line">	// 创建新的nsproxy</span><br><span class="line">	new_nsp = create_nsproxy<span class="list">()</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(!new_nsp)</span></span><br><span class="line">		return ERR_PTR<span class="list">(<span class="keyword">-ENOMEM</span>)</span><span class="comment">;</span></span><br><span class="line">	// 分配新的mnt_namespace</span><br><span class="line">	new_nsp-&gt;mnt_ns = copy_mnt_ns<span class="list">(<span class="keyword">flags</span>, tsk-&gt;nsproxy-&gt;mnt_ns, user_ns, new_fs)</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(<span class="keyword">IS_ERR</span><span class="list">(<span class="keyword">new_nsp-&gt;mnt_ns</span>)</span>)</span> &#123;</span><br><span class="line">		err = PTR_ERR<span class="list">(<span class="keyword">new_nsp-&gt;mnt_ns</span>)</span><span class="comment">;</span></span><br><span class="line">		goto out_ns<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line">	// 分配新的uts namespace</span><br><span class="line">	new_nsp-&gt;uts_ns = copy_utsname<span class="list">(<span class="keyword">flags</span>, user_ns, tsk-&gt;nsproxy-&gt;uts_ns)</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(<span class="keyword">IS_ERR</span><span class="list">(<span class="keyword">new_nsp-&gt;uts_ns</span>)</span>)</span> &#123;</span><br><span class="line">		err = PTR_ERR<span class="list">(<span class="keyword">new_nsp-&gt;uts_ns</span>)</span><span class="comment">;</span></span><br><span class="line">		goto out_uts<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line">	// 分配新的ipc namespace</span><br><span class="line">	new_nsp-&gt;ipc_ns = copy_ipcs<span class="list">(<span class="keyword">flags</span>, user_ns, tsk-&gt;nsproxy-&gt;ipc_ns)</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(<span class="keyword">IS_ERR</span><span class="list">(<span class="keyword">new_nsp-&gt;ipc_ns</span>)</span>)</span> &#123;</span><br><span class="line">		err = PTR_ERR<span class="list">(<span class="keyword">new_nsp-&gt;ipc_ns</span>)</span><span class="comment">;</span></span><br><span class="line">		goto out_ipc<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line">	// 注意不同于其他namespace 这里改变的是此进程的子进程的pid namespace</span><br><span class="line">	new_nsp-&gt;pid_ns_for_children =</span><br><span class="line">		copy_pid_ns<span class="list">(<span class="keyword">flags</span>, user_ns, tsk-&gt;nsproxy-&gt;pid_ns_for_children)</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(<span class="keyword">IS_ERR</span><span class="list">(<span class="keyword">new_nsp-&gt;pid_ns_for_children</span>)</span>)</span> &#123;</span><br><span class="line">		err = PTR_ERR<span class="list">(<span class="keyword">new_nsp-&gt;pid_ns_for_children</span>)</span><span class="comment">;</span></span><br><span class="line">		goto out_pid<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line">	// 分配新的net</span><br><span class="line">	new_nsp-&gt;net_ns = copy_net_ns<span class="list">(<span class="keyword">flags</span>, user_ns, tsk-&gt;nsproxy-&gt;net_ns)</span><span class="comment">;</span></span><br><span class="line">	if <span class="list">(<span class="keyword">IS_ERR</span><span class="list">(<span class="keyword">new_nsp-&gt;net_ns</span>)</span>)</span> &#123;</span><br><span class="line">		err = PTR_ERR<span class="list">(<span class="keyword">new_nsp-&gt;net_ns</span>)</span><span class="comment">;</span></span><br><span class="line">		goto out_net<span class="comment">;</span></span><br><span class="line">	&#125;</span><br><span class="line">	/*... 省略 ...<span class="variable">*/</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>unshare系统调用的实现<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// unshare主要也是使用create_new_nsproxy和switch_tasks_namespace</span></span><br><span class="line">SYS<span class="built_in">CALL_DEFINE1</span>(unshare, <span class="keyword">unsigned</span> <span class="keyword">long</span>, unshare_flags)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">struct</span> fs_struct *fs, *new_fs = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">struct</span> files_struct *fd, *new_fd = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">struct</span> cred *new_cred = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">struct</span> nsproxy *new_nsproxy = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="comment">/*... 省略 ...*/</span></span><br><span class="line">	<span class="comment">// 内部调用了create_new_nsproxy</span></span><br><span class="line">	err = unshare_nsproxy_namespaces(unshare_flags, &amp;new_nsproxy,</span><br><span class="line">					 new_cred, new_fs);</span><br><span class="line">	<span class="comment">/*... 省略 ...*/</span></span><br><span class="line">	<span class="keyword">if</span> (new_nsproxy)</span><br><span class="line">	   <span class="comment">// 切换当前进程的nsproxy到新的nsproxy，</span></span><br><span class="line">	   <span class="comment">// 并可能释放nsproxy，nsproxy本身结构放回kmem_cache，</span></span><br><span class="line">	   <span class="comment">// 而nsproxy中的uts/ipc/net/user/mnt以及嵌入其他</span></span><br><span class="line">	   <span class="comment">// namespace中的user namespace也会根据引用计数释放回slab </span></span><br><span class="line">		switch_task_namespaces(current, new_nsproxy);</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Linux内核-容器之namespace" 
+      data-title="Linux内核-容器之namespace" data-url="/2016/06/10/Linux内核-容器之namespace/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

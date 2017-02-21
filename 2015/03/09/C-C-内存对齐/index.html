@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>C/C++内存对齐 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="C/C++,Linux内核," />
+  
+
+  <meta name="description" content="有时会在c/c++中看到这种形式
+12#pragma pack(n)#pragma pack()
+前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
+123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C/C++内存对齐">
+<meta property="og:url" content="/2015/03/09/C-C-内存对齐/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="有时会在c/c++中看到这种形式
+12#pragma pack(n)#pragma pack()
+前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
+123456789">
+<meta property="og:image" content="http://img.blog.csdn.net/20150309153751330">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C/C++内存对齐">
+<meta name="twitter:description" content="有时会在c/c++中看到这种形式
+12#pragma pack(n)#pragma pack()
+前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
+123456789">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-C-C-内存对齐" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">C/C++内存对齐</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.03.09</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/编程语言/">编程语言</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-C-C-内存对齐"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>有时会在c/c++中看到这种形式</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="id">#pragma</span> <span class="function"><span class="title">pack</span><span class="params">(n)</span></span></span><br><span class="line"><span class="id">#pragma</span> <span class="function"><span class="title">pack</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+<p>前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">//缺省，一般8字节对齐</span></span><br><span class="line">    <span class="comment">//struct有成员字节大于pack值,对齐为pack的整数倍=&gt;24</span></span><br><span class="line">    <span class="keyword">struct</span> default_pack_struct_size_bigger &#123;</span><br><span class="line">        <span class="keyword">struct</span> c &#123;</span><br><span class="line">            <span class="keyword">long</span> <span class="keyword">long</span> a;</span><br><span class="line">            <span class="keyword">char</span> d;</span><br><span class="line">        &#125; m;</span><br><span class="line">        <span class="keyword">char</span> b;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"default_pack_struct_size_bigger:%d\n"</span>,(<span class="keyword">int</span>)<span class="keyword">sizeof</span>(<span class="keyword">struct</span> default_pack_struct_size_bigger));</span><br><span class="line">    <span class="comment">//struct成员字节数都小于pack,按字节数最大的对齐=&gt;4</span></span><br><span class="line">    <span class="keyword">struct</span> default_pack_struct_size_smaller &#123;</span><br><span class="line">        <span class="keyword">char</span> a;</span><br><span class="line">        <span class="keyword">short</span> <span class="keyword">int</span> b;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"default_pack_struct_size_smaller:%d\n"</span>,(<span class="keyword">int</span>)<span class="keyword">sizeof</span>(<span class="keyword">struct</span> default_pack_struct_size_smaller));</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    <span class="comment">//设置pack为4</span></span><br><span class="line">    <span class="preprocessor">#<span class="keyword">pragma</span> pack(<span class="number">4</span>)</span></span><br><span class="line">    <span class="comment">//结构成员有大于4字节的 =&gt; 12</span></span><br><span class="line">    <span class="keyword">struct</span> pack_4_struct_size_bigger &#123;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">short</span> <span class="keyword">int</span> a;</span><br><span class="line">        <span class="keyword">long</span> <span class="keyword">long</span> b;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pack_4_struct_size_bigger:%d\n"</span>,(<span class="keyword">int</span>)<span class="keyword">sizeof</span>(<span class="keyword">struct</span> pack_4_struct_size_bigger));</span><br><span class="line">    <span class="comment">//结构成员都小于4字节 =&gt; 4 </span></span><br><span class="line">    <span class="keyword">struct</span> pack_4_struct_size_smaller &#123;</span><br><span class="line">        <span class="keyword">char</span> a;</span><br><span class="line">        <span class="keyword">unsigned</span> <span class="keyword">short</span> <span class="keyword">int</span> b;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"pack_4_struct_size_smaller:%d\n"</span>,(<span class="keyword">int</span>)<span class="keyword">sizeof</span>(<span class="keyword">struct</span> pack_4_struct_size_smaller));</span><br><span class="line">    <span class="preprocessor">#<span class="keyword">pragma</span> pack()</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>结果：<br><img src="http://img.blog.csdn.net/20150309153751330" alt=""></p>
+<hr>
+<p>另外，在对位域操作时有位序的概念，对于小端的机器(通常x86都是)来说，位序与端序是一致的，即对于低位放在高内存地址(当然这个是假定的一个字节内的高位，内存寻址一般是以字节为单位的)</p>
+<p>下面是一段测试程序:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> &#123;</span><br><span class="line">  <span class="keyword">int</span> a;  <span class="comment">// lower linear address</span></span><br><span class="line">  <span class="keyword">char</span> b;  <span class="comment">// higher linear address </span></span><br><span class="line">&#125; testStruct;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">testStructEndian</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  testStruct t = &#123;<span class="number">1</span>, <span class="number">2</span>&#125;;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"sizeof testStruct : %ld\n"</span>, <span class="keyword">sizeof</span>(testStruct));</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"%p\n"</span>, &amp;t.a);</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"%p\n"</span>, &amp;t.b);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">testInt</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> a = <span class="number">0x12345678</span>;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"%x\n"</span>, a);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 小端情况下，对于位域和字节一样也是低线性地址存放内容二进制的低位</span></span><br><span class="line"><span class="comment">// 测试下大端的情况?</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> &#123;</span><br><span class="line">  <span class="keyword">int</span> a:<span class="number">5</span>;  <span class="comment">// lower </span></span><br><span class="line">  <span class="keyword">int</span> b:<span class="number">2</span>;  <span class="comment">// higher </span></span><br><span class="line">  <span class="comment">//int c:10;</span></span><br><span class="line">&#125; bitField;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">testBitField</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  bitField b;</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"sizeof bitField:%ld\n"</span>, <span class="keyword">sizeof</span>(bitField));</span><br><span class="line">  <span class="keyword">const</span> <span class="keyword">char</span> *str = <span class="string">"0123"</span>;</span><br><span class="line">  <span class="keyword">int</span> temp;</span><br><span class="line">  <span class="built_in">memcpy</span>(&amp;temp, str, <span class="keyword">sizeof</span>(<span class="keyword">int</span>));</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"%x\n"</span>, temp);</span><br><span class="line">  <span class="built_in">memcpy</span>(&amp;b, str, <span class="keyword">sizeof</span>(b));  </span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"a:%d,b:%d\n"</span>, b.a, b.b);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 0 : little endian</span></span><br><span class="line"><span class="comment">// 1 : big endian</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">checkEndian</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">union</span> &#123;</span><br><span class="line">    <span class="keyword">int</span> a;</span><br><span class="line">    <span class="keyword">char</span> b;</span><br><span class="line">  &#125; u;</span><br><span class="line">  u.a = <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">return</span> u.b == <span class="number">1</span> ? <span class="number">0</span> : <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span> *argv[])</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  testStructEndian();</span><br><span class="line">  testInt();</span><br><span class="line">  testBitField();</span><br><span class="line">  <span class="built_in">fprintf</span>(<span class="built_in">stdout</span>, <span class="string">"endian:%d\n"</span>, checkEndian());</span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p>输出:<br><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">sizeof</span> testStruct : <span class="number">8</span></span><br><span class="line"><span class="number">0x7fff2d59d790</span></span><br><span class="line"><span class="number">0x7fff2d59d794</span></span><br><span class="line"><span class="number">12345678</span></span><br><span class="line"><span class="keyword">sizeof</span> bitField:<span class="number">4</span></span><br><span class="line"><span class="number">33323130</span></span><br><span class="line">a:-<span class="number">16</span>,b:<span class="number">1</span></span><br><span class="line">endian:<span class="number">0</span></span><br></pre></td></tr></table></figure></p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-C-C-内存对齐" 
+      data-title="C/C++内存对齐" data-url="/2015/03/09/C-C-内存对齐/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

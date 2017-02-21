@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>支持向量机(SVM)笔记 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="SVM,机器学习," />
+  
+
+  <meta name="description" content="##SVM
+1.概述SVM全称Support_Vector_Machine,即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，其也可以通过核函数将低维映射到高维空间从而转变为线性可分。对于多分类问题，SVM经过适当的转换，也能加以解决。相对于传统的分类算法如logistic回归，k近邻法，决策树，感知机，高斯判别">
+<meta property="og:type" content="article">
+<meta property="og:title" content="支持向量机(SVM)笔记">
+<meta property="og:url" content="/2015/05/24/支持向量机-SVM-笔记/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="##SVM
+1.概述SVM全称Support_Vector_Machine,即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，其也可以通过核函数将低维映射到高维空间从而转变为线性可分。对于多分类问题，SVM经过适当的转换，也能加以解决。相对于传统的分类算法如logistic回归，k近邻法，决策树，感知机，高斯判别">
+<meta property="og:image" content="http://img.blog.csdn.net/20150524195045259">
+<meta property="og:image" content="http://img.blog.csdn.net/20150524195822371">
+<meta property="og:image" content="http://img.blog.csdn.net/20150524200008560">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="支持向量机(SVM)笔记">
+<meta name="twitter:description" content="##SVM
+1.概述SVM全称Support_Vector_Machine,即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，其也可以通过核函数将低维映射到高维空间从而转变为线性可分。对于多分类问题，SVM经过适当的转换，也能加以解决。相对于传统的分类算法如logistic回归，k近邻法，决策树，感知机，高斯判别">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-_u6982_u8FF0"><span class="toc-text">1.概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-_u95EE_u9898_u7684_u63D0_u51FA"><span class="toc-text">2.问题的提出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-_u95EE_u9898_u7684_u8F6C_u5316"><span class="toc-text">3.问题的转化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-_u95EE_u9898_u6C42_u89E3"><span class="toc-text">4.问题求解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-_u95EE_u9898_u7684_u4F18_u5316"><span class="toc-text">5.问题的优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-_u4F18_u5316_u540E_u95EE_u9898_u7684_u6C42_u89E3"><span class="toc-text">6.优化后问题的求解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-_u5B9E_u6218"><span class="toc-text">7.实战</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-支持向量机-SVM-笔记" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">支持向量机(SVM)笔记</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.05.24</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/机器学习/">机器学习</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-支持向量机-SVM-笔记"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>##SVM</p>
+<h3 id="1-_u6982_u8FF0"><a href="#1-_u6982_u8FF0" class="headerlink" title="1.概述"></a>1.概述</h3><p>SVM全称Support_Vector_Machine,即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，其也可以通过核函数将低维映射到高维空间从而转变为线性可分。对于多分类问题，SVM经过适当的转换，也能加以解决。相对于传统的分类算法如logistic回归，k近邻法，决策树，感知机，高斯判别分析法(GDA)等，SVM尤其独到的优势。相对于神经网络复杂的训练计算量，SVM在训练方面较少计算量的同时也能得到很好的训练效果。</p>
+<h3 id="2-_u95EE_u9898_u7684_u63D0_u51FA"><a href="#2-_u95EE_u9898_u7684_u63D0_u51FA" class="headerlink" title="2.问题的提出"></a>2.问题的提出</h3><ul>
+<li>考虑一个线性可分的二分类问题<ul>
+<li>m个训练样本$x$是特征向量，$y$是目标变量<blockquote>
+<p>${x^{(i)},y^{(i)}},x^{(i)}\in R^n,y^{(i)}\in {1,-1},i=1,2,\cdots,m$<br>决策函数：$h_{w,b}(x) = g(w^Tx+b)，g(z)=\begin{cases} 1,if\;\;x&gt;0 \    0,if\;\;x&lt;0 \end{cases}$<br><img src="http://img.blog.csdn.net/20150524195045259" alt="这里写图片描述"><br>直线代表 $w^Tx+b=0$</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>首先定义一些符号</p>
+<ul>
+<li><p>functional margin（函数边界）</p>
+<blockquote>
+<p>$\hat r=min{\hat r^{(i)}},\;i=1,2,\cdots,m;\;\;\hat r^{(i)}=y^{(i)}*(w^Tx^{(i)}+b)$</p>
+</blockquote>
+</li>
+<li><p>geometrical margin（几何边界）</p>
+<blockquote>
+<p>$r=min{r^{(i)}},\;i=1,2,\cdots,m;\;\;r^{(i)}=\frac{y^{(i)*(w^Tx^{(i)}+b)}}{|w|}$</p>
+</blockquote>
+</li>
+<li><p>符号解释：</p>
+<blockquote>
+<ul>
+<li>函数边界：由于$y^{(i)}$只能取$1,-1$，所以当$w^T*x^{(i)}+b&gt;&gt;0$时，$y=1$和$y=-1$分别表示点分布在距离超平面$w^Tx+b=0$两边很远的地方,注意如果加倍$w$与$x$，函数边界是会加倍的</li>
+</ul>
+</blockquote>
+</li>
+<li><p>目标：几何边界最大，即</p>
+<blockquote>
+<p>$max{r}$</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-_u95EE_u9898_u7684_u8F6C_u5316"><a href="#3-_u95EE_u9898_u7684_u8F6C_u5316" class="headerlink" title="3.问题的转化"></a>3.问题的转化</h3><ul>
+<li><p>依次转化：</p>
+<ul>
+<li>$max{r}$</li>
+<li>$max{min{r^{(i)}=\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}};i=1,2,\cdots,m}$</li>
+<li>$\begin{cases}max{r}\s.t. \;\;\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}\ge r\end{cases}$</li>
+<li>$\begin{cases}max{\frac{\hat r}{|w|}}\s.t. \;\;y^{(i)}*(w^Tx^{(i)}+b)\ge \hat r\end{cases}$</li>
+<li><p>注意函数边界的改变不影响优化问题的求解结果</p>
+<blockquote>
+<p>$let \;\hat r=1$<br>问题转化为:<br>$\begin{cases}max{\frac{1}{|w|}}\s.t. \;\;y^{(i)}<em>(w^Tx^{(i)}+b)\ge 1\end{cases}$<br>最终转化为optimization problem，而且目标函数是convex的，即凸函数<br>$\begin{cases}min{\frac{1}{2}w^2}\s.t. \;\;y^{(i)}</em>(w^Tx^{(i)}+b)\ge 1\end{cases}最终得到优化问题(1)$</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-_u95EE_u9898_u6C42_u89E3"><a href="#4-_u95EE_u9898_u6C42_u89E3" class="headerlink" title="4.问题求解"></a>4.问题求解</h3><p>(1)可以用通常的QP（二次规划）方法求解，matlab或lingo都有相应工具箱。<br>(2)既然本文叫SVM，当然会用到不同的解法，而且SVM的解法在训练集很大的时候，比一般的QP解法效率高。</p>
+<ul>
+<li><p>广义拉格朗日数乘法</p>
+<blockquote>
+<p>对于3中得到的优化问题（1）有：<br>$\begin{cases}L(w,b,\alpha)=\frac{1}{2}w^2-\sum_{i=1}^m\alpha^{(i)}[y^{(i)}*(w^Tx^{(i)}+b)-1]\\alpha^{(i)}\ge 0\end{cases}$</p>
+<ul>
+<li>满足约束条件$y^{(i)}*(w^Tx^{(i)}+b)\ge 1$下有：<br>$max{L(w,b,\alpha)}=\frac{1}{w^2}=f(w)$</li>
+</ul>
+</blockquote>
+</li>
+<li><p>优化问题变为:</p>
+<blockquote>
+<p>$\begin{cases}min<em>{w,b}{max</em>\alpha{L(w,b,\alpha)}}\s.t. \;\;y^{(i)}*(w^Tx^{(i)}+b)\ge 1 \\alpha^{(i)}\ge 0 \end{cases}$</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li><p>在满足KKT条件下有(对偶优化问题)</p>
+<ul>
+<li>$min<em>{w,b}{max</em>\alpha{L(w,b,\alpha)}}=max<em>{\alpha}{min</em>{w,b}{L(w,b,\alpha)}}$<blockquote>
+<p>通常对偶问题(dual problem)$max{min{f(w,\alpha)}}$比原始问题(primal problem)$min{max{f(w,\alpha)}}$更容易求解，尤其是在训练样本数量很大的情况下,KKT条件又称为互补松弛条件</p>
+</blockquote>
+</li>
+<li><p>$\nabla_{w,b}L(\bar w,\bar b,\bar \alpha)=0;$</p>
+<blockquote>
+<p>$\bar w,\bar b是primal\;optimal;\;\;\bar \alpha是dual\;optimal$</p>
+</blockquote>
+</li>
+<li><p>$\bar \alpha^{(i)}g_i(\bar w,\bar b)=0$，</p>
+<blockquote>
+<p>$y^{(i)}<em>(w^Tx^{(i)}+b)=1$时，通常有$\alpha\ne 0$，这些点称为Support Vector，即支持向量     $y^{(i)}</em>(w^Tx^{(i)}+b)&gt;1$时,有$\alpha=0$，通常大多数$\alpha$为0，减少了计算量</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>解决$min_{w,b}{L(w,b,\alpha)}$<blockquote>
+<p>求偏导令为0可得$\begin{cases}w=\sum<em>{i=1}^m\alpha^{(i)}y^{(i)}x^{(i)}\\sum</em>{i=1}^m\alpha^{(i)}y^{(i)}=0 \end{cases}$</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>带入原式:<blockquote>
+<p>$\begin{cases}max<em>\alpha{\sum</em>{i=1}^m\alpha^{(i)}-\frac{1}{2}\sum<em>{i,j=1}^my^{(i)}y^{(j)}\alpha^{(i)   }\alpha^{(j)}<x^{(i)},x^{(j)}>} \ \alpha^{(i)}\ge 0 \      \sum</x^{(i)},x^{(j)}></em>{i=1}^m\alpha^{(i)}y^{(i)}=0\end{cases}$</p>
+<ul>
+<li>求得$\alpha$则可得到$w,b$</li>
+<li>目标表示为 $w^Tx+b=\sum_{i=1}^m\alpha^{(i)}y^{(i)}<x^{(i)},x>+b$</x^{(i)},x></li>
+<li>$kernel(x，y)=<x^t,y>$称为核函数，能较少高维空间计算量，通常知道了核函数，计算量相对于找对应的$x,y$向量小得多,而且若$x,y$是无限维向量，也可通过核函数映射。常用的核函数有：<ul>
+<li>高斯核$K(x,z)=exp(-\frac{|z-x|}{2\sigma^2})$</li>
+<li>多项式核$K(x,z)=(x-z)^a$</li>
+</ul>
+</x^t,y></li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h3 id="5-_u95EE_u9898_u7684_u4F18_u5316"><a href="#5-_u95EE_u9898_u7684_u4F18_u5316" class="headerlink" title="5.问题的优化"></a>5.问题的优化</h3><ul>
+<li>4中推导出了求$\alpha$使得最大化的问题。但其存在一定问题。<br><img src="http://img.blog.csdn.net/20150524195822371" alt="这里写图片描述"></li>
+</ul>
+<p>  当训练集如右图分布在超平面两侧时，结果并不好，因此我们可以给$\hat r=1$添加松弛条件，允许少数点小于1，甚至分类到错误的一面</p>
+<ul>
+<li>我们修改限制条件，并修改目标函数<blockquote>
+<p>$\begin{cases}min{\frac{1}{2}w^2+csum<em>{i=1}^m\xi</em>{i}}\y^{(i)}*(w^Tx^{(i)}+b)\ge 1-\xi<em>{i} \ \xi</em>{i}\ge 0\end{cases}$</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>通过类似的对偶问题的求解，我们得到<blockquote>
+<p>$\begin{cases}W=max<em>\alpha{\sum</em>{i=1}^m\alpha^{(i)}-\frac{1}{2}\sum<em>{i,j=1}^my^{(i)}y^{(j)}\alpha^{(i)   }\alpha^{(j)}<x^{(i)},x^{(j)}>} \ 0\le \alpha\le c \      \sum</x^{(i)},x^{(j)}></em>{i=1}^m\alpha^{(i)}y^{(i)}=0\end{cases}$</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="6-_u4F18_u5316_u540E_u95EE_u9898_u7684_u6C42_u89E3"><a href="#6-_u4F18_u5316_u540E_u95EE_u9898_u7684_u6C42_u89E3" class="headerlink" title="6.优化后问题的求解"></a>6.优化后问题的求解</h3><ul>
+<li><p>坐标上升法求解最大值</p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#伪代码</span><br><span class="line">       loop &#123;</span><br><span class="line">         <span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">m</span>):</span><br><span class="line">             <span class="keyword">alpha</span>(i):=<span class="keyword">alpha</span>(i) <span class="keyword">which</span> let &#123;w&#125; maximum</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>坐标上升与梯度上升的对比图<br><img src="http://img.blog.csdn.net/20150524200008560" alt="这里写图片描述"></p>
+</li>
+</ul>
+<ul>
+<li>SMO</li>
+</ul>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">#伪代码</span><br><span class="line">     <span class="keyword">L</span>&lt;=<span class="keyword">alpha</span>&lt;=<span class="literal">H</span></span><br><span class="line">     loop &#123;</span><br><span class="line">         <span class="keyword">for</span> i,j <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">m</span>):</span><br><span class="line">             <span class="keyword">alpha</span>(i):=min&#123; (<span class="keyword">alpha</span>(i) or <span class="keyword">L</span> or <span class="keyword">H</span> ) <span class="keyword">which</span> let &#123;w&#125; maximum &#125;</span><br><span class="line">             <span class="keyword">alpha</span>(j):=min&#123; (<span class="keyword">alpha</span>(j) or <span class="keyword">L</span> or <span class="keyword">H</span> ) <span class="keyword">which</span> let &#123;w&#125; maximum &#125;</span><br><span class="line">     &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="7-_u5B9E_u6218"><a href="#7-_u5B9E_u6218" class="headerlink" title="7.实战"></a>7.实战</h3><ul>
+<li>trainsets  总共90组                                       <blockquote>
+<p>-0.017612 14.0530640<br>-1.395634 4.6625411<br>-0.752157 6.5386200<br>-1.322371 7.1528530<br>…………………………<br>-1.076637 -3.1818881<br>1.821096 10.2839900<br>3.010150 8.4017661<br>-1.099458 1.6882741<br>-0.834872 -1.7338691<br>-0.846637 3.8490751<br>1.400102 12.6287810<br>1.752842 5.4681661<br>0.078557 0.0597361</p>
+</blockquote>
+</li>
+<li>testsets  总共10组<blockquote>
+<p>0.089392 -0.7153001<br>1.825662 12.6938080<br>0.197445 9.7446380<br>0.126117 0.9223111<br>-0.679797 1.2205301<br>0.677983 2.5566661<br>0.761349 10.6938620<br>-2.168791 0.1436321<br>1.388610 9.3419970<br>0.317029 14.7390250</p>
+</blockquote>
+</li>
+</ul>
+<ul>
+<li>logistic回归效果<ul>
+<li>权值$weight=[[ 11.93391219][  1.12324688][ -1.60965531]]$</li>
+<li>原始测试文件真值$y=[1.0, 0.0, 0.0, 1.0, 1.0,1.0, 0.0, 1.0, 0.0, 0.0]$</li>
+<li>logistic回归预测值:$y1=[1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0]$</li>
+<li>正确率还是蛮高的</li>
+<li>附上代码:</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env</span><br><span class="line"><span class="id">#coding</span>:utf-<span class="number">8</span></span><br><span class="line">import numpy</span><br><span class="line">import sys</span><br><span class="line">from matplotlib import pyplot</span><br><span class="line">import random</span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">makedata</span><span class="params">(filename)</span></span>:</span><br><span class="line">    try:</span><br><span class="line">        f = <span class="function"><span class="title">open</span><span class="params">(filename,<span class="string">"r"</span>)</span></span></span><br><span class="line">        lines = f.<span class="function"><span class="title">readlines</span><span class="params">()</span></span></span><br><span class="line">        datalist = []</span><br><span class="line">        datalist = [<span class="tag">i</span>.<span class="function"><span class="title">split</span><span class="params">()</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> lines ]</span><br><span class="line">        datalist = [ [ <span class="function"><span class="title">float</span><span class="params">(i)</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> line] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">        <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> <span class="function"><span class="title">range</span><span class="params">(len(datalist)</span></span>):</span><br><span class="line">            datalist[i].<span class="function"><span class="title">insert</span><span class="params">(<span class="number">0</span>,<span class="number">1.0</span>)</span></span></span><br><span class="line">    except:</span><br><span class="line">        return</span><br><span class="line">    finally:</span><br><span class="line">        return datalist</span><br><span class="line">        f.<span class="function"><span class="title">close</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">makedat</span><span class="params">(filename)</span></span>:</span><br><span class="line">    try:</span><br><span class="line">        f = <span class="function"><span class="title">open</span><span class="params">(filename,<span class="string">"r"</span>)</span></span></span><br><span class="line">        lines = f.<span class="function"><span class="title">readlines</span><span class="params">()</span></span></span><br><span class="line">        datalist = []</span><br><span class="line">        datalist = [<span class="tag">i</span>.<span class="function"><span class="title">split</span><span class="params">()</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> lines ]</span><br><span class="line">        datalist = [ [ <span class="function"><span class="title">float</span><span class="params">(i)</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> line] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">        x = [ line[<span class="number">0</span>:<span class="function"><span class="title">len</span><span class="params">(line)</span></span>-<span class="number">1</span>] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">        y = [ line[-<span class="number">1</span>] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">    except:</span><br><span class="line">        return</span><br><span class="line">    finally:</span><br><span class="line">        return x,y</span><br><span class="line">        f.<span class="function"><span class="title">close</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">sigma</span><span class="params">(z)</span></span>:</span><br><span class="line">    return <span class="number">1.0</span>/(<span class="number">1</span>+numpy.<span class="function"><span class="title">exp</span><span class="params">(-z)</span></span>)</span><br><span class="line"></span><br><span class="line"><span class="id">#batch</span> regression</span><br><span class="line">def <span class="function"><span class="title">logisticFunc</span><span class="params">(dataset,itertimes,alpha)</span></span>:</span><br><span class="line">    weight = numpy.<span class="function"><span class="title">ones</span><span class="params">((len(dataset[<span class="number">0</span>])</span></span>-<span class="number">1</span>,<span class="number">1</span>))   </span><br><span class="line">    value = [ <span class="function"><span class="title">int</span><span class="params">(i[-<span class="number">1</span>])</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> dataset ]</span><br><span class="line">    value = numpy.<span class="function"><span class="title">mat</span><span class="params">(value)</span></span>.<span class="function"><span class="title">transpose</span><span class="params">()</span></span></span><br><span class="line">    params = [ <span class="tag">i</span>[<span class="number">0</span>:-<span class="number">1</span>] <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> dataset ]</span><br><span class="line">    params = numpy.<span class="function"><span class="title">mat</span><span class="params">(params)</span></span></span><br><span class="line">    <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> <span class="function"><span class="title">range</span><span class="params">(int(itertimes)</span></span>):</span><br><span class="line">        error = <span class="function"><span class="title">value-sigma</span><span class="params">(params*weight)</span></span></span><br><span class="line">        weight = weight+alpha*params.<span class="function"><span class="title">transpose</span><span class="params">()</span></span>*error</span><br><span class="line">    return weight</span><br><span class="line"></span><br><span class="line"><span class="id">#random</span> grad ascend regression </span><br><span class="line">def <span class="function"><span class="title">randLogisticFunc</span><span class="params">(dataset,itertimes,alpha)</span></span>:</span><br><span class="line">    weight = numpy.<span class="function"><span class="title">ones</span><span class="params">((len(dataset[<span class="number">0</span>])</span></span>-<span class="number">1</span>,<span class="number">1</span>))   </span><br><span class="line">    value = [ <span class="function"><span class="title">int</span><span class="params">(i[-<span class="number">1</span>])</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> dataset ]</span><br><span class="line">    value = numpy.<span class="function"><span class="title">mat</span><span class="params">(value)</span></span>.<span class="function"><span class="title">transpose</span><span class="params">()</span></span></span><br><span class="line">    params = [ <span class="tag">i</span>[<span class="number">0</span>:-<span class="number">1</span>] <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> dataset ]</span><br><span class="line">    params = numpy.<span class="function"><span class="title">mat</span><span class="params">(params)</span></span></span><br><span class="line">    <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> <span class="function"><span class="title">range</span><span class="params">(int(itertimes)</span></span>):</span><br><span class="line">        randid = random.<span class="function"><span class="title">randint</span><span class="params">(<span class="number">0</span>,len(dataset)</span></span>-<span class="number">1</span>)</span><br><span class="line">        error = value[randid]-<span class="function"><span class="title">sigma</span><span class="params">(params[randid]*weight)</span></span></span><br><span class="line">        weight = weight+alpha*params[randid].<span class="function"><span class="title">transpose</span><span class="params">()</span></span>*error</span><br><span class="line">    return weight</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">plot</span><span class="params">(data,weight)</span></span>:</span><br><span class="line">    x1 = []</span><br><span class="line">    x2 = []</span><br><span class="line">    y1 = []</span><br><span class="line">    y2 = []</span><br><span class="line">    <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> data:</span><br><span class="line">        <span class="keyword">if</span> <span class="tag">i</span>[-<span class="number">1</span>] == <span class="number">1</span>:</span><br><span class="line">            x1.<span class="function"><span class="title">append</span><span class="params">(i[<span class="number">1</span>])</span></span></span><br><span class="line">            y1.<span class="function"><span class="title">append</span><span class="params">(i[<span class="number">2</span>])</span></span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            x2.<span class="function"><span class="title">append</span><span class="params">(i[<span class="number">1</span>])</span></span></span><br><span class="line">            y2.<span class="function"><span class="title">append</span><span class="params">(i[<span class="number">2</span>])</span></span></span><br><span class="line">    x = numpy.<span class="function"><span class="title">linspace</span><span class="params">(-<span class="number">3</span>,<span class="number">3</span>,<span class="number">1000</span>)</span></span></span><br><span class="line">    weight = numpy.<span class="function"><span class="title">array</span><span class="params">(weight)</span></span></span><br><span class="line">    y = (-weight[<span class="number">0</span>][<span class="number">0</span>]-weight[<span class="number">1</span>][<span class="number">0</span>]*x)/weight[<span class="number">2</span>][<span class="number">0</span>]</span><br><span class="line">    fg = pyplot.<span class="function"><span class="title">figure</span><span class="params">()</span></span></span><br><span class="line">    sp = fg.<span class="function"><span class="title">add_subplot</span><span class="params">(<span class="number">111</span>)</span></span></span><br><span class="line">    sp.<span class="function"><span class="title">scatter</span><span class="params">(x1,y1,s=<span class="number">30</span>,c=<span class="string">"red"</span>)</span></span></span><br><span class="line">    sp.<span class="function"><span class="title">scatter</span><span class="params">(x2,y2,s=<span class="number">30</span>,c=<span class="string">"blue"</span>)</span></span></span><br><span class="line">    sp.<span class="function"><span class="title">plot</span><span class="params">(x,y)</span></span></span><br><span class="line">    pyplot.<span class="function"><span class="title">show</span><span class="params">()</span></span></span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">predict</span><span class="params">(weight,x1)</span></span>:</span><br><span class="line">    yi = []</span><br><span class="line">    <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> x1:</span><br><span class="line">        <span class="keyword">if</span> weight[<span class="number">0</span>][<span class="number">0</span>]+<span class="tag">i</span>[<span class="number">0</span>]*weight[<span class="number">1</span>][<span class="number">0</span>]+<span class="tag">i</span>[<span class="number">1</span>]*weight[<span class="number">2</span>][<span class="number">0</span>]&gt;=<span class="number">0</span>:</span><br><span class="line">            yi.<span class="function"><span class="title">append</span><span class="params">(<span class="number">1</span>)</span></span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            yi.<span class="function"><span class="title">append</span><span class="params">(<span class="number">0</span>)</span></span></span><br><span class="line">    print yi</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">def <span class="function"><span class="title">main</span><span class="params">()</span></span>:</span><br><span class="line">    trainfile = sys<span class="class">.argv</span>[<span class="number">1</span>]</span><br><span class="line">    itertimes = <span class="function"><span class="title">int</span><span class="params">(sys.argv[<span class="number">2</span>])</span></span></span><br><span class="line">    alpha = <span class="function"><span class="title">float</span><span class="params">(sys.argv[<span class="number">3</span>])</span></span></span><br><span class="line">    testfile = sys<span class="class">.argv</span>[<span class="number">4</span>]</span><br><span class="line">    data = <span class="function"><span class="title">makedata</span><span class="params">(trainfile)</span></span></span><br><span class="line">    testx,testy = <span class="function"><span class="title">makedat</span><span class="params">(testfile)</span></span></span><br><span class="line">    weight = <span class="function"><span class="title">logisticFunc</span><span class="params">(data,itertimes,alpha)</span></span></span><br><span class="line">    print weight</span><br><span class="line">    <span class="function"><span class="title">predict</span><span class="params">(weight,testx)</span></span></span><br><span class="line">    print testy</span><br><span class="line">    <span class="id">#weight</span> = <span class="function"><span class="title">randLogisticFunc</span><span class="params">(data,itertimes,alpha)</span></span></span><br><span class="line">    <span class="id">#print</span> weight</span><br><span class="line">    <span class="function"><span class="title">plot</span><span class="params">(data,weight)</span></span></span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">'__main__'</span>:</span><br><span class="line">    <span class="function"><span class="title">main</span><span class="params">()</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>SVM效果（采用高斯核,使用sklearn库）<ul>
+<li>原始测试文件真值$y=[1.0, 0.0, 0.0, 1.0, 1.0,1.0, 0.0, 1.0, 0.0, 0.0]$</li>
+<li>svm预测值:$y1=array([ 1.,  0.,  0.,  1.,  1.,  1.,  0.,  1.,  0.,  0.])$</li>
+<li>正确率也挺高的</li>
+<li>附上代码:</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">#!/usr/bin/env python</span><br><span class="line"><span class="id">#coding</span>:utf-<span class="number">8</span></span><br><span class="line">from sklearn import svm</span><br><span class="line">import sys</span><br><span class="line">def <span class="function"><span class="title">makedata</span><span class="params">(filename)</span></span>:</span><br><span class="line">    try:</span><br><span class="line">        f = <span class="function"><span class="title">open</span><span class="params">(filename,<span class="string">"r"</span>)</span></span></span><br><span class="line">        lines = f.<span class="function"><span class="title">readlines</span><span class="params">()</span></span></span><br><span class="line">        datalist = []</span><br><span class="line">        datalist = [<span class="tag">i</span>.<span class="function"><span class="title">split</span><span class="params">()</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> lines ]</span><br><span class="line">        datalist = [ [ <span class="function"><span class="title">float</span><span class="params">(i)</span></span> <span class="keyword">for</span> <span class="tag">i</span> <span class="keyword">in</span> line] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">        x = [ line[<span class="number">0</span>:<span class="function"><span class="title">len</span><span class="params">(line)</span></span>-<span class="number">1</span>] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">        y = [ line[-<span class="number">1</span>] <span class="keyword">for</span> line <span class="keyword">in</span> datalist ]</span><br><span class="line">    except:</span><br><span class="line">        return</span><br><span class="line">    finally:</span><br><span class="line">        return x,y</span><br><span class="line">        f.<span class="function"><span class="title">close</span><span class="params">()</span></span></span><br><span class="line">def <span class="function"><span class="title">learn</span><span class="params">(x,y)</span></span>:</span><br><span class="line">	clf = svm.<span class="function"><span class="title">SVC</span><span class="params">()</span></span></span><br><span class="line">	clf.<span class="function"><span class="title">fit</span><span class="params">(x,y)</span></span></span><br><span class="line">	return clf</span><br><span class="line">def <span class="function"><span class="title">predict</span><span class="params">(x1,y1,clf)</span></span>:</span><br><span class="line">	print <span class="string">"svm fit results"</span>,clf.<span class="function"><span class="title">predict</span><span class="params">(x1)</span></span></span><br><span class="line">	print <span class="string">"original test file results"</span>,y1</span><br><span class="line"><span class="keyword">if</span> __name__==<span class="string">"__main__"</span>:</span><br><span class="line">	inputfile = sys<span class="class">.argv</span>[<span class="number">1</span>]</span><br><span class="line">	testfile = sys<span class="class">.argv</span>[<span class="number">2</span>]</span><br><span class="line">	x,y = <span class="function"><span class="title">makedata</span><span class="params">(inputfile)</span></span></span><br><span class="line">	x1,y1 = <span class="function"><span class="title">makedata</span><span class="params">(testfile)</span></span></span><br><span class="line">	clf = <span class="function"><span class="title">learn</span><span class="params">(x,y)</span></span></span><br><span class="line">	<span class="function"><span class="title">predict</span><span class="params">(x1, y1, clf)</span></span></span><br></pre></td></tr></table></figure>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-支持向量机-SVM-笔记" 
+      data-title="支持向量机(SVM)笔记" data-url="/2015/05/24/支持向量机-SVM-笔记/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

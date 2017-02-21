@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>KMP简单证明 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="KMP,数据结构与算法," />
+  
+
+  <meta name="description" content="在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。
+朴素算法朴素算法比较明了，不再赘述，下面是简单的代码：
+12345678910111213141516171819// time : O(n*m), space : O(1)int naive(const std::string &amp;amp;text, const std::s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="KMP简单证明">
+<meta property="og:url" content="/2016/03/03/KMP简单证明/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。
+朴素算法朴素算法比较明了，不再赘述，下面是简单的代码：
+12345678910111213141516171819// time : O(n*m), space : O(1)int naive(const std::string &amp;amp;text, const std::s">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="KMP简单证明">
+<meta name="twitter:description" content="在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。
+朴素算法朴素算法比较明了，不再赘述，下面是简单的代码：
+12345678910111213141516171819// time : O(n*m), space : O(1)int naive(const std::string &amp;amp;text, const std::s">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#u6734_u7D20_u7B97_u6CD5"><span class="toc-text">朴素算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u6A21_u5F0F_u4E32_u4E0D_u542B_u6709_u76F8_u540C_u5B57_u7B26"><span class="toc-text">模式串不含有相同字符</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#KMP"><span class="toc-text">KMP</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-KMP简单证明" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">KMP简单证明</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.03.03</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/数据结构与算法/">数据结构与算法</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-KMP简单证明"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。</p>
+<h4 id="u6734_u7D20_u7B97_u6CD5"><a href="#u6734_u7D20_u7B97_u6CD5" class="headerlink" title="朴素算法"></a>朴素算法</h4><p>朴素算法比较明了，不再赘述，下面是简单的代码：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// time : O(n*m), space : O(1)</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">naive</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;text, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;pattern)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="comment">// corner case </span></span><br><span class="line">  <span class="keyword">int</span> len1 = text.length();</span><br><span class="line">  <span class="keyword">int</span> len2 = pattern.length();</span><br><span class="line">  <span class="keyword">if</span> (len2 &gt; len1) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">int</span> end = len1 - len2;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= end; ++i) &#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; len2; ++j) &#123;</span><br><span class="line">      <span class="keyword">if</span> (text[i + j] != pattern[j]) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (j == len2) <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前<br>的已匹配的相同前缀的信息。</p>
+<h4 id="u6A21_u5F0F_u4E32_u4E0D_u542B_u6709_u76F8_u540C_u5B57_u7B26"><a href="#u6A21_u5F0F_u4E32_u4E0D_u542B_u6709_u76F8_u540C_u5B57_u7B26" class="headerlink" title="模式串不含有相同字符"></a>模式串不含有相同字符</h4><p>这种情况下，当模式串的一个位置不匹配的时候，我们可以优化朴素算法直接跳过前面模式串已经匹配的长度，实际上这种思路和<br>KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// if pattern has different chars </span></span><br><span class="line"><span class="comment">// we can optimize it to O(n)</span></span><br><span class="line"><span class="comment">// proof:</span></span><br><span class="line"><span class="comment">// assume match break in index j of pattern length m</span></span><br><span class="line"><span class="comment">// current index i : T1 T2 T3 ..Tj.. Tm ... Tn</span></span><br><span class="line"><span class="comment">//                   P1 P2 P3 ..Pj.. Pm</span></span><br><span class="line"><span class="comment">//                   Tj != Pj </span></span><br><span class="line"><span class="comment">// (Pk != Pt) for 1 &lt;= k,t &lt;= m and k != t</span></span><br><span class="line"><span class="comment">// (Pk == Tk) for 1 &lt;= k &lt; j</span></span><br><span class="line"><span class="comment">// =&gt; P1 != Pk for 1 &lt;= k &lt; j</span></span><br><span class="line"><span class="comment">// =&gt; so move i to j</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">special_case</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;text, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;pattern)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> len1 = text.length();</span><br><span class="line">  <span class="keyword">int</span> len2 = pattern.length();</span><br><span class="line">  <span class="keyword">if</span> (len2 &gt; len1) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">int</span> end = len1 - len2;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= end; ++i) &#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; len2; ++j) &#123;</span><br><span class="line">      <span class="keyword">if</span> (text[i + j] != pattern[j]) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (j == len2) <span class="keyword">return</span> i;</span><br><span class="line">    <span class="comment">// notice ++i</span></span><br><span class="line">    <span class="keyword">if</span> (j != <span class="number">0</span>) &#123;</span><br><span class="line">      i += (j - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="KMP"><a href="#KMP" class="headerlink" title="KMP"></a>KMP</h4><ul>
+<li><p>KMP第一遍不是特别容易理解，所以就琢磨着给出一个证明，来加深理解，所以就想出了下面这么个不是很正规和形式化的证明。关于KMP算法的流程可以搜索相关文章，比如<a href="http://kb.cnblogs.com/page/176818/" target="_blank" rel="external">这篇</a>挺不错的。</p>
+</li>
+<li><p>前提假设：目标文本串T的长度为n，模式串P的长度为m，Arr为所谓的next数组，i为在模式串的第i个位置匹配失败。</p>
+</li>
+<li><p>需要证明的问题：对于形如A B X1 X2… A B Y1 Y2… A B的模式串，为什么可以将模式串直接移到最后一个A B处进行下一次匹配，而不是在中间某个A B处？也就是说为什么以中间某个 A B开头进行匹配不可能成功。(注意这里为了方便只有A B两个字符，实际上可能是多个，并且中间的A B和第一个以及最后一个 A B使可能部分重合的)。</p>
+</li>
+<li><p>简单证明 </p>
+<ul>
+<li><p>首先，一次匹配成功则必然有在T中的对应的位置以A B开头，所以从T中最后一个A B处开始进行下一次匹配，成功是可能的。(即是KMP算法中下一次匹配移动模式串的位置)</p>
+</li>
+<li><p>下面证明为什么从中间某个位置的A B处匹配不可能成功</p>
+<ul>
+<li><p>若序列X1 X2…与序列Y1 Y2…不完全相同，显然在第二个A B串处后面不可能匹配成功</p>
+</li>
+<li><p>若序列X1 X2…与序列Y1 Y2…完全相同，则显然A B X1 X2…A B与A B Y1 Y2… A B是相等的更长的前缀和后缀，这自然回到了next数组</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>虽然不是很正规(应该很不正规…)，但是还是多少能帮助理解吧:-)</p>
+</li>
+<li><p>最后附上kmp代码</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// longest common prefix and suffix of</span></span><br><span class="line"><span class="comment">// substr of pattern[0, i] </span></span><br><span class="line"><span class="comment">// use dyamic programming </span></span><br><span class="line"><span class="comment">// time : O(m), space : O(m)</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; nextArray(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;pattern)</span><br><span class="line">&#123;</span><br><span class="line">  <span class="keyword">int</span> len = pattern.length();</span><br><span class="line">  <span class="keyword">if</span> (len == <span class="number">0</span>) <span class="keyword">return</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt;();</span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; res(len, <span class="number">0</span>);</span><br><span class="line">  res[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt; len; ++i) &#123;</span><br><span class="line">    <span class="keyword">if</span> (pattern[res[i - <span class="number">1</span>]] == pattern[i]) &#123;</span><br><span class="line">      res[i] = res[i - <span class="number">1</span>] + <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    res[i] = res[i - <span class="number">1</span>];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">//for (auto &amp;&amp;ele : res) &#123;</span></span><br><span class="line">  <span class="comment">//  std::cout &lt;&lt; ele &lt;&lt; std::endl;</span></span><br><span class="line">  <span class="comment">//&#125;</span></span><br><span class="line">  <span class="keyword">return</span> res;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// time : O(n) + O(m), space : O(m)</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">kmp</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;text, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;pattern)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> len1 = text.length();</span><br><span class="line">  <span class="keyword">int</span> len2 = pattern.length();</span><br><span class="line">  <span class="keyword">if</span> (len2 &gt; len1) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="comment">// get next array</span></span><br><span class="line">  <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="keyword">int</span>&gt; next = nextArray(pattern);</span><br><span class="line">  <span class="keyword">int</span> i = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">int</span> end = len1 - len2;</span><br><span class="line">  <span class="keyword">for</span> (; i &lt;= end; ++i) &#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; len2; ++j) &#123;</span><br><span class="line">      <span class="keyword">if</span> (text[i + j] != pattern[j]) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// got one </span></span><br><span class="line">    <span class="keyword">if</span> (j == len2) <span class="keyword">return</span> i;</span><br><span class="line">    <span class="comment">// move to next position</span></span><br><span class="line">    <span class="comment">// notice the ++i </span></span><br><span class="line">    <span class="comment">// we can skip j == 0</span></span><br><span class="line">    <span class="keyword">if</span> (j != <span class="number">0</span>) &#123;</span><br><span class="line">      i += (j - next[j - <span class="number">1</span>]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//std::cout &lt;&lt; "j:" &lt;&lt; j &lt;&lt; " i:" &lt;&lt; i &lt;&lt; std::endl;</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-KMP简单证明" 
+      data-title="KMP简单证明" data-url="/2016/03/03/KMP简单证明/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

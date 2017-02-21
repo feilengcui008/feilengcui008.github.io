@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Distributed Systems-2PC and 3PC | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="2PC,3PC,分布式系统," />
+  
+
+  <meta name="description" content="这篇文章主要讨论下解决分布式一致性问题的两种算法：两阶段提交(2PC)和三阶段提交(3PC)。之前感觉2PC和3PC的流程挺简单的，但是真正仔细去分析过后，才发现很多的细节。而这些细节对理解Paxos，Raft，Viewstamp Replication，Atomic Broadcast等其他更复杂的一致性算法有很大的作用。所以才在此记录一下这些细节，尤其是从工程实现的角度来思考。
+  具体的术语">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distributed Systems-2PC and 3PC">
+<meta property="og:url" content="/2016/01/21/Distributed-Systems-2PC-and-3PC/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="这篇文章主要讨论下解决分布式一致性问题的两种算法：两阶段提交(2PC)和三阶段提交(3PC)。之前感觉2PC和3PC的流程挺简单的，但是真正仔细去分析过后，才发现很多的细节。而这些细节对理解Paxos，Raft，Viewstamp Replication，Atomic Broadcast等其他更复杂的一致性算法有很大的作用。所以才在此记录一下这些细节，尤其是从工程实现的角度来思考。
+  具体的术语">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Distributed Systems-2PC and 3PC">
+<meta name="twitter:description" content="这篇文章主要讨论下解决分布式一致性问题的两种算法：两阶段提交(2PC)和三阶段提交(3PC)。之前感觉2PC和3PC的流程挺简单的，但是真正仔细去分析过后，才发现很多的细节。而这些细节对理解Paxos，Raft，Viewstamp Replication，Atomic Broadcast等其他更复杂的一致性算法有很大的作用。所以才在此记录一下这些细节，尤其是从工程实现的角度来思考。
+  具体的术语">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-_u6B63_u5E38_u4EA4_u4E92_u6D41_u7A0B"><span class="toc-text">1.正常交互流程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2PC"><span class="toc-text">2PC</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3PC"><span class="toc-text">3PC</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-_u6709_u6302_u6389_u7684_u60C5_u51B5"><span class="toc-text">2.有挂掉的情况</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#2PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29"><span class="toc-text">2PC 有节点挂掉的可能情况(主要以coordinator的视角)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2PC_coordinator_recovery"><span class="toc-text">2PC coordinator recovery</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29"><span class="toc-text">3PC 有节点挂掉的可能情况(主要以coordinator的视角)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3PC_coordinator_recovery"><span class="toc-text">3PC coordinator recovery</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-_u603B_u7ED3"><span class="toc-text">3.总结</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Distributed-Systems-2PC-and-3PC" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Distributed Systems-2PC and 3PC</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.01.21</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Distributed-Systems-2PC-and-3PC"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>  这篇文章主要讨论下解决分布式一致性问题的两种算法：两阶段提交(2PC)和三阶段提交(3PC)。之前感觉2PC和3PC的流程挺简单的，但是真正仔细去分析过后，才发现很多的细节。而这些细节对理解Paxos，Raft，Viewstamp Replication，Atomic Broadcast等其他更复杂的一致性算法有很大的作用。所以才在此记录一下这些细节，尤其是从工程实现的角度来思考。</p>
+<p>  具体的术语，像coordinator,participant具体指代什么，不熟悉的可以参考其他讲2PC和3PC的文章。</p>
+<h3 id="1-_u6B63_u5E38_u4EA4_u4E92_u6D41_u7A0B"><a href="#1-_u6B63_u5E38_u4EA4_u4E92_u6D41_u7A0B" class="headerlink" title="1.正常交互流程"></a>1.正常交互流程</h3><p>这里的正常是指coordinator和participant没有挂掉的。交互流程如下所示，比较容易理解。</p>
+<h4 id="2PC"><a href="#2PC" class="headerlink" title="2PC"></a>2PC</h4><ul>
+<li>(1). coordinator ——(proposal)—–&gt; all participants</li>
+<li>(2). all participants —-(accept/refuse)———-&gt; coordinator</li>
+<li>(3.1). if any of participants is refuse, then coordinator ——-(abort)——–&gt; all participants<br>(3.2). else coordinator ——-(commit)——-&gt; all participants</li>
+</ul>
+<h4 id="3PC"><a href="#3PC" class="headerlink" title="3PC"></a>3PC</h4><ul>
+<li>(1). coordinator ——(proposal)—–&gt; all participants</li>
+<li>(2). all participants —-(accept/refuse)———-&gt; coordinator</li>
+<li>(3.1). if any of participants is refuse, then coordinator ——-(cancel)——–&gt; all participants<br>(3.2). else coordinator ——-(prepare-commit)——-&gt; all participants</li>
+<li>(4). all participants ——(prepare-commit-received)——&gt; coordinator</li>
+<li>(5). if coordinator received prepare-commit-received from all participants then coordiantor —(commit)—&gt; all participants </li>
+</ul>
+<h3 id="2-_u6709_u6302_u6389_u7684_u60C5_u51B5"><a href="#2-_u6709_u6302_u6389_u7684_u60C5_u51B5" class="headerlink" title="2.有挂掉的情况"></a>2.有挂掉的情况</h3><p>2PC和3PC很多细节其实是在这一部分，因为在不同时间点(阶段)，不同类型节点挂掉的情况下，能不能recover以及recover的结果都是不一样的(也就是容错，比如fail-recover，fail-stop，network partition等的程度不同)。我觉得严格来讲，对于coordinator和participants的挂掉的不同组合以及相应的恢复策略，应该用各自接收和发送消息的时间点严格定义，而不是笼统地说阶段1，阶段2等。由于组合情况比较多，而且有些情况的recover方式相同，这里就简单总结分类一下。</p>
+<p>2PC和3PC最主要的区别在于coordinator挂掉的情况下，如果存在participant挂掉，那么能不能recover保证liveness(或者整个系统progress)的问题。对于2PC来说是不能的，对于3PC来说是可以的，而prepare-commit阶段起了决定性作用，这一点后面会详细分析。</p>
+<h4 id="2PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29"><a href="#2PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29" class="headerlink" title="2PC 有节点挂掉的可能情况(主要以coordinator的视角)"></a>2PC 有节点挂掉的可能情况(主要以coordinator的视角)</h4><ul>
+<li>(1).coordinator在未发送proposal消息给任何participant以及之前挂掉了</li>
+<li>(2).coordinator在给一部分participant发送proposal消息后挂掉</li>
+<li>(3).coordinator在给所有participant发送proposal消息，但是没有发送所有commit/abort消息的情况下挂掉了</li>
+<li>(4).coordinator在发送所有commit/abort后挂掉<br>上述(1)和(4)是相同的情况，对于(2)recover处理比较简单，对于(3)比较麻烦，因为participants可能存在一种状态，是在有至少一个participant挂掉的情况下，整个事务状态是无法确定的。下面具体分析。</li>
+</ul>
+<h4 id="2PC_coordinator_recovery"><a href="#2PC_coordinator_recovery" class="headerlink" title="2PC coordinator recovery"></a>2PC coordinator recovery</h4><p>这里不讨论所有participant都返回(即没有participant挂掉的情况)，因为只要所有的participant都返回了，判断事务的状态就能确定了</p>
+<ul>
+<li><p>新的coordinator向剩余的所有participant发送query请求，获得其最后一条日志记录</p>
+<ul>
+<li><p>如果返回至少一个refuse，则新的coordinator abort</p>
+</li>
+<li><p>如果返回至少一个commit，则新的coordinator commit</p>
+</li>
+<li><p><code>导致可能出现不一致的情况：如果其中有一个participant挂掉没返回，而且其他节点都返回accept，这种情况下，新的coordinator无法决定是abort还是commit，因为挂掉的节点可能处于accept/refuse/commit/abort的任何一个状态，如果coordiantor commit或者abort了，都可能导致次participant恢复后与其余participant不一致。2PC最主要的限制就在这一点</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="3PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29"><a href="#3PC__u6709_u8282_u70B9_u6302_u6389_u7684_u53EF_u80FD_u60C5_u51B5_28_u4E3B_u8981_u4EE5coordinator_u7684_u89C6_u89D2_29" class="headerlink" title="3PC 有节点挂掉的可能情况(主要以coordinator的视角)"></a>3PC 有节点挂掉的可能情况(主要以coordinator的视角)</h4><ul>
+<li>(1).coordinator在未发送proposal消息给任何participant以及之前挂掉了</li>
+<li>(2).coordinator在给一部分participant发送proposal消息后挂掉</li>
+<li>(3).发送全部proposal消息，但是没有发送全部prepare-commit/cancel消息</li>
+<li>(4).发送全部prepare-commit消息，但是没有发送全部commit消息</li>
+<li>(5).发送全部commit消息。</li>
+</ul>
+<h4 id="3PC_coordinator_recovery"><a href="#3PC_coordinator_recovery" class="headerlink" title="3PC coordinator recovery"></a>3PC coordinator recovery</h4><p>这里不讨论所有participant都返回(即没有participant挂掉的情况)，因为只要所有的participant都返回了，判断事务的状态就能确定了</p>
+<ul>
+<li><p>新的coordinator向剩余的所有participant发送query请求，获得其最后一条日志记录</p>
+<ul>
+<li><p>如果返回至少一个refuse，则新的coordinator abort</p>
+</li>
+<li><p>如果返回至少一个commit，则新的coordinator commit</p>
+</li>
+<li><p>如果返回的所有节点中有一个不是prepare-commit，则可以安全地abort，因为不可能有节点进入commit(其实包含了第一种情况)</p>
+</li>
+<li><p><code>如果返回的节点全部是prepare-commit，此时可能会有participant挂掉，但是其可能的状态为accept/prepare-commit/commit，这三种情况下此participant恢复的时候都能commit，所以此时新的coordinator可以决定提交，不会造成恢复后的不一致状态。这一点是与2PC最大的区别</code></p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-_u603B_u7ED3"><a href="#3-_u603B_u7ED3" class="headerlink" title="3.总结"></a>3.总结</h3><p>综上，最核心的还是recovery中2PC和3PC的最后一点，也是加入prepare-commit阶段后造成的本质区别。当然虽然3PC保证了participant挂掉的时候系统能够继续progress(也就是能容错)，但是其也存在问题，比如在网络分区的时候，刚好coordinator所在的一部分能commit，但是另一部分重新选择coordinator后不能commit，这样分区恢复后会导致不一致，这种情况就是Paxos，Raft等算法能解决的，后面会结合这些更复杂一些的算法分析。对于2PC和3PC来说，如果coordinator本身也是participant，则和其他算法比如Paxos中的Proposer/Acceptor概念对应起来了，此种情况下如果coordinator挂掉了，则无法progress，对于3PC来说，可以process但无法容忍分区，但是对于Paxos等来说，能够progress且能容忍分区。其实，对于分布式一致性算法来说，了解其历史对了解算法本质是很有帮助的。</p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Distributed-Systems-2PC-and-3PC" 
+      data-title="Distributed Systems-2PC and 3PC" data-url="/2016/01/21/Distributed-Systems-2PC-and-3PC/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

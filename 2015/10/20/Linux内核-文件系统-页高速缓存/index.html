@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux内核-文件系统-页高速缓存 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Linux内核,文件系统," />
+  
+
+  <meta name="description" content="Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核-文件系统-页高速缓存">
+<meta property="og:url" content="/2015/10/20/Linux内核-文件系统-页高速缓存/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux内核-文件系统-页高速缓存">
+<meta name="twitter:description" content="Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u7684_u91CD_u8981_u6570_u636E_u7ED3_u6784"><span class="toc-text">1.与页高速缓存相关的重要数据结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-_u7CFB_u7EDF_u8C03_u7528read_u6D41_u7A0B_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u4EE3_u7801_u5206_u6790"><span class="toc-text">2.系统调用read流程与页高速缓存相关代码分析</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Linux内核-文件系统-页高速缓存" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux内核-文件系统-页高速缓存</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.10.20</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Linux内核-文件系统-页高速缓存"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，不过于追究具体bio请求的底层细节。另外，在写操作的过程中，页高速缓存的处理流程有所不同(回写)，涉及的东西更多，本文主要关注读操作。Linux VFS相关的重要数据结构及概念可以参考Document目录下的<a href="https://www.kernel.org/doc/Documentation/filesystems/vfs.txt" target="_blank" rel="external">vfs.txt</a>。</p>
+<hr>
+<h4 id="1-_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u7684_u91CD_u8981_u6570_u636E_u7ED3_u6784"><a href="#1-_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u7684_u91CD_u8981_u6570_u636E_u7ED3_u6784" class="headerlink" title="1.与页高速缓存相关的重要数据结构"></a>1.与页高速缓存相关的重要数据结构</h4><p>除了前述基本数据结构以外，struct address_space 和 struct address_space_operations也在页高速缓存中起着极其重要的作用。</p>
+<ul>
+<li>address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。</li>
+<li>address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//include/linux/fs.h</span></span><br><span class="line"><span class="keyword">struct</span> address_space &#123;</span><br><span class="line">    <span class="comment">//指向文件的inode，可能为NULL</span></span><br><span class="line">	<span class="keyword">struct</span> inode		*host;	</span><br><span class="line">	<span class="comment">//存放装有缓存数据的页面</span></span><br><span class="line">	<span class="keyword">struct</span> radix_tree_root	page_tree;	</span><br><span class="line">	<span class="keyword">spinlock_t</span>		tree_lock;	</span><br><span class="line">	<span class="keyword">atomic_t</span>		i_mmap_writable;</span><br><span class="line">	<span class="keyword">struct</span> rb_root		i_mmap;	</span><br><span class="line">	<span class="keyword">struct</span> list_head	i_mmap_nonlinear;</span><br><span class="line">	<span class="keyword">struct</span> rw_semaphore	i_mmap_rwsem;</span><br><span class="line">	<span class="comment">//已缓存页的数量</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		nrpages;	</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		nrshadows;	</span><br><span class="line">	<span class="keyword">pgoff_t</span>			writeback_index;</span><br><span class="line">	<span class="comment">//address_space相关操作，定义了具体读写页面的钩子</span></span><br><span class="line">	<span class="keyword">const</span> <span class="keyword">struct</span> address_space_operations *a_ops;	</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">long</span>		flags;	</span><br><span class="line">	<span class="keyword">struct</span> backing_dev_info *backing_dev_info; </span><br><span class="line">	<span class="keyword">spinlock_t</span>		private_lock;	</span><br><span class="line">	<span class="keyword">struct</span> list_head	private_list;	</span><br><span class="line">	<span class="keyword">void</span>			*private_data;</span><br><span class="line">&#125; __attribute__((aligned(<span class="keyword">sizeof</span>(<span class="keyword">long</span>))));</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//include/linux/fs.h </span></span><br><span class="line"><span class="keyword">struct</span> address_space_operations &#123;</span><br><span class="line">    <span class="comment">//具体写页面的操作</span></span><br><span class="line">	<span class="keyword">int</span> (*writepage)(<span class="keyword">struct</span> page *page, <span class="keyword">struct</span> writeback_control *wbc);</span><br><span class="line">	<span class="comment">//具体读页面的操作</span></span><br><span class="line">	<span class="keyword">int</span> (*readpage)(<span class="keyword">struct</span> file *, <span class="keyword">struct</span> page *);</span><br><span class="line">	<span class="keyword">int</span> (*writepages)(<span class="keyword">struct</span> address_space *, <span class="keyword">struct</span> writeback_control *);</span><br><span class="line">    <span class="comment">//标记页面脏</span></span><br><span class="line">	<span class="keyword">int</span> (*set_page_dirty)(<span class="keyword">struct</span> page *page);</span><br><span class="line">	<span class="keyword">int</span> (*readpages)(<span class="keyword">struct</span> file *filp, <span class="keyword">struct</span> address_space *mapping, <span class="keyword">struct</span> list_head *pages, <span class="keyword">unsigned</span> nr_pages);</span><br><span class="line">	<span class="keyword">int</span> (*write_begin)(<span class="keyword">struct</span> file *, <span class="keyword">struct</span> address_space  *mapping, <span class="keyword">loff_t</span> pos, <span class="keyword">unsigned</span> len, <span class="keyword">unsigned</span> flags, <span class="keyword">struct</span> page **pagep, <span class="keyword">void</span> **fsdata);</span><br><span class="line">	<span class="keyword">int</span> (*write_end)(<span class="keyword">struct</span> file *, <span class="keyword">struct</span> address_space *mapping, <span class="keyword">loff_t</span> pos, <span class="keyword">unsigned</span> len, <span class="keyword">unsigned</span> copied, <span class="keyword">struct</span> page *page, <span class="keyword">void</span> *fsdata);</span><br><span class="line">	<span class="keyword">sector_t</span> (*bmap)(<span class="keyword">struct</span> address_space *, <span class="keyword">sector_t</span>);</span><br><span class="line">	<span class="keyword">void</span> (*invalidatepage) (<span class="keyword">struct</span> page *, <span class="keyword">unsigned</span> <span class="keyword">int</span>, <span class="keyword">unsigned</span> <span class="keyword">int</span>);</span><br><span class="line">	<span class="keyword">int</span> (*releasepage) (<span class="keyword">struct</span> page *, <span class="keyword">gfp_t</span>);</span><br><span class="line">	<span class="keyword">void</span> (*freepage)(<span class="keyword">struct</span> page *);</span><br><span class="line">	<span class="keyword">ssize_t</span> (*direct_IO)(<span class="keyword">int</span>, <span class="keyword">struct</span> kiocb *, <span class="keyword">struct</span> iov_iter *iter, <span class="keyword">loff_t</span> offset);</span><br><span class="line">	<span class="keyword">int</span> (*get_xip_mem)(<span class="keyword">struct</span> address_space *, <span class="keyword">pgoff_t</span>, <span class="keyword">int</span>, <span class="keyword">void</span> **, <span class="keyword">unsigned</span> <span class="keyword">long</span> *);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">int</span> (*migratepage) (<span class="keyword">struct</span> address_space *, <span class="keyword">struct</span> page *, <span class="keyword">struct</span> page *, <span class="keyword">enum</span> migrate_mode);</span><br><span class="line">	<span class="keyword">int</span> (*launder_page) (<span class="keyword">struct</span> page *);</span><br><span class="line">	<span class="keyword">int</span> (*is_partially_uptodate) (<span class="keyword">struct</span> page *, <span class="keyword">unsigned</span> <span class="keyword">long</span>, <span class="keyword">unsigned</span> <span class="keyword">long</span>);</span><br><span class="line">	<span class="keyword">void</span> (*is_dirty_writeback) (<span class="keyword">struct</span> page *, <span class="keyword">bool</span> *, <span class="keyword">bool</span> *);</span><br><span class="line">	<span class="keyword">int</span> (*error_remove_page)(<span class="keyword">struct</span> address_space *, <span class="keyword">struct</span> page *);</span><br><span class="line">	<span class="comment">/* swapfile support */</span></span><br><span class="line">	<span class="keyword">int</span> (*swap_activate)(<span class="keyword">struct</span> swap_info_struct *sis, <span class="keyword">struct</span> file *file, <span class="keyword">sector_t</span> *span);</span><br><span class="line">	<span class="keyword">void</span> (*swap_deactivate)(<span class="keyword">struct</span> file *file);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<hr>
+<h4 id="2-_u7CFB_u7EDF_u8C03_u7528read_u6D41_u7A0B_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u4EE3_u7801_u5206_u6790"><a href="#2-_u7CFB_u7EDF_u8C03_u7528read_u6D41_u7A0B_u4E0E_u9875_u9AD8_u901F_u7F13_u5B58_u76F8_u5173_u4EE3_u7801_u5206_u6790" class="headerlink" title="2.系统调用read流程与页高速缓存相关代码分析"></a>2.系统调用read流程与页高速缓存相关代码分析</h4><p>关于挂载和打开文件的操作，不赘述(涉及的细节也很多…)，(极其)简陋地理解，挂载返回挂载点的root dentry，并且读取磁盘数据生成了super_block链接到全局超级块链表中，这样，当前进程就可以通过root dentry找到其inode，从而找到并生成其子树的dentry和inode信息，从而实现查找路径的逻辑。打开文件简单理解就是分配fd，通过dentry将file结构与对应inode挂接，最后安装到进程的打开文件数组中，这里假设已经成功打开文件，返回了fd，我们从系统调用read开始。</p>
+<ul>
+<li>定义系统调用read</li>
+</ul>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//定义系统调用read</span></span><br><span class="line"><span class="comment">//fs/read_write.c</span></span><br><span class="line">SYSCALL_DEFINE3(<span class="keyword">read</span>, unsigned int, fd, <span class="keyword">char</span> __user *, buf, size_t, <span class="keyword">count</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">//根据fd number获得struct fd</span></span><br><span class="line">	struct fd f = fdget_pos(fd);</span><br><span class="line">	ssize_t <span class="keyword">ret</span> = -EBADF;</span><br><span class="line">	<span class="keyword">if</span> (f.<span class="keyword">file</span>) &#123;</span><br><span class="line">	    <span class="comment">//偏移位置</span></span><br><span class="line">		loff_t pos = file_pos_read(f.<span class="keyword">file</span>);</span><br><span class="line">		<span class="comment">//进入vfs_read</span></span><br><span class="line">		<span class="comment">//参数：file指针，用户空间buffer指针，长度，偏移位置</span></span><br><span class="line">		<span class="comment">//主要做一些验证工作，最后进入__vfs_read</span></span><br><span class="line">		<span class="keyword">ret</span> = vfs_read(f.<span class="keyword">file</span>, buf, <span class="keyword">count</span>, &amp;pos);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">ret</span> &gt;= 0)</span><br><span class="line">			file_pos_write(f.<span class="keyword">file</span>, pos);</span><br><span class="line">		fdput_pos(f);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">ret</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>进入__vfs_read</li>
+</ul>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//fs/read_write.c</span></span><br><span class="line">ssize_t __vfs_read(struct <span class="keyword">file</span> *<span class="keyword">file</span>, <span class="keyword">char</span> __user *buf, size_t <span class="keyword">count</span>, loff_t *pos)</span><br><span class="line">&#123;</span><br><span class="line">	ssize_t <span class="keyword">ret</span>;</span><br><span class="line">	<span class="comment">//注意这，我们可以在file_operations中定义自己的read操作，使不使用页高速缓存可以自己控制</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="keyword">file</span>-&gt;f_op-&gt;<span class="keyword">read</span>)</span><br><span class="line">		<span class="keyword">ret</span> = <span class="keyword">file</span>-&gt;f_op-&gt;<span class="keyword">read</span>(<span class="keyword">file</span>, buf, <span class="keyword">count</span>, pos);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">file</span>-&gt;f_op-&gt;aio_read)</span><br><span class="line">	    <span class="comment">//会调用f_ops-&gt;read_iter</span></span><br><span class="line">		<span class="keyword">ret</span> = do_sync_read(<span class="keyword">file</span>, buf, <span class="keyword">count</span>, pos);</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">file</span>-&gt;f_op-&gt;read_iter)</span><br><span class="line">	    <span class="comment">//会调用f_ops-&gt;read_iter</span></span><br><span class="line">	    <span class="comment">//这里ext2中又将read_iter直接与generic_file_read_iter挂接，使用内核自带的read操作，稍后会以ext2为例分析</span></span><br><span class="line">		<span class="keyword">ret</span> = new_sync_read(<span class="keyword">file</span>, buf, <span class="keyword">count</span>, pos);</span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">		<span class="keyword">ret</span> = -EINVAL;</span><br><span class="line">	<span class="keyword">return</span> <span class="keyword">ret</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>以ext2为例，进入ext2的file_operations-&gt;read</li>
+</ul>
+<figure class="highlight roboconf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">//fs/ext2/file.c</span><br><span class="line"><span class="component">const struct file_operations ext2_file_operations = &#123;</span><br><span class="line">	<span class="string">.llseek</span>		= generic_file_llseek,</span><br><span class="line">	<span class="string">.read</span>		= new_sync_read,  //重定向到read_iter此处即generic_file_read_iter</span><br><span class="line">	<span class="string">.write</span>		= new_sync_write,</span><br><span class="line">	<span class="string">.read_iter</span>	= generic_file_read_iter, //使用内核自带的通用读操作，这里会进入页高速缓冲的部分</span><br><span class="line">	<span class="string">.write_iter</span>	= generic_file_write_iter,</span><br><span class="line">	<span class="string">.unlocked_ioctl</span> = ext2_ioctl,</span><br><span class="line"><span class="comment">#ifdef CONFIG_COMPAT</span></span><br><span class="line">	<span class="string">.compat_ioctl</span>	= ext2_compat_ioctl,</span><br><span class="line"><span class="comment">#endif</span></span><br><span class="line">	<span class="string">.mmap</span>		= generic_file_mmap,</span><br><span class="line">	<span class="string">.open</span>		= dquot_file_open,</span><br><span class="line">	<span class="string">.release</span>	= ext2_release_file,</span><br><span class="line">	<span class="string">.fsync</span>		= ext2_fsync,</span><br><span class="line">	<span class="string">.splice_read</span>	= generic_file_splice_read,</span><br><span class="line">	<span class="string">.splice_write</span>	= iter_file_splice_write,</span><br><span class="line">&#125;</span>;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>进入generic_file_read_iter</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ssize_t</span></span><br><span class="line">generic_file_read_iter(<span class="keyword">struct</span> kiocb *iocb, <span class="keyword">struct</span> iov_iter *iter)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">struct</span> file *file = iocb-&gt;ki_filp;</span><br><span class="line">	<span class="keyword">ssize_t</span> retval = <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">loff_t</span> *ppos = &amp;iocb-&gt;ki_pos;</span><br><span class="line">	<span class="keyword">loff_t</span> pos = *ppos;</span><br><span class="line">	<span class="comment">/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */</span></span><br><span class="line">	<span class="keyword">if</span> (file-&gt;f_flags &amp; O_DIRECT) &#123;</span><br><span class="line">		<span class="keyword">struct</span> address_space *mapping = file-&gt;f_mapping;</span><br><span class="line">		<span class="keyword">struct</span> inode *inode = mapping-&gt;host;</span><br><span class="line">		<span class="keyword">size_t</span> count = iov_iter_count(iter);</span><br><span class="line">		<span class="keyword">loff_t</span> size;</span><br><span class="line">		<span class="keyword">if</span> (!count)</span><br><span class="line">			<span class="keyword">goto</span> out; <span class="comment">/* skip atime */</span></span><br><span class="line">		size = i_size_read(inode);</span><br><span class="line">        <span class="comment">//先写？</span></span><br><span class="line">		retval = filemap_write_and_wait_range(mapping, pos,</span><br><span class="line">					pos + count - <span class="number">1</span>);</span><br><span class="line">		<span class="keyword">if</span> (!retval) &#123;</span><br><span class="line">			<span class="keyword">struct</span> iov_iter data = *iter;</span><br><span class="line">			retval = mapping-&gt;a_ops-&gt;direct_IO(READ, iocb, &amp;data, pos);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (retval &gt; <span class="number">0</span>) &#123;</span><br><span class="line">			*ppos = pos + retval;</span><br><span class="line">			iov_iter_advance(iter, retval);</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="comment">/*</span><br><span class="line">		 * Btrfs can have a short DIO read if we encounter</span><br><span class="line">		 * compressed extents, so if there was an error, or if</span><br><span class="line">		 * we've already read everything we wanted to, or if</span><br><span class="line">		 * there was a short read because we hit EOF, go ahead</span><br><span class="line">		 * and return.  Otherwise fallthrough to buffered io for</span><br><span class="line">		 * the rest of the read.</span><br><span class="line">		 */</span></span><br><span class="line">		<span class="keyword">if</span> (retval &lt; <span class="number">0</span> || !iov_iter_count(iter) || *ppos &gt;= size) &#123;</span><br><span class="line">			file_accessed(file);</span><br><span class="line">			<span class="keyword">goto</span> out;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">    <span class="comment">//进入真正read,在address_space的radix tree中查找</span></span><br><span class="line">    <span class="comment">//偏移的page，如果找到，直接copy到用户空间如果未找到，</span></span><br><span class="line">    <span class="comment">//则调用a_ops-&gt;readpage读取发起bio，分配cache page，</span></span><br><span class="line">    <span class="comment">//读入数据，加入radix,然后拷贝到用户空间，完成读取数据的过程.</span></span><br><span class="line">	retval = do_generic_file_read(file, ppos, iter, retval);</span><br><span class="line">out:</span><br><span class="line">	<span class="keyword">return</span> retval;</span><br><span class="line">&#125;</span><br><span class="line">EXPORT_SYMBOL(generic_file_read_iter);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>进入do_generic_file_read<br>这个函数基本是整个页高速缓存的核心了，在具体的bio操作请求操作之前判断是否存在缓存页面，如果存在拷贝数据到用户空间，否则分配新页面，调用具体文件系统address_space_operations-&gt;readpage读取块数据到页面中，并且加入到radix tree中。</li>
+</ul>
+<figure class="highlight zephir"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> ssize_t do_generic_file_read(struct file *filp, loff_t *ppos,struct iov_iter *iter, ssize_t written)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* 省略部分 */</span></span><br><span class="line">	<span class="keyword">for</span> (;;) &#123;</span><br><span class="line">		struct page *page;</span><br><span class="line">		pgoff_t end_index;</span><br><span class="line">		loff_t isize;</span><br><span class="line">		unsigned <span class="keyword">long</span> nr, ret;</span><br><span class="line">        <span class="comment">//读页面的过程中可能重新调度</span></span><br><span class="line">		cond_resched();</span><br><span class="line">find_page:</span><br><span class="line">        <span class="comment">//redix tree中查找 </span></span><br><span class="line">		page = find_get_page(mapping, index);</span><br><span class="line">        <span class="comment">//没找到</span></span><br><span class="line">		<span class="keyword">if</span> (!page) &#123;</span><br><span class="line">            <span class="comment">//先读到页缓存</span></span><br><span class="line">            <span class="comment">//分配list page_pool</span></span><br><span class="line">            <span class="comment">//调用a_ops-&gt;readpages or a_ops-&gt;readpage读取数据</span></span><br><span class="line">            <span class="comment">//a_ops-&gt;readpage负责提交bio</span></span><br><span class="line">			page_cache_sync_readahead(mapping,</span><br><span class="line">					ra, filp,</span><br><span class="line">					index, last_index - index);</span><br><span class="line">			<span class="comment">//再找</span></span><br><span class="line">            page = find_get_page(mapping, index);</span><br><span class="line">            <span class="comment">//还是没找到...</span></span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">unlikely</span>(page == <span class="keyword">NULL</span>))</span><br><span class="line">				<span class="comment">//去分配页面再读</span></span><br><span class="line">                <span class="keyword">goto</span> no_cached_page;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//readahead related </span></span><br><span class="line">		<span class="keyword">if</span> (PageReadahead(page)) &#123;</span><br><span class="line">			page_cache_async_readahead(mapping,</span><br><span class="line">					ra, filp, page,</span><br><span class="line">					index, last_index - index);</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//不是最新</span></span><br><span class="line">		<span class="keyword">if</span> (!PageUptodate(page)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (inode-&gt;i_blkbits == PAGE_CACHE_SHIFT ||</span><br><span class="line">					!mapping-&gt;a_ops-&gt;is_partially_uptodate)</span><br><span class="line">				<span class="keyword">goto</span> page_not_up_to_date;</span><br><span class="line">			<span class="keyword">if</span> (!trylock_page(page))</span><br><span class="line">				<span class="keyword">goto</span> page_not_up_to_date;</span><br><span class="line"></span><br><span class="line">			<span class="keyword">if</span> (!page-&gt;mapping)</span><br><span class="line">				<span class="keyword">goto</span> page_not_up_to_date_locked;</span><br><span class="line">			<span class="keyword">if</span> (!mapping-&gt;a_ops-&gt;is_partially_uptodate(page,</span><br><span class="line">							offset, iter-&gt;count))</span><br><span class="line">				<span class="keyword">goto</span> page_not_up_to_date_locked;</span><br><span class="line">			unlock_page(page);</span><br><span class="line">		&#125;</span><br><span class="line">page_ok: <span class="comment">//好，拿到的cached page正常了</span></span><br><span class="line"></span><br><span class="line">         <span class="comment">/* 省略其他检查部分 */</span></span><br><span class="line">         </span><br><span class="line">        <span class="comment">//到这，从磁盘中读取块到page cache或者本身page cache存在，一切正常，拷贝到用户空间</span></span><br><span class="line">		ret = copy_page_to_iter(page, offset, nr, iter);</span><br><span class="line">		offset += ret;</span><br><span class="line">		index += offset &gt;&gt; PAGE_CACHE_SHIFT;</span><br><span class="line">		offset &amp;= ~PAGE_CACHE_MASK;</span><br><span class="line">		prev_offset = offset;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//释放页面</span></span><br><span class="line">		page_cache_release(page);</span><br><span class="line">		written += ret;</span><br><span class="line">		<span class="keyword">if</span> (!iov_iter_count(iter))</span><br><span class="line">			<span class="keyword">goto</span> out;</span><br><span class="line">		<span class="keyword">if</span> (ret &lt; nr) &#123;</span><br><span class="line">			error = -EFAULT;</span><br><span class="line">			<span class="keyword">goto</span> out;</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">//继续</span></span><br><span class="line">		<span class="keyword">continue</span>;</span><br><span class="line"></span><br><span class="line">page_not_up_to_date:</span><br><span class="line">		<span class="comment">/* Get exclusive access to the page ... */</span></span><br><span class="line">		error = lock_page_killable(page);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">unlikely</span>(error))</span><br><span class="line">			<span class="keyword">goto</span> readpage_error;</span><br><span class="line"></span><br><span class="line">page_not_up_to_date_locked:</span><br><span class="line">		<span class="comment">/* Did it get truncated before we got the lock? */</span></span><br><span class="line">		<span class="keyword">if</span> (!page-&gt;mapping) &#123;</span><br><span class="line">			unlock_page(page);</span><br><span class="line">			page_cache_release(page);</span><br><span class="line">			<span class="keyword">continue</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">/* Did somebody else fill it already? */</span></span><br><span class="line">		<span class="keyword">if</span> (PageUptodate(page)) &#123;</span><br><span class="line">			unlock_page(page);</span><br><span class="line">			<span class="keyword">goto</span> page_ok;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">readpage: <span class="comment">//为了no_cached_page</span></span><br><span class="line">		<span class="comment">/*</span><br><span class="line">		 * A previous I/O error may have been due to temporary</span><br><span class="line">		 * failures, eg. multipath errors.</span><br><span class="line">		 * PG_error will be set again if readpage fails.</span><br><span class="line">		 */</span></span><br><span class="line">		ClearPageError(page);</span><br><span class="line">		<span class="comment">/* Start the actual read. The read will unlock the page. */</span></span><br><span class="line">        <span class="comment">//还是调用a_ops-&gt;readpage </span></span><br><span class="line">		error = mapping-&gt;a_ops-&gt;readpage(filp, page);</span><br><span class="line">		<span class="keyword">if</span> (<span class="keyword">unlikely</span>(error)) &#123;</span><br><span class="line">			<span class="keyword">if</span> (error == AOP_TRUNCATED_PAGE) &#123;</span><br><span class="line">				page_cache_release(page);</span><br><span class="line">				error = <span class="number">0</span>;</span><br><span class="line">				<span class="keyword">goto</span> find_page;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">goto</span> readpage_error;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (!PageUptodate(page)) &#123;</span><br><span class="line">			error = lock_page_killable(page);</span><br><span class="line">			<span class="keyword">if</span> (<span class="keyword">unlikely</span>(error))</span><br><span class="line">				<span class="keyword">goto</span> readpage_error;</span><br><span class="line">			<span class="keyword">if</span> (!PageUptodate(page)) &#123;</span><br><span class="line">				<span class="keyword">if</span> (page-&gt;mapping == <span class="keyword">NULL</span>) &#123;</span><br><span class="line">					<span class="comment">/*</span><br><span class="line">					 * invalidate_mapping_pages got it</span><br><span class="line">					 */</span></span><br><span class="line">					unlock_page(page);</span><br><span class="line">					page_cache_release(page);</span><br><span class="line">					<span class="keyword">goto</span> find_page;</span><br><span class="line">				&#125;</span><br><span class="line">				unlock_page(page);</span><br><span class="line">				shrink_readahead_size_eio(filp, ra);</span><br><span class="line">				error = -EIO;</span><br><span class="line">				<span class="keyword">goto</span> readpage_error;</span><br><span class="line">			&#125;</span><br><span class="line">			unlock_page(page);</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//page ok</span></span><br><span class="line">		<span class="keyword">goto</span> page_ok;</span><br><span class="line"></span><br><span class="line">readpage_error:</span><br><span class="line">		<span class="comment">/* UHHUH! A synchronous read error occurred. Report it */</span></span><br><span class="line">		page_cache_release(page);</span><br><span class="line">		<span class="keyword">goto</span> out;</span><br><span class="line"></span><br><span class="line">no_cached_page:</span><br><span class="line">		<span class="comment">/*</span><br><span class="line">		 * Ok, it wasn't cached, so we need to create a new</span><br><span class="line">		 * page..</span><br><span class="line">		 */</span></span><br><span class="line">		<span class="comment">//从冷页面链表中拿一个page</span></span><br><span class="line">		page = page_cache_alloc_cold(mapping);</span><br><span class="line">		<span class="keyword">if</span> (!page) &#123;</span><br><span class="line">			error = -ENOMEM;</span><br><span class="line">			<span class="keyword">goto</span> out;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">//加入cache</span></span><br><span class="line">		error = add_to_page_cache_lru(page, mapping,</span><br><span class="line">						index, GFP_KERNEL);</span><br><span class="line">		<span class="keyword">if</span> (error) &#123;</span><br><span class="line">			page_cache_release(page);</span><br><span class="line">			<span class="keyword">if</span> (error == -EEXIST) &#123;</span><br><span class="line">				error = <span class="number">0</span>;</span><br><span class="line">				<span class="keyword">goto</span> find_page;</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">goto</span> out;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">goto</span> readpage;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="comment">/* 省略部分 */</span></span><br></pre></td></tr></table></figure>
+<hr>
+<blockquote>
+<p>ref: Linux Kernel 3.19.3 source code</p>
+</blockquote>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Linux内核-文件系统-页高速缓存" 
+      data-title="Linux内核-文件系统-页高速缓存" data-url="/2015/10/20/Linux内核-文件系统-页高速缓存/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

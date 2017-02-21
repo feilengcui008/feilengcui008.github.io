@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Redis源码分析 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Redis," />
+  
+
+  <meta name="description" content="这一篇或者说一个系列用来记录Redis相关的一些源码分析，不定时更新。
+目前已添加的内容：
+
+Redis之eventloop
+Redis数据结构之dict
+
+
+Redis之eventloop简介Redis的eventloop实现也是比较平常的，主要关注文件描述符和timer相关事件，而且timer只是简单用一个单链表(O(n)遍历寻找最近触发的时间)实现。
+流程
+主要在initServer(ser">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redis源码分析">
+<meta property="og:url" content="/2016/05/29/Redis源码分析/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="这一篇或者说一个系列用来记录Redis相关的一些源码分析，不定时更新。
+目前已添加的内容：
+
+Redis之eventloop
+Redis数据结构之dict
+
+
+Redis之eventloop简介Redis的eventloop实现也是比较平常的，主要关注文件描述符和timer相关事件，而且timer只是简单用一个单链表(O(n)遍历寻找最近触发的时间)实现。
+流程
+主要在initServer(ser">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis源码分析">
+<meta name="twitter:description" content="这一篇或者说一个系列用来记录Redis相关的一些源码分析，不定时更新。
+目前已添加的内容：
+
+Redis之eventloop
+Redis数据结构之dict
+
+
+Redis之eventloop简介Redis的eventloop实现也是比较平常的，主要关注文件描述符和timer相关事件，而且timer只是简单用一个单链表(O(n)遍历寻找最近触发的时间)实现。
+流程
+主要在initServer(ser">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis_u4E4Beventloop"><span class="toc-text">Redis之eventloop</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#u7B80_u4ECB"><span class="toc-text">简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u6D41_u7A0B"><span class="toc-text">流程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u5176_u4ED6_u6CE8_u610F_u70B9"><span class="toc-text">其他注意点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Redis_u6570_u636E_u7ED3_u6784_u4E4Bdict"><span class="toc-text">Redis数据结构之dict</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#u4E3B_u8981_u7279_u70B9"><span class="toc-text">主要特点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u4E3B_u8981_u6570_u636E_u7ED3_u6784"><span class="toc-text">主要数据结构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u4E3B_u8981_u63A5_u53E3"><span class="toc-text">主要接口</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u4E00_u4E9B_u53EF_u80FD_u4F18_u5316_u7684_u5730_u65B9"><span class="toc-text">一些可能优化的地方</span></a></li></ol></li></ol></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Redis源码分析" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Redis源码分析</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.05.29</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Redis源码分析"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>这一篇或者说一个系列用来记录Redis相关的一些源码分析，不定时更新。</p>
+<p>目前已添加的内容：</p>
+<ul>
+<li>Redis之eventloop</li>
+<li>Redis数据结构之dict</li>
+</ul>
+<hr>
+<h2 id="Redis_u4E4Beventloop"><a href="#Redis_u4E4Beventloop" class="headerlink" title="Redis之eventloop"></a>Redis之eventloop</h2><h4 id="u7B80_u4ECB"><a href="#u7B80_u4ECB" class="headerlink" title="简介"></a>简介</h4><p>Redis的eventloop实现也是比较平常的，主要关注文件描述符和timer相关事件，而且timer只是简单用一个单链表(O(n)遍历寻找最近触发的时间)实现。</p>
+<h4 id="u6D41_u7A0B"><a href="#u6D41_u7A0B" class="headerlink" title="流程"></a>流程</h4><ul>
+<li>主要在initServer(server.c)中初始化整个eventloop相关的数据结构与回调</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注册系统timer事件</span></span><br><span class="line"><span class="keyword">if</span> (aeCreateTimeEvent(server.el, <span class="number">1</span>, serverCron, <span class="literal">NULL</span>, <span class="literal">NULL</span>) == AE_ERR) &#123;</span><br><span class="line">  serverPanic(<span class="string">"Can't create event loop timers."</span>);</span><br><span class="line">  <span class="built_in">exit</span>(<span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 注册poll fd的接收客户端连接的读事件</span></span><br><span class="line"><span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; server.ipfd_count; j++) &#123;</span><br><span class="line">  <span class="keyword">if</span> (aeCreateFileEvent(server.el, server.ipfd[j], AE_READABLE,</span><br><span class="line">        acceptTcpHandler,<span class="literal">NULL</span>) == AE_ERR)</span><br><span class="line">  &#123;</span><br><span class="line">    serverPanic(</span><br><span class="line">        <span class="string">"Unrecoverable error creating server.ipfd file event."</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 同上</span></span><br><span class="line"><span class="keyword">if</span> (server.sofd &gt; <span class="number">0</span> &amp;&amp; aeCreateFileEvent(server.el,server.sofd,AE_READABLE,</span><br><span class="line">      acceptUnixHandler,<span class="literal">NULL</span>) == AE_ERR) serverPanic(<span class="string">"Unrecoverable error creating server.sofd file event."</span>);</span><br></pre></td></tr></table></figure>
+<ul>
+<li>acceptTcpHandler处理客户端请求，分配client结构，注册事件</li>
+</ul>
+<figure class="highlight lisp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cfd = anetTcpAccept<span class="list">(<span class="keyword">server</span>.neterr, fd, cip, sizeof<span class="list">(<span class="keyword">cip</span>)</span>, <span class="keyword">&amp;cport</span>)</span><span class="comment">;</span></span><br><span class="line">acceptCommonHandler<span class="list">(<span class="keyword">cfd</span>,<span class="number">0</span>,cip)</span><span class="comment">;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>createClient，创建客户端</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// receieved a client, alloc client structure </span></span><br><span class="line"><span class="comment">// and register it into eventpoll</span></span><br><span class="line"><span class="function">client *<span class="title">createClient</span><span class="params">(<span class="keyword">int</span> fd)</span> </span>&#123;</span><br><span class="line">client *c = zmalloc(<span class="keyword">sizeof</span>(client));</span><br><span class="line"><span class="keyword">if</span> (fd != -<span class="number">1</span>) &#123;</span><br><span class="line">  anetNonBlock(<span class="literal">NULL</span>,fd);</span><br><span class="line">  anetEnableTcpNoDelay(<span class="literal">NULL</span>,fd);</span><br><span class="line">  <span class="keyword">if</span> (server.tcpkeepalive)</span><br><span class="line">    anetKeepAlive(<span class="literal">NULL</span>,fd,server.tcpkeepalive);</span><br><span class="line">  <span class="comment">// register read event for client connection</span></span><br><span class="line">  <span class="comment">// the callback handler is readQueryFromClient</span></span><br><span class="line">  <span class="comment">// read into client data buffer</span></span><br><span class="line">  <span class="keyword">if</span> (aeCreateFileEvent(server.el,fd,AE_READABLE,</span><br><span class="line">        readQueryFromClient, c) == AE_ERR)</span><br><span class="line">  &#123;</span><br><span class="line">    close(fd);</span><br><span class="line">    zfree(c);</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>client读事件触发，读到buffer，解析client命令</li>
+</ul>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">dQueryFromClient(aeEventLoop *el, int fd, void *privdata, int mask) </span><br><span class="line">--&gt; processInputBuffer </span><br><span class="line"></span><br><span class="line"><span class="comment">// handle query buffer</span></span><br><span class="line"><span class="comment">// in processInputBuffer(c);</span></span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">c</span>-&gt;reqtype == <span class="type">PROTO_REQ_INLINE</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (processInlineBuffer(<span class="built_in">c</span>) != <span class="type">C_OK</span>) <span class="keyword">break</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> <span class="keyword">if</span> (<span class="built_in">c</span>-&gt;reqtype == <span class="type">PROTO_REQ_MULTIBULK</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (processMultibulkBuffer(<span class="built_in">c</span>) != <span class="type">C_OK</span>) <span class="keyword">break</span>;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    serverPanic(<span class="string">"Unknown request type"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Multibulk processing could see a &lt;= 0 length. */</span></span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">c</span>-&gt;argc == <span class="number">0</span>) &#123;</span><br><span class="line">    resetClient(<span class="built_in">c</span>);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="comment">/* Only reset the client when the command was executed. */</span></span><br><span class="line">    <span class="comment">// handle the client command </span></span><br><span class="line">    <span class="keyword">if</span> (processCommand(<span class="built_in">c</span>) == <span class="type">C_OK</span>)</span><br><span class="line">        resetClient(<span class="built_in">c</span>);</span><br><span class="line">    <span class="comment">/* freeMemoryIfNeeded may flush slave output buffers. This may result</span><br><span class="line">     * into a slave, that may be the active client, to be freed. */</span></span><br><span class="line">    <span class="keyword">if</span> (server.current_client == <span class="type">NULL</span>) <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>处理客户端命令</li>
+</ul>
+<figure class="highlight nimrod"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// <span class="keyword">in</span> processCommand </span><br><span class="line">/* <span class="type">Exec</span> the command */</span><br><span class="line"><span class="keyword">if</span> (c-&gt;flags &amp; <span class="type">CLIENT_MULTI</span> &amp;&amp;</span><br><span class="line">    c-&gt;cmd-&gt;<span class="keyword">proc</span> != execCommand &amp;&amp; c-&gt;cmd-&gt;<span class="keyword">proc</span> != discardCommand &amp;&amp;</span><br><span class="line">    c-&gt;cmd-&gt;<span class="keyword">proc</span> != multiCommand &amp;&amp; c-&gt;cmd-&gt;<span class="keyword">proc</span> != watchCommand)</span><br><span class="line">&#123;</span><br><span class="line">    queueMultiCommand(c);</span><br><span class="line">    addReply(c,<span class="literal">shared</span>.queued);</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    // call the cmd </span><br><span class="line">    // 进入具体数据结构的命令处理</span><br><span class="line">    call(c,<span class="type">CMD_CALL_FULL</span>);</span><br><span class="line">    c-&gt;woff = server.master_repl_offset;</span><br><span class="line">    <span class="keyword">if</span> (listLength(server.ready_keys))</span><br><span class="line">        handleClientsBlockedOnLists();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="u5176_u4ED6_u6CE8_u610F_u70B9"><a href="#u5176_u4ED6_u6CE8_u610F_u70B9" class="headerlink" title="其他注意点"></a>其他注意点</h4><ul>
+<li>关于timer的实现没有采用优先级队列(O(logn))等其他数据结构，而是直接采用O(n)遍历的单链表，是因为一般来说timer会较少?</li>
+</ul>
+<hr>
+<h2 id="Redis_u6570_u636E_u7ED3_u6784_u4E4Bdict"><a href="#Redis_u6570_u636E_u7ED3_u6784_u4E4Bdict" class="headerlink" title="Redis数据结构之dict"></a>Redis数据结构之dict</h2><h4 id="u4E3B_u8981_u7279_u70B9"><a href="#u4E3B_u8981_u7279_u70B9" class="headerlink" title="主要特点"></a>主要特点</h4><p>Redis的hashtable实现叫dict，其实现和平常没有太大的区别，唯一比较特殊的地方是每个dict结构内部有两个实际的hashtable结构dictht，是为了实现增量哈希，故名思义，即当第一个dictht到一定负载因子后会触发rehash，分配新的dictht结构的动作和真正的rehash的动作是分离的，并且rehash被均摊到各个具体的操作中去了，这样就不会长时间阻塞线程，因为Redis是单线程。另外，增量hash可以按多步或者持续一定时间做。</p>
+<h4 id="u4E3B_u8981_u6570_u636E_u7ED3_u6784"><a href="#u4E3B_u8981_u6570_u636E_u7ED3_u6784" class="headerlink" title="主要数据结构"></a>主要数据结构</h4><ul>
+<li>dictEntry  =&gt;  hashtable的bucket</li>
+<li>dictType   =&gt;  规定操作hashtable的接口</li>
+<li>dictht     =&gt;  hashtable</li>
+<li>dict       =&gt;  对外呈现的”hashtable”</li>
+<li>dictIterator  =&gt; 迭代器，方便遍历 </li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// dict.h</span></span><br><span class="line"><span class="comment">// hash table entry </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> dictEntry &#123;</span><br><span class="line">    <span class="keyword">void</span> *key;  <span class="comment">// key </span></span><br><span class="line">    <span class="keyword">union</span> &#123;</span><br><span class="line">        <span class="keyword">void</span> *val;</span><br><span class="line">        <span class="keyword">uint64_t</span> u64;</span><br><span class="line">        <span class="keyword">int64_t</span> s64;</span><br><span class="line">        <span class="keyword">double</span> d;</span><br><span class="line">    &#125; v;  <span class="comment">// value</span></span><br><span class="line">    <span class="keyword">struct</span> dictEntry *next;  <span class="comment">// linked list </span></span><br><span class="line">&#125; dictEntry;</span><br><span class="line"></span><br><span class="line"><span class="comment">// operations(APIS) of some type of hashtable</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> dictType &#123;</span><br><span class="line">    <span class="comment">// hash function </span></span><br><span class="line">    <span class="function"><span class="keyword">unsigned</span> <span class="title">int</span> <span class="params">(*hashFunction)</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span> *key)</span></span>;</span><br><span class="line">    <span class="comment">// copy key </span></span><br><span class="line">    <span class="keyword">void</span> *(*keyDup)(<span class="keyword">void</span> *privdata, <span class="keyword">const</span> <span class="keyword">void</span> *key);</span><br><span class="line">    <span class="comment">// copy value </span></span><br><span class="line">    <span class="keyword">void</span> *(*valDup)(<span class="keyword">void</span> *privdata, <span class="keyword">const</span> <span class="keyword">void</span> *obj);</span><br><span class="line">    <span class="comment">// key comparison </span></span><br><span class="line">    <span class="keyword">int</span> (*keyCompare)(<span class="keyword">void</span> *privdata, <span class="keyword">const</span> <span class="keyword">void</span> *key1, <span class="keyword">const</span> <span class="keyword">void</span> *key2);</span><br><span class="line">    <span class="comment">// dtor for key </span></span><br><span class="line">    <span class="keyword">void</span> (*keyDestructor)(<span class="keyword">void</span> *privdata, <span class="keyword">void</span> *key);</span><br><span class="line">    <span class="comment">// dtor for value </span></span><br><span class="line">    <span class="keyword">void</span> (*valDestructor)(<span class="keyword">void</span> *privdata, <span class="keyword">void</span> *obj);</span><br><span class="line">&#125; dictType;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* This is our hash table structure. Every dictionary has two of this as we</span><br><span class="line"> * implement incremental rehashing, for the old to the new table. */</span></span><br><span class="line"><span class="comment">// a hashtable </span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> dictht &#123;</span><br><span class="line">    dictEntry **table;  <span class="comment">// entries </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> size;  <span class="comment">// max size </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> sizemask;  <span class="comment">// mask </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> used;  <span class="comment">// current used </span></span><br><span class="line">&#125; dictht;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> dict &#123;</span><br><span class="line">    dictType *type;  <span class="comment">// type operations </span></span><br><span class="line">    <span class="keyword">void</span> *privdata;  <span class="comment">// for extension </span></span><br><span class="line">    dictht ht[<span class="number">2</span>];    <span class="comment">// two hashtables </span></span><br><span class="line">    <span class="comment">// rehashing flag</span></span><br><span class="line">    <span class="keyword">long</span> rehashidx; <span class="comment">/* rehashing not in progress if rehashidx == -1 */</span></span><br><span class="line">    <span class="comment">// users number </span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">long</span> iterators; <span class="comment">/* number of iterators currently running */</span></span><br><span class="line">&#125; dict;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* If safe is set to 1 this is a safe iterator, that means, you can call</span><br><span class="line"> * dictAdd, dictFind, and other functions against the dictionary even while</span><br><span class="line"> * iterating. Otherwise it is a non safe iterator, and only dictNext()</span><br><span class="line"> * should be called while iterating. */</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span> dictIterator &#123;</span><br><span class="line">    dict *d;</span><br><span class="line">    <span class="keyword">long</span> index;</span><br><span class="line">    <span class="keyword">int</span> table, safe;</span><br><span class="line">    dictEntry *entry, *nextEntry;</span><br><span class="line">    <span class="comment">/* unsafe iterator fingerprint for misuse detection. */</span></span><br><span class="line">    <span class="keyword">long</span> <span class="keyword">long</span> fingerprint;</span><br><span class="line">&#125; dictIterator;</span><br></pre></td></tr></table></figure>
+<h4 id="u4E3B_u8981_u63A5_u53E3"><a href="#u4E3B_u8981_u63A5_u53E3" class="headerlink" title="主要接口"></a>主要接口</h4><figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// dict.h</span></span><br><span class="line"><span class="comment">// create</span></span><br><span class="line">dict *dictCreate(dictType *type, <span class="keyword">void</span> *privDataPtr);</span><br><span class="line"></span><br><span class="line"><span class="comment">// expand or initilize the just created dict, alloc second hashtable of dict for incremental rehashing</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictExpand</span>(<span class="params">dict *d, unsigned <span class="keyword">long</span> size</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// add, if in rehashing, do 1 step of incremental rehashing</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictAdd</span>(<span class="params">dict *d, <span class="keyword">void</span> *key, <span class="keyword">void</span> *val</span>)</span>;</span><br><span class="line">dictEntry *dictAddRaw(dict *d, <span class="keyword">void</span> *key);</span><br><span class="line"></span><br><span class="line"><span class="comment">// update, if in rehashing, do 1 step of incremental rehashing</span></span><br><span class="line"><span class="comment">// can we first find and return the entry no matter it is update or add, so </span></span><br><span class="line"><span class="comment">// we can speed up the update process because no need to do twice find process?</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictReplace</span>(<span class="params">dict *d, <span class="keyword">void</span> *key, <span class="keyword">void</span> *val</span>)</span>;</span><br><span class="line">dictEntry *dictReplaceRaw(dict *d, <span class="keyword">void</span> *key);</span><br><span class="line"></span><br><span class="line"><span class="comment">// delete if in rehashing, do 1 step of incremental rehashing</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictDelete</span>(<span class="params">dict *d, <span class="keyword">const</span> <span class="keyword">void</span> *key</span>)</span>;  <span class="comment">// free the memory </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictDeleteNoFree</span>(<span class="params">dict *d, <span class="keyword">const</span> <span class="keyword">void</span> *key</span>)</span>;  <span class="comment">// not free the memory</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// can we use a double linked list to free the hash table, so speed up?</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictRelease</span>(<span class="params">dict *d</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// find an entry</span></span><br><span class="line">dictEntry * dictFind(dict *d, <span class="keyword">const</span> <span class="keyword">void</span> *key);</span><br><span class="line"><span class="keyword">void</span> *dictFetchValue(dict *d, <span class="keyword">const</span> <span class="keyword">void</span> *key);</span><br><span class="line"></span><br><span class="line"><span class="comment">// resize to eh pow of 2 number just &gt;= the used number of slots</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictResize</span>(<span class="params">dict *d</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// alloc a new iterator</span></span><br><span class="line">dictIterator *dictGetIterator(dict *d);</span><br><span class="line"><span class="comment">// alloc a safe iterator </span></span><br><span class="line">dictIterator *dictGetSafeIterator(dict *d);</span><br><span class="line"><span class="comment">// next entry </span></span><br><span class="line">dictEntry *dictNext(dictIterator *iter);</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictReleaseIterator</span>(<span class="params">dictIterator *iter</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// random sampling</span></span><br><span class="line">dictEntry *dictGetRandomKey(dict *d);</span><br><span class="line"><span class="function">unsigned <span class="keyword">int</span> <span class="title">dictGetSomeKeys</span>(<span class="params">dict *d, dictEntry **des, unsigned <span class="keyword">int</span> count</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// get stats info</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictGetStats</span>(<span class="params"><span class="keyword">char</span> *buf, size_t bufsize, dict *d</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// murmurhash </span></span><br><span class="line"><span class="function">unsigned <span class="keyword">int</span> <span class="title">dictGenHashFunction</span>(<span class="params"><span class="keyword">const</span> <span class="keyword">void</span> *key, <span class="keyword">int</span> len</span>)</span>;</span><br><span class="line"><span class="function">unsigned <span class="keyword">int</span> <span class="title">dictGenCaseHashFunction</span>(<span class="params"><span class="keyword">const</span> unsigned <span class="keyword">char</span> *buf, <span class="keyword">int</span> len</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// empty a dict </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictEmpty</span>(<span class="params">dict *d, <span class="keyword">void</span>(callback</span>)(<span class="params"><span class="keyword">void</span>*</span>))</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictEnableResize</span>(<span class="params"><span class="keyword">void</span></span>)</span>;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictDisableResize</span>(<span class="params"><span class="keyword">void</span></span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// do n steps rehashing</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictRehash</span>(<span class="params">dict *d, <span class="keyword">int</span> n</span>)</span>;</span><br><span class="line"><span class="comment">// do rehashing for a ms milliseconds</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">dictRehashMilliseconds</span>(<span class="params">dict *d, <span class="keyword">int</span> ms</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// hash function seed </span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dictSetHashFunctionSeed</span>(<span class="params">unsigned <span class="keyword">int</span> initval</span>)</span>;</span><br><span class="line"><span class="function">unsigned <span class="keyword">int</span> <span class="title">dictGetHashFunctionSeed</span>(<span class="params"><span class="keyword">void</span></span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// scan a dict</span></span><br><span class="line"><span class="function">unsigned <span class="keyword">long</span> <span class="title">dictScan</span>(<span class="params">dict *d, unsigned <span class="keyword">long</span> v, dictScanFunction *fn, <span class="keyword">void</span> *privdata</span>)</span>;</span><br></pre></td></tr></table></figure>
+<h4 id="u4E00_u4E9B_u53EF_u80FD_u4F18_u5316_u7684_u5730_u65B9"><a href="#u4E00_u4E9B_u53EF_u80FD_u4F18_u5316_u7684_u5730_u65B9" class="headerlink" title="一些可能优化的地方"></a>一些可能优化的地方</h4><ul>
+<li><p>在dictReplace中能否统一add和update的查找，无论是add还是update都返回一个entry，用标识表明是add还是update，而不用在update时做两次查找，从而提升update的性能</p>
+</li>
+<li><p>在release整个dict时，是循环遍历所有头bucket，最坏情况接近O(n)，能否用双向的空闲链表优化(当然这样会浪费指针所占空间)</p>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Redis源码分析" 
+      data-title="Redis源码分析" data-url="/2016/05/29/Redis源码分析/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

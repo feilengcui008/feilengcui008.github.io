@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>C++ RVO/NRVO以及move语义的影响 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="C/C++,优化," />
+  
+
+  <meta name="description" content="C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。
+RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。
+123456789">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ RVO/NRVO以及move语义的影响">
+<meta property="og:url" content="/2015/05/09/C-RVO-NRVO以及move语义的影响/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。
+RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。
+123456789">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ RVO/NRVO以及move语义的影响">
+<meta name="twitter:description" content="C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。
+RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。
+123456789">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-C-RVO-NRVO以及move语义的影响" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">C++ RVO/NRVO以及move语义的影响</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.05.09</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/编程语言/">编程语言</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-C-RVO-NRVO以及move语义的影响"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。</p>
+<p>RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;vector&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> Test &#123;</span><br><span class="line">    Test()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"construct a Test object"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    Test(<span class="keyword">const</span> Test&amp;)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copy construct  a Test object"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    Test&amp; <span class="keyword">operator</span>=(<span class="keyword">const</span> Test&amp;)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"copy assignment a Test object"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">        <span class="keyword">return</span> *<span class="keyword">this</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    </span><br><span class="line">    Test(Test&amp;&amp;)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"move construct a Test object"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="comment">/*</span><br><span class="line">    Test&amp; operator=(Test &amp;&amp;t)</span><br><span class="line">    &#123;</span><br><span class="line">        std::cout &lt;&lt; "move assignment a Test object" &lt;&lt; std::endl;</span><br><span class="line">        return *this;</span><br><span class="line">    &#125;</span><br><span class="line">    */</span></span><br><span class="line"></span><br><span class="line">    ~Test()</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"destruct a Test object"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="function">Test <span class="title">getTest</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Test();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">Test <span class="title">getTestWithName</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    Test temp;</span><br><span class="line">    <span class="keyword">return</span> temp;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"=============RVO=============="</span> &lt;&lt; <span class="built_in">std</span>::endl; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj rvo for copy construct"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">auto</span> obj1 = getTest();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj rvo for move construct"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">auto</span> obj111 = <span class="built_in">std</span>::move(getTest());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;  </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj rvo for copy assignment"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    Test obj11; obj11 = getTest();</span><br><span class="line">  </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test object rvo for move assignment"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    Test obj1111; obj1111 = <span class="built_in">std</span>::move(getTest());</span><br><span class="line">    </span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"=============NRVO=============="</span> &lt;&lt; <span class="built_in">std</span>::endl; </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj nrvo for copy construct"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">auto</span> obj2 = getTestWithName();</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj nrvo for move construct"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="keyword">auto</span> obj222 = <span class="built_in">std</span>::move(getTestWithName());</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj nrvo for copy assignment"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    Test obj22; obj22 = getTestWithName();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"--------------"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"++Test obj nrvo for move assignment"</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    Test obj2222; obj2222 = <span class="built_in">std</span>::move(getTestWithName());</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"=============================="</span> &lt;&lt; <span class="built_in">std</span>::endl;</span><br><span class="line">    <span class="comment">// std::string s1 = "s1 string move semantics test", s2;</span></span><br><span class="line">    <span class="comment">//std::cout &lt;&lt; "++before move s1\t" &lt;&lt; s1 &lt;&lt; std::endl;</span></span><br><span class="line">    <span class="comment">//s2 = std::move(s1);</span></span><br><span class="line">    <span class="comment">//std::cout &lt;&lt; "++after move s1\t" &lt;&lt; s1 &lt;&lt; std::endl;</span></span><br><span class="line">    <span class="comment">//std::cout &lt;&lt; "=============" &lt;&lt; std::endl;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>测试结果：</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">=============<span class="type">RVO</span>==============</span><br><span class="line">++<span class="type">Test</span> obj rvo <span class="keyword">for</span> copy construct</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> obj rvo <span class="keyword">for</span> move construct</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> obj rvo <span class="keyword">for</span> copy assignment</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move assignment a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> <span class="class"><span class="keyword">object</span> <span class="title">rvo</span> <span class="title">for</span> <span class="title">move</span> <span class="title">assignment</span></span><br><span class="line"></span>construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move assignment a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>=============<span class="type">NRVO</span>==============</span><br><span class="line">++<span class="type">Test</span> obj nrvo <span class="keyword">for</span> copy construct</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> obj nrvo <span class="keyword">for</span> move construct</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> obj nrvo <span class="keyword">for</span> copy assignment</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move assignment a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>--------------</span><br><span class="line">++<span class="type">Test</span> obj nrvo <span class="keyword">for</span> move assignment</span><br><span class="line">construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>construct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>move assignment a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>==============================</span><br><span class="line">destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span><br><span class="line"></span>destruct a <span class="type">Test</span> <span class="class"><span class="keyword">object</span></span></span><br></pre></td></tr></table></figure>
+<p>由此可得出几个简单结论：<br>1.copy construct本身在RVO和NRVO两种情况下被优化了，如果再加上move反而画蛇添足。<br>2.加入了move assignment后，默认是调用move assignment而不是copy assignment，可以将move assignment注释后测试。<br>3.对于RVO和NRVO来说，construction的情况编译器优化得比较好了，加入move语义主要是对于assignment有比较大影响</p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-C-RVO-NRVO以及move语义的影响" 
+      data-title="C++ RVO/NRVO以及move语义的影响" data-url="/2015/05/09/C-RVO-NRVO以及move语义的影响/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

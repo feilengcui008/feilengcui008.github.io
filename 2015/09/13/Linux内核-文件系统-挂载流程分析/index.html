@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux内核-文件系统-挂载流程分析 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Linux内核,文件系统," />
+  
+
+  <meta name="description" content="1.根文件系统的挂载
+
+mount_root[init/do_mounts.c]
+create_dev(“/dev/root”, ROOT_DEV)  ==&amp;gt;  how to do this
+sys_unlink(“/dev/root”)
+sys_mknod(“/dev/root”,…)
+
+
+mount_block_root(“/dev/root”, flags)
+get_fs_names">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核-文件系统-挂载流程分析">
+<meta property="og:url" content="/2015/09/13/Linux内核-文件系统-挂载流程分析/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="1.根文件系统的挂载
+
+mount_root[init/do_mounts.c]
+create_dev(“/dev/root”, ROOT_DEV)  ==&amp;gt;  how to do this
+sys_unlink(“/dev/root”)
+sys_mknod(“/dev/root”,…)
+
+
+mount_block_root(“/dev/root”, flags)
+get_fs_names">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux内核-文件系统-挂载流程分析">
+<meta name="twitter:description" content="1.根文件系统的挂载
+
+mount_root[init/do_mounts.c]
+create_dev(“/dev/root”, ROOT_DEV)  ==&amp;gt;  how to do this
+sys_unlink(“/dev/root”)
+sys_mknod(“/dev/root”,…)
+
+
+mount_block_root(“/dev/root”, flags)
+get_fs_names">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Linux内核-文件系统-挂载流程分析" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux内核-文件系统-挂载流程分析</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.09.13</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Linux内核-文件系统-挂载流程分析"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>1.根文件系统的挂载</p>
+<ul>
+<li>mount_root[init/do_mounts.c]<ul>
+<li>create_dev(“/dev/root”, ROOT_DEV)  ==&gt;  how to do this<ul>
+<li>sys_unlink(“/dev/root”)</li>
+<li>sys_mknod(“/dev/root”,…)</li>
+</ul>
+</li>
+<li>mount_block_root(“/dev/root”, flags)<ul>
+<li>get_fs_names -&gt; copy root_fs_names</li>
+<li>do_mount_root ==&gt; 调用系统调用sys_mount，sys_chdir(“/root”)，为当  前进程current-&gt;fs.pwd.dentry设置挂载返回的root dentry<ul>
+<li>sys_mount  ==&gt;进入系统调用</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>2.进入系统调用的挂载，也是用户态挂载文件系统的入口</p>
+<ul>
+<li>sys_mount[fs/namespace.c]<ul>
+<li>copy_mount_string</li>
+<li>copy_mount_options </li>
+<li>do_mount <ul>
+<li>user_path(dirname, &amp;path) -&gt; path_lookupat ==&gt; 获取挂载路径的struct path，查找路径是很复杂的过程:)</li>
+<li>do_remount </li>
+<li>do_loopback</li>
+<li>do_change_type</li>
+<li>do_move_mount </li>
+<li>do_new_mount  ==&gt; 构建虚拟挂载点vsfmount，检查设置namespace<ul>
+<li>get_fs_type ==&gt; 在file_systems查找传入的文件系统类型</li>
+<li>vfs_kernel_mount ==&gt; 调用具体文件系统的mount，并将返回的root dentry与分配的vfsmount挂接<ul>
+<li>alloc_vfsmnt ==&gt; 从slob中分配虚拟挂载点struct vfsmount </li>
+<li>root = mount_fs<ul>
+<li>type-&gt;mount ==&gt; 调用具体文件系统的mount，返回root dentry</li>
+<li>设置vfsmount结构内容</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>3.进入具体文件系统类型的mount，此处以ext2为例分析</p>
+<ul>
+<li><p>模块初始化时</p>
+<ul>
+<li>init_inodecache分配slab作为inode的cache</li>
+<li>register_filesystem加入模块全局变量file_systems</li>
+</ul>
+</li>
+<li><p>struct file_system_type ext2_fs_type</p>
+<ul>
+<li>ext2_mount<ul>
+<li>mount_bdev ==&gt; 传入ext2_fill_super，返回root dentry <ul>
+<li>blkdev_get_by_path ==&gt; 通过设备节点路径名构造block_device结构</li>
+<li>sget ==&gt; 获取或分配super block结构体，并将bdev绑定到sb上</li>
+<li>fill_super ==&gt; 填充super block <ul>
+<li>sb_bread ==&gt; 读取super block的count块到buffer head，先查找lru缓存<ul>
+<li>__find_get_clock_slow  ==&gt; 根据bdev中的inode及inode中的i_mapping信息将page cache读到buffer head里</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>kill_block_super</li>
+</ul>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Linux内核-文件系统-挂载流程分析" 
+      data-title="Linux内核-文件系统-挂载流程分析" data-url="/2015/09/13/Linux内核-文件系统-挂载流程分析/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux下的时间 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Linux," />
+  
+
+  <meta name="description" content="时钟
+硬件时钟
+
+RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间
+读取方式
+
+通过ioctl
+12#include &amp;lt;linux/rtc.h&amp;gt;int ioctl(fd, RTC_request, param);
+
+hwclock命令
+
+
+
+通常内核在boot以及从低电量中恢复时，会读取RTC更">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux下的时间">
+<meta property="og:url" content="/2016/05/16/Linux下的时间/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="时钟
+硬件时钟
+
+RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间
+读取方式
+
+通过ioctl
+12#include &amp;lt;linux/rtc.h&amp;gt;int ioctl(fd, RTC_request, param);
+
+hwclock命令
+
+
+
+通常内核在boot以及从低电量中恢复时，会读取RTC更">
+<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux下的时间">
+<meta name="twitter:description" content="时钟
+硬件时钟
+
+RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间
+读取方式
+
+通过ioctl
+12#include &amp;lt;linux/rtc.h&amp;gt;int ioctl(fd, RTC_request, param);
+
+hwclock命令
+
+
+
+通常内核在boot以及从低电量中恢复时，会读取RTC更">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u949F"><span class="toc-text">时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u95F4"><span class="toc-text">时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u7CFB_u7EDF_u65F6_u95F4_u7684_u64CD_u4F5C"><span class="toc-text">系统时间的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5B9A_u65F6_u5668"><span class="toc-text">定时器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4"><span class="toc-text">分布式系统的时间</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Linux下的时间" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux下的时间</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.05.16</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Linux下的时间"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h3 id="u65F6_u949F"><a href="#u65F6_u949F" class="headerlink" title="时钟"></a>时钟</h3><ul>
+<li><p>硬件时钟</p>
+<ul>
+<li>RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间</li>
+<li><p>读取方式</p>
+<ul>
+<li><p>通过ioctl</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;linux/rtc.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ioctl</span><span class="params">(fd, RTC_request, param)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>hwclock命令</p>
+</li>
+</ul>
+</li>
+<li>通常内核在boot以及从低电量中恢复时，会读取RTC更新system time</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>软件时钟</p>
+<ul>
+<li>HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100</li>
+<li>精度影响select等依赖timeout的系统调用 </li>
+<li>HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。</li>
+</ul>
+</li>
+<li><p>外部时钟</p>
+<ul>
+<li>从网络ntp，原子钟等同步</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="u65F6_u95F4"><a href="#u65F6_u95F4" class="headerlink" title="时间"></a>时间</h3><ul>
+<li><p>时间类别</p>
+<ul>
+<li>wall clock time =&gt; 硬件时间</li>
+<li>real time =&gt; 从某个时间点(比如Epoch)开始的系统时间</li>
+<li>sys and user time =&gt; 通常指程序在内核态和用户态花的时间 </li>
+</ul>
+</li>
+<li><p>时间的表示</p>
+<ul>
+<li>time_t 从Epoch开始的秒数</li>
+<li>calendar time 字符串</li>
+<li><p>拆分时间 struct tm</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> tm &#123;</span><br><span class="line">  <span class="keyword">int</span> tm_sec;         <span class="comment">/* seconds */</span></span><br><span class="line">  <span class="keyword">int</span> tm_min;         <span class="comment">/* minutes */</span></span><br><span class="line">  <span class="keyword">int</span> tm_hour;        <span class="comment">/* hours */</span></span><br><span class="line">  <span class="keyword">int</span> tm_mday;        <span class="comment">/* day of the month */</span></span><br><span class="line">  <span class="keyword">int</span> tm_mon;         <span class="comment">/* month */</span></span><br><span class="line">  <span class="keyword">int</span> tm_year;        <span class="comment">/* year */</span></span><br><span class="line">  <span class="keyword">int</span> tm_wday;        <span class="comment">/* day of the week */</span></span><br><span class="line">  <span class="keyword">int</span> tm_yday;        <span class="comment">/* day in the year */</span></span><br><span class="line">  <span class="keyword">int</span> tm_isdst;       <span class="comment">/* daylight saving time */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>struct timeval/struct timespec</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> timeval &#123;</span><br><span class="line">  <span class="keyword">time_t</span> seconds;</span><br><span class="line">  <span class="keyword">suseconds_t</span> useconds;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> timespec &#123;</span><br><span class="line">  <span class="keyword">time_t</span>   tv_sec;        <span class="comment">/* seconds */</span></span><br><span class="line">  <span class="keyword">long</span>     tv_nsec;       <span class="comment">/* nanoseconds */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="u7CFB_u7EDF_u65F6_u95F4_u7684_u64CD_u4F5C"><a href="#u7CFB_u7EDF_u65F6_u95F4_u7684_u64CD_u4F5C" class="headerlink" title="系统时间的操作"></a>系统时间的操作</h3><figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;time.h&gt;</span></span></span><br><span class="line"><span class="preprocessor">#<span class="keyword">include</span> <span class="string">&lt;sys/time.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// number of seconds since epoch</span></span><br><span class="line"><span class="keyword">time_t</span> time(<span class="keyword">time_t</span> *t) </span><br><span class="line"></span><br><span class="line"><span class="comment">//参数time_t*</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">ctime</span><span class="params">(<span class="keyword">const</span> time_t *timep)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">ctime_r</span><span class="params">(<span class="keyword">const</span> time_t *timep, <span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">struct</span> tm *<span class="title">gmtime</span><span class="params">(<span class="keyword">const</span> time_t *timep)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">struct</span> tm *<span class="title">gmtime_r</span><span class="params">(<span class="keyword">const</span> time_t *timep, <span class="keyword">struct</span> tm *result)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">struct</span> tm *<span class="title">localtime</span><span class="params">(<span class="keyword">const</span> time_t *timep)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">struct</span> tm *<span class="title">localtime_r</span><span class="params">(<span class="keyword">const</span> time_t *timep, <span class="keyword">struct</span> tm *result)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//参数struct tm*</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">asctime</span><span class="params">(<span class="keyword">const</span> <span class="keyword">struct</span> tm *tm)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">asctime_r</span><span class="params">(<span class="keyword">const</span> <span class="keyword">struct</span> tm *tm, <span class="keyword">char</span> *buf)</span></span>;</span><br><span class="line"><span class="keyword">time_t</span> mktime(<span class="keyword">struct</span> tm *tm);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">gettimeofday</span><span class="params">(<span class="keyword">struct</span> timeval *tv, <span class="keyword">struct</span> timezone *tz)</span></span>;<span class="comment">//如果系统时间调整了会影响</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">clock_gettime</span><span class="params">(clockid_t clk_id, <span class="keyword">struct</span> timespec *tp)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//将tm按照format处理后放到s</span></span><br><span class="line"><span class="keyword">size_t</span> strftime(<span class="keyword">char</span> *s, <span class="keyword">size_t</span> max, <span class="keyword">const</span> <span class="keyword">char</span> *format, <span class="keyword">const</span> <span class="keyword">struct</span> tm *tm);</span><br><span class="line"></span><br><span class="line"><span class="comment">//将字符串时间s按照format格式化后放入tm</span></span><br><span class="line"><span class="function"><span class="keyword">char</span> *<span class="title">strptime</span><span class="params">(<span class="keyword">const</span> <span class="keyword">char</span> *s, <span class="keyword">const</span> <span class="keyword">char</span> *format, <span class="keyword">struct</span> tm *tm)</span></span>;</span><br></pre></td></tr></table></figure>
+<hr>
+<h3 id="u5B9A_u65F6_u5668"><a href="#u5B9A_u65F6_u5668" class="headerlink" title="定时器"></a>定时器</h3><ul>
+<li><p>sleep</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">sleep</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>usleep </p>
+<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">usleep</span><span class="params">(useconds_t usec)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>nanosleep</p>
+<figure class="highlight dos"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int nanosleep(const struct timespec *req, struct timespec *<span class="comment">rem);</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>alarm </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// SIGALARM after seconds</span></span><br><span class="line"><span class="function"><span class="keyword">unsigned</span> <span class="keyword">int</span> <span class="title">alarm</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">int</span> seconds)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>timer_create</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">timer_create</span><span class="params">(clockid_t clockid, <span class="keyword">struct</span> sigevent *sevp,</span><br><span class="line">                        timer_t *timerid)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>setitimer </p>
+</li>
+<li><p>timerfd_create ＋ select/poll/epoll</p>
+<figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">timerfd_create</span><span class="params">(<span class="keyword">int</span> clockid, <span class="keyword">int</span> flags)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>select </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span><span class="params">(<span class="keyword">int</span> nfds, fd_set *readfds, fd_set *writefds,</span><br><span class="line">                  fd_set *exceptfds, <span class="keyword">struct</span> timeval *timeout)</span></span>;</span><br><span class="line"><span class="comment">// struct timespec可以精确到纳秒，但是pselect下次无法修改timeout </span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">pselect</span><span class="params">(<span class="keyword">int</span> nfds, fd_set *readfds, fd_set *writefds,</span><br><span class="line">                   fd_set *exceptfds, <span class="keyword">const</span> <span class="keyword">struct</span> timespec *timeout,</span><br><span class="line">                   <span class="keyword">const</span> sigset_t *sigmask)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 一般能提供周期，延时，时间点触发，但核心还是时间点触发的timer</span></span><br><span class="line"><span class="comment">// 1.call_period =&gt; 触发一次重新注册call_at</span></span><br><span class="line"><span class="comment">// 2.call_later =&gt; 转换为call_at </span></span><br><span class="line"><span class="comment">// 3.call_at =&gt; 时间点触发的timer可以用一个优先级队列保存</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>poll </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// timeout最小单位ms，并且rounded up to系统时钟的精度</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span><span class="params">(<span class="keyword">struct</span> pollfd *fds, nfds_t nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br><span class="line"><span class="comment">// 注意timespec会被转换成ms</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">ppoll</span><span class="params">(<span class="keyword">struct</span> pollfd *fds, nfds_t nfds,</span><br><span class="line">               <span class="keyword">const</span> <span class="keyword">struct</span> timespec *timeout_ts, <span class="keyword">const</span> sigset_t *sigmask)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>epoll </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// timeout最小单位ms，并且rounded up to系统时钟的精度</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">struct</span> epoll_event *events,</span><br><span class="line">                      <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_pwait</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">struct</span> epoll_event *events,</span><br><span class="line">                      <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout,</span><br><span class="line">                      <span class="keyword">const</span> sigset_t *sigmask)</span></span>;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>eventfd + select/poll/epoll<br>一个fd可同时负责读接受事件通知和写触发事件通知</p>
+</li>
+<li><p>signaled + select/poll/epoll<br>借助alarm/setitimer/timer_create等触发的SIGALARM，通过signalfd传递到多路复用中</p>
+</li>
+<li><p>pipe + select/poll/epoll<br>一端另起线程定时触发，另一端放到多路复用中</p>
+</li>
+</ul>
+<hr>
+<h3 id="u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4"><a href="#u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4" class="headerlink" title="分布式系统的时间"></a>分布式系统的时间</h3><p>扯点其他的东西:-)。时间是个复杂而有意思的东西，在单机上不同处理器不同进程不同线程可以读到同一个系统时钟CLOCK_REALTIME，而且在一定时间范围内t1~t2发生的事件，即使在t1之前，t2之后系统时间与真实时间发生了一定偏移，只要时间戳的相对顺序没乱，那么我们就可以完全确定t1~t2时间戳之间不同线程发生事件的顺序。但是不同机器之间的系统时间总会互相漂移(ntp局域网0.1ms左右，互联网1-50ms左右)，导致我们没法直接使用系统时间(google的原子钟也是将一个时间段作为时间点的，只要这个时间段比较小，那么性能应该可以接收)，所以需要logic clock以及衍生出来的vector clock或者version number等。</p>
+<p>没有全局时钟是分布式系统需要一致性算法的一个重要原因，因为我们没办法根据单机的系统时间戳来判断多台机器之间事件的先后顺序，那么对于一个新的节点，我们要把之前所有的时间atomic broadcast到这个新节点就会出现问题，所以这也是分布式一致性算法(Paxos/Raft/Viewstamp Replication/Zab)解决的一个问题，当然再加上网络的异步，以及无法获知各个节点的全局状态，以及机器crash等各种问题，这些算法往往加入了容错性。</p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Linux下的时间" 
+      data-title="Linux下的时间" data-url="/2016/05/16/Linux下的时间/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
