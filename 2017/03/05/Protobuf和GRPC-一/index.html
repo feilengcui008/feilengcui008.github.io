@@ -15,37 +15,37 @@
     <meta name="keywords" content="GRPC,Protobuf," />
   
 
-  <meta name="description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的主要实现原理，本文主要介绍Protobuf生成代码的主要流程以及Protobuf与GRPC之间的交互方式。
+  <meta name="description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
 
 简要描述
 ProtobufProtobuf主要由三大部分构成: 
 
 
 Core: 包括核心的数据结构比如Message和Service等等
-Compiler: proto文件的Tok">
+Compiler: proto文件的Tokeniz">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Protobuf和GRPC(一)">
 <meta property="og:url" content="/2017/03/05/Protobuf和GRPC-一/index.html">
 <meta property="og:site_name" content="feilengcui008">
-<meta property="og:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的主要实现原理，本文主要介绍Protobuf生成代码的主要流程以及Protobuf与GRPC之间的交互方式。
+<meta property="og:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
 
 简要描述
 ProtobufProtobuf主要由三大部分构成: 
 
 
 Core: 包括核心的数据结构比如Message和Service等等
-Compiler: proto文件的Tok">
-<meta property="og:updated_time" content="2017-03-05T12:34:43.245Z">
+Compiler: proto文件的Tokeniz">
+<meta property="og:updated_time" content="2017-03-06T08:03:09.848Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Protobuf和GRPC(一)">
-<meta name="twitter:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的主要实现原理，本文主要介绍Protobuf生成代码的主要流程以及Protobuf与GRPC之间的交互方式。
+<meta name="twitter:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
 
 简要描述
 ProtobufProtobuf主要由三大部分构成: 
 
 
 Core: 包括核心的数据结构比如Message和Service等等
-Compiler: proto文件的Tok">
+Compiler: proto文件的Tokeniz">
 
   
 
@@ -199,7 +199,7 @@ Compiler: proto文件的Tok">
 
   <div class="article-content">
     
-      <p>数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的主要实现原理，本文主要介绍Protobuf生成代码的主要流程以及Protobuf与GRPC之间的交互方式。</p>
+      <p>数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。</p>
 <hr>
 <h3 id="u7B80_u8981_u63CF_u8FF0"><a href="#u7B80_u8981_u63CF_u8FF0" class="headerlink" title="简要描述"></a>简要描述</h3><ul>
 <li><p>Protobuf<br>Protobuf主要由三大部分构成: </p>
