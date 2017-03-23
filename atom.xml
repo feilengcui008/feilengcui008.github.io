@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-03-20T12:42:48.461Z</updated>
+  <updated>2017-03-23T10:06:31.381Z</updated>
   <id>/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="/2017/03/20/Raft%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/"/>
     <id>/2017/03/20/Raft简单实现小结/</id>
     <published>2017-03-20T11:02:13.000Z</published>
-    <updated>2017-03-20T12:42:48.461Z</updated>
+    <updated>2017-03-23T10:06:31.381Z</updated>
     <content type="html"><![CDATA[<p>上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。</p>
 <hr>
 <h3 id="Raft_u5B9E_u73B0"><a href="#Raft_u5B9E_u73B0" class="headerlink" title="Raft实现"></a>Raft实现</h3><p>这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。</p>
@@ -82,12 +82,12 @@
 <li>测试和其他一些问题<ul>
 <li>测试过程中发现MIT6.824测试有两处小问题<ul>
 <li>一个是TestReElection中隔离leader1，重连leader1后需要睡眠至少一个心跳周期，让leader1接收到leader1的心跳而转换为follower</li>
-<li>另一个是cfg.one中提交一个日志后需要检查所有参与节点applied日志后的结果，所以需要leader和所有follower尽早applied日志，但是follower总是滞后于leader至少一个心跳周期或者一次AppendEntries请求的，所以这个检查会失败</li>
+<li>另一个是cfg.one中提交一个日志后需要检查所有参与节点applied日志后的结果，所以需要leader和所有follower尽早applied日志，但是follower总是滞后于leader至少一个心跳周期或者一次AppendEntries请求的，所以这个检查有时会失败，从而导致测试失败。</li>
 </ul>
 </li>
 <li>Start异步执行的问题?<ul>
-<li>由于测试代码直接阻塞调用Start，需要获取Start返回的Term/Index等，当日志复制请求失败时，Start会无限重试，从而阻塞测试代码，而无法重新加入节点，到时整个测试阻塞。</li>
-<li>如果在单独的goroutine中执行Start的逻辑，log index的获取是序列化的(Raft需要保证前面所有的日志提交后才能提交本条日志)，所以本质上后面的请求需要等待前面的请求完成并持久化日志然后再拿下一个log index，所以还是序列化的。而且，并发之后给commitIndex和apply log的逻辑引入了更多的复杂度。</li>
+<li>由于测试代码直接阻塞调用Start，需要获取Start返回的Term/Index等，当日志复制请求失败时，Start会无限重试，从而阻塞测试代码，而无法重新加入节点，导致整个测试阻塞，所以Start的实现需要支持异步</li>
+<li>如果在单独的goroutine中执行Start的逻辑，让Start异步并发执行，log index的获取是序列化的(Raft需要保证前面所有的日志提交后才能提交本条日志)，且log index较大的由于较小log index的consistency check失败而阻塞，仍然需要等待前面较小log index的日志达成多数派，所以本质上后面的请求需要等待前面的请求完成并持久化日志然后再拿下一个log index，所以还是序列化的。只是不会阻塞Start调用。</li>
 </ul>
 </li>
 <li>一些优化点在保证基本协议正确性的前提下如何实现?<ul>
@@ -113,7 +113,7 @@
 </li>
 </ul>
 </li>
-<li>最后放上简单的代码供参考:-), <a href="https://github.com/feilengcui008/moocs/blob/master/mit_6.824/2016/src/raft/raft.complete.go" target="_blank" rel="external">Raft</a></li>
+<li>最后放上简单的代码供参考:-), <a href="https://github.com/feilengcui008/moocs/blob/master/mit_6.824/2016/src/raft/raft.concurrent.go" target="_blank" rel="external">Raft</a></li>
 </ul>
 ]]></content>
     <summary type="html">
