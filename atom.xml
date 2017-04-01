@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-03-31T15:58:35.000Z</updated>
+  <updated>2017-04-01T01:21:07.924Z</updated>
   <id>/</id>
   
   <author>
@@ -15,13 +15,12 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
-    <title><![CDATA[Borg论文简记]]></title>
-    <link href="/2017/03/31/Borg%E8%AE%BA%E6%96%87%E7%AE%80%E8%AE%B0/"/>
-    <id>/2017/03/31/Borg论文简记/</id>
+    <title><![CDATA[Paper Reading - Large-scale cluster management at Google with Borg]]></title>
+    <link href="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/"/>
+    <id>/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/</id>
     <published>2017-03-31T15:05:00.000Z</published>
-    <updated>2017-03-31T15:58:35.000Z</updated>
-    <content type="html"><![CDATA[<p>Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。</p>
-<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
+    <updated>2017-04-01T01:21:07.924Z</updated>
+    <content type="html"><![CDATA[<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
 <p>It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation</p>
 </blockquote>
 <p>最重要的三点：装箱与调度算法，资源的抢占/reclaim/over-commit，资源的隔离。</p>
@@ -104,17 +103,21 @@
 </ul>
 ]]></content>
     <summary type="html">
-    <![CDATA[<p>Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。</p>
-<h4 id="0-_Abstract]]>
+    <![CDATA[<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
+<p>It achieves high util]]>
     </summary>
     
       <category term="Borg" scheme="/tags/Borg/"/>
+    
+      <category term="Paper" scheme="/tags/Paper/"/>
     
       <category term="分布式资源管理与调度" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6/"/>
     
       <category term="容器技术" scheme="/tags/%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF/"/>
     
       <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
+    
+      <category term="分布式系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     
   </entry>
   
@@ -231,6 +234,142 @@
       <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     
       <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
+    <title><![CDATA[Paper Reading - In Search of an Understandable Consensus Algorithm(Raft)]]></title>
+    <link href="/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/"/>
+    <id>/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/</id>
+    <published>2017-03-19T01:15:32.000Z</published>
+    <updated>2017-04-01T02:39:47.144Z</updated>
+    <content type="html"><![CDATA[<h4 id="0_Abstract"><a href="#0_Abstract" class="headerlink" title="0 Abstract"></a>0 Abstract</h4><blockquote>
+<p>In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered</p>
+</blockquote>
+<p>Raft强化Leader的作用，明确划分了协议各个阶段(leader election, log replication)的边界，并且让leader election中的一部分重要内容-新leader的状态恢复变得很直观简单，并且和普通的日志复制请求与心跳请求整合到同一个RPC。这在后面的分析会看到。</p>
+<h4 id="1_Introduction"><a href="#1_Introduction" class="headerlink" title="1 Introduction"></a>1 Introduction</h4><blockquote>
+<p>Strong leader: Raft uses a stronger form of leader- ship than other consensus algorithms. For example, log entries only flow fromthe leader to other servers. This simplifies themanagement of the replicated log and makes Raft easier to understand</p>
+</blockquote>
+<p>Raft在选主的时候会添加额外的限制条件，要求新选出的主一定具有最新的日志，这样无论是正常的log replication，还是leader election的状态恢复，日志都是单向流动到follower。这大大简化了恢复过程。</p>
+<blockquote>
+<p>Leader election: Raft uses randomized timers to elect leaders…</p>
+</blockquote>
+<p>使用随机timeout的方式来触发选主。</p>
+<blockquote>
+<p>Membership changes: Raft’s mechanism for changing the set of servers in the cluster uses a new joint consensus approach where the majorities of two different configurations overlap during transi-tions…</p>
+</blockquote>
+<p>成员组变更使用joint-consensus，也是两阶段形式。这里通过限制每次变更的server数量到一个，貌似可以做一些简化(具体参考下<a href="https://coreos.com/etcd/docs/latest/op-guide/runtime-reconf-design.html" target="_blank" rel="external">etcd的设计和实现</a>)</p>
+<h4 id="2_Replicated_state_machines"><a href="#2_Replicated_state_machines" class="headerlink" title="2 Replicated state machines"></a>2 Replicated state machines</h4><blockquote>
+<p>Replicated state machines are typically implemented using a replicated log, as shown in Figure 1. Each server stores a log containing a series of commands, which its state machine executes in order…</p>
+<p>Keeping the replicated log consistent is the job of the consensus algorithm.</p>
+</blockquote>
+<p>一致性协议的通常用法是作为复制状态机的日志复制模块，日志基本上是状态机一致性和持久性的基石，在计算机的系统领域有着及其重要的作用，可参考这篇很棒的文章-<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying" target="_blank" rel="external">The Log: What every software engineer should know about real-time data’s unifying abstraction</a></p>
+<h4 id="3_Whats_u2019s_wrong_with_Paxos_3F"><a href="#3_Whats_u2019s_wrong_with_Paxos_3F" class="headerlink" title="3 Whats’s wrong with Paxos?"></a>3 Whats’s wrong with Paxos?</h4><blockquote>
+<p>Paxos’ opaqueness derives from its choice of the single-decree subset as its foundation. Single-decree Paxos is dense and subtle … The composition rules for multi- Paxos add significant additional complexity and subtlety</p>
+</blockquote>
+<p>Basic Paxos本身面向并发决议的场景，多个参与者可以同时提出决议，且Basic Paxos解决的是对单个值达成决议，实际应用中往往需要对多个值达成决议，就需要组合多轮Basic Paxos，而基于Basic Paxos的Multi-Paxos并没有比较好地在论文中描述如何组合多轮Basic Paxos，实现起来有很多细节问题。但是，面向单个值的设计也是Basic Paxos和Multi-Paxos的优势，对于每条日志可以单独提交，而不用像raft需要等待前面所有日志提交，这在后面Raft的详细描述中可看到。</p>
+<h4 id="4_Designing_for_understandability"><a href="#4_Designing_for_understandability" class="headerlink" title="4 Designing for understandability"></a>4 Designing for understandability</h4><blockquote>
+<p>in Raft we separated leader election, log replication, safety, andmembership changes.</p>
+</blockquote>
+<p>一个是良好的模块划分，选主/日志复制/成员组变更。</p>
+<blockquote>
+<p>logs are not allowed to have holes, and Raft limits the ways in which logs can become inconsistent with each other.</p>
+</blockquote>
+<p>Raft不允许日志有空洞，这大大简化了其leader election后状态恢复的过程，但是同时也限制了其日志只能顺序提交。</p>
+<h4 id="5-1_Raft_basics"><a href="#5-1_Raft_basics" class="headerlink" title="5.1 Raft basics"></a>5.1 Raft basics</h4><blockquote>
+<p>At any given time each server is in one of three states: leader, follower, or candidate</p>
+</blockquote>
+<p>节点三种角色：leader/follower/candidate。follower不会主动发RPC请求，leader发送AppendEntries的日志复制和心跳请求，candidate发送RequestVote的选主请求。</p>
+<h4 id="5-2_Leader_election"><a href="#5-2_Leader_election" class="headerlink" title="5.2 Leader election"></a>5.2 Leader election</h4><blockquote>
+<p>To begin an election, a follower increments its current term and transitions to candidate state</p>
+</blockquote>
+<p>leader的心跳超时，转换为candidate，等待随机的timeout，增加自身的term，发起选主请求。得到多数投票则成功，后续会看到选主投票时会加上限制条件。选主成功后，复制一条nop的日志，让之前term的日志全部提交，一遍读请求能读到最新的数据。</p>
+<h4 id="5-3_Log_replication"><a href="#5-3_Log_replication" class="headerlink" title="5.3 Log replication"></a>5.3 Log replication</h4><blockquote>
+<p>If followers crash or run slowly, or if network packets are lost, the leader retries Append- Entries RPCs indefinitely (even after it has responded to the client) until all followers eventually store all log en- tries</p>
+</blockquote>
+<p>这里的重试应该是指consistency check中的日志恢复，只要某个follower没有恢复到最新日志，leader就持续向该follower发送请求。而不是说在发送AppendEntries时如果遇到请求失败无限重试，这里如果达到多数派后应该返回成功，不要阻塞下一次请求。但是，如果没有达成多数派，这条log index位置初应该无限重试，不然会有正确性问题。</p>
+<blockquote>
+<p>The leader keeps track of the highest index it knows to be committed, and it includes that index in future AppendEntries RPCs (including heartbeats) so that the other servers eventually find out</p>
+</blockquote>
+<p>注意leader更新commitIndex的时候需要借助matchIndex，严格按照图2的规则更新，避免提交之前term的日志。</p>
+<blockquote>
+<p>The first property follows from the fact that a leader creates atmost one entrywith a given log index in a given term</p>
+</blockquote>
+<p>这个性质需要无限重试来保证，对于某个log index，如果没达成决议，则需要拿着相同的cmd无限重试，直到成功或者自己不在是leader。这样能保证在一个term和一个index log下不会存在两个不同的cmd被提交。否则如果不无限重试，可以构造一种状态转换，违背这个性质。</p>
+<blockquote>
+<p>the leader includes the index and term of the entry in its log that immediately precedes the new entries.</p>
+</blockquote>
+<p>每次AppendEntries请求的prevLogTerm和prevLogIndex可以通过nextIndex数组来获得</p>
+<blockquote>
+<p>With thismechanism, a leader does not need to take any special actions to restore log consistencywhen it comes to power</p>
+</blockquote>
+<p>这一点比较巧妙，把一致性协议中或者说其他主备系统中最复杂的一步leader状态恢复，融入进了日志复制和心跳的rpc请求中，大大简化了实现。</p>
+<h4 id="5-4_Safety"><a href="#5-4_Safety" class="headerlink" title="5.4 Safety"></a>5.4 Safety</h4><blockquote>
+<p>The restriction ensures that the leader for any given term con- tains all of the entries committed in previous terms (the Leader Completeness Property from Figure 3)</p>
+</blockquote>
+<p>Leader Completeness Property保证正确性。保证Leader Completeness Property有两点需要注意: (1) 选主的限制条件 (2) 新leader不能提交之前term的日志。</p>
+<h4 id="5-4-1_Election_restriction"><a href="#5-4-1_Election_restriction" class="headerlink" title="5.4.1 Election restriction"></a>5.4.1 Election restriction</h4><blockquote>
+<p>The RequestVote RPC implements this restriction: the RPC includes information about the candidate’s log, and the voter denies its vote if its own log is more up-to-date than that of the candidate</p>
+</blockquote>
+<p>如果请求者的term不低于自己，且日志不必自己旧，则投票。这样由于日志复制的多数派以及选主的多数派限制，新选出的leader一定有最新的日志。</p>
+<h4 id="5-4-2_Committing_entries_from_previous_terms"><a href="#5-4-2_Committing_entries_from_previous_terms" class="headerlink" title="5.4.2 Committing entries from previous terms"></a>5.4.2 Committing entries from previous terms</h4><blockquote>
+<p>Raft never commits log entries from previous terms by count- ing replicas</p>
+</blockquote>
+<p>新选出的leader恢复状态时，永远不要直接提交之前term的日志，需要在新term的第一条日志达成决议后，让consistency check的过程来提交之前term的日志。</p>
+<h4 id="5-6_Timing_and_availability"><a href="#5-6_Timing_and_availability" class="headerlink" title="5.6 Timing and availability"></a>5.6 Timing and availability</h4><blockquote>
+<p>broadcastTime≪electionTimeout≪MTBF</p>
+</blockquote>
+<p>尤其注意RPC请求的时间一定要远小于election timeout，否则会很久选不出主。</p>
+<h4 id="6_Cluster_membership_changes"><a href="#6_Cluster_membership_changes" class="headerlink" title="6 Cluster membership changes"></a>6 Cluster membership changes</h4><blockquote>
+<p>The leader first creates the Cold,new configuration entry in its log and commits it to Cold,new (a majority of Cold and a majority of Cnew). Then it creates the Cnew entry and commits it to a majority of Cnew. There is no point in time in which Cold and Cnew can both make decisions independently</p>
+</blockquote>
+<p>Cold,new被apply的的时候需要做两件事情，一件是向joint cluster发送Cnew并达成决议，在Cnew被apply之前，所有的log replication请求需要对old cluster和new cluster都达成决议，当Cnew被提交时，更改整个集群的peers</p>
+<blockquote>
+<p>The second issue is that the cluster leader may not be part of the new configuration. In this case, the leader steps down (returns to follower state) once it has committed the Cnew log entry. This means that there will be a period of time (while it is committingCnew)when the leader isman- aging a cluster that does not include itself; it replicates log entries but does not count itself in majorities.</p>
+</blockquote>
+<p>Cnew日志的commitIndex还没有被心跳发送过去. 那这个地方在AppendEntries的多数派判断时，还需要判断自身是否在peers数组中，如果不在则本轮少一票.</p>
+<blockquote>
+<p>if a server receives a RequestVote RPC within the minimum election timeout of hearing from a cur- rent leader, it does not update its term or grant its vote</p>
+</blockquote>
+<p>leader lease，表明leader很可能还未过期，此时先不投票。</p>
+<h4 id="7_Log_compaction"><a href="#7_Log_compaction" class="headerlink" title="7 Log compaction"></a>7 Log compaction</h4><blockquote>
+<p>Raft also includes a small amount of metadata in the snapshot: the last included index is the index of the last entry in the log that the snapshot replaces (the last en- try the state machine had applied), and the last included term is the term of this entry. These are preserved to sup- port the AppendEntries consistency check for the first log entry following the snapshot, since that entry needs a pre- vious log index and term. To enable cluster membership changes (Section 6), the snapshot also includes the latest configuration in the log as of last included index</p>
+</blockquote>
+<p>snapshot请求中需要包含last included index和latest configuration</p>
+<blockquote>
+<p>Although servers normally take snapshots indepen-dently, the leader must occasionally send snapshots to followers that lag behind. This happens when the leader has already discarded the next log entry that it needs to send to a follower</p>
+</blockquote>
+<p>leader需要发送状态机的snapshot数据给follower，不能靠follower自身的日志，因为有可能leader的日志还没完全复制到某个follower，此时leader发生了snapshot，把之前的log entry都丢掉了。</p>
+<h4 id="8_Client_interaction"><a href="#8_Client_interaction" class="headerlink" title="8 Client interaction"></a>8 Client interaction</h4><blockquote>
+<p>The solution is for clients to assign unique serial numbers to every command</p>
+</blockquote>
+<p>如何处理客户端重试的重复请求</p>
+<blockquote>
+<p>First, a leader must have the latest information on which entries are committed. Raft handles this by having each leader commit a blank no-op entry into the log at the start of its term. </p>
+<p>Second, a leadermust checkwhether it has been deposed before processing a read-only request. Raft handles this by having the leader exchange heartbeat messages with a majority of the cluster before responding to read-only requests. Alternatively, the leader could rely on the heartbeat mechanism to provide a form of lease.</p>
+</blockquote>
+<p>如何保证读请求读到最新的数据: (1) 保证leader上的状态机的数据最新，每次选主后主动复制一条nop日志，提交之前term的所有日志，让状态机保持最新；(2) leader响应的时候保证自己是最新的leader，两个办法，一个是响应前发一条消息，如果得到多数派应答，则说明是最新，第二种是leader lease，leader如果在某个lease时间段内没有收到多数派的心跳回复就自动变为follower，每个leader刚选出时，等待lease的时间才开始处理请求。</p>
+<h4 id="u5C0F_u7ED3"><a href="#u5C0F_u7ED3" class="headerlink" title="小结"></a>小结</h4><p>保证协议safety性质的前提下，通过增加以下三个条件来简化Leader恢复或者说View Change过程中的状态恢复，保证日志从Leader上单向流动到Follower(而这个过程又可以合并到AppendEntries日志复制的逻辑中，即consistency check)，这个过程往往是关键和最复杂的步骤。</p>
+<ul>
+<li>选主的时候满足发请求的节点和被请求的节点日志至少一样新，保证选主成功后Leader上的日志最新</li>
+<li>日志必须顺序提交(对数据库事务日志来说可能并不友好)</li>
+<li>新选出的Leader不能直接提交以前Term的日志，需要写入一条当前Term的日志后才能提交之前Term的日志</li>
+</ul>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h4 id="0_Abstract"><a href="#0_Abstract" class="headerlink" title="0 Abstract"></a>0 Abstract</h4><blockquote>
+<p>In order to enhance under]]>
+    </summary>
+    
+      <category term="Paper" scheme="/tags/Paper/"/>
+    
+      <category term="Raft" scheme="/tags/Raft/"/>
+    
+      <category term="容错分布式一致性协议" scheme="/tags/%E5%AE%B9%E9%94%99%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE/"/>
+    
+      <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
+    
+      <category term="分布式系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     
   </entry>
   
@@ -1954,200 +2093,6 @@
     </summary>
     
       <category term="一致性算法" scheme="/tags/%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95/"/>
-    
-      <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
-    
-      <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Distributed Systems-Basics]]></title>
-    <link href="/2015/12/02/Distributed-Systems-Basics/"/>
-    <id>/2015/12/02/Distributed-Systems-Basics/</id>
-    <published>2015-12-02T02:41:01.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
-    <content type="html"><![CDATA[<p>This post is a simple outline about some basic(really basic) ideas behind distributed systems and I will add more (detail) stuff sometimes according to my narrow understanding. </p>
-<p>(update 2015.12.2)<br>I maintains a reading list for distributed systems at github, hope any help for those who are interested<br><a href="https://github.com/feilengcui008/distributed_systems_readings" target="_blank" rel="external">distributed_systems_readings</a></p>
-<ul>
-<li><p>Why distributed?</p>
-<ul>
-<li>a single machine can not offer enough storage and computation ability</li>
-<li>to build a system with high availability and scalability </li>
-<li>maybe for easier resource management and high resource usage like cluster management tools</li>
-<li>many other reasons…</li>
-</ul>
-</li>
-<li><p>What to achieve?</p>
-<ul>
-<li>fault tolerance<ul>
-<li>though other goals may be more difficult to reach, but I think this is a basic cause for many other problems, usually we want to get a robust system first, in this process we most probably come across the different replication approach which trade off between avalibility and consistency. So I make it first</li>
-</ul>
-</li>
-<li>availability<ul>
-<li>usually the availibility increases  as CA(2pc…)-&gt;CP(paxos,raft…)-&gt;AP systems</li>
-</ul>
-</li>
-<li>replication and consistency(usually this emerges in solving fault tolerance and avalibility)<ul>
-<li>replication is so important for fault tolerence and availibility which I think is a must for robust distributed system. Different replication approaches usually have different consistency and performance needs, our systems will be very different because of this. A most often used approach is SMT, that is State Machine Replication, a deterministic state machine, and the consensus algorithms like paxos, viewstamp replication, raft, zab, 2pc, 3pc… are used to make sure that the operation sequences serializably executed on all replicas and all replicas reach the same state at last. Another modification for replication is to use deterministic multithreading to replicate on each node. </li>
-</ul>
-</li>
-<li>scalability </li>
-<li>performance </li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p>Many problems to solve </p>
-<ul>
-<li>usaully no global clock and global event order, syncronization system is hard to achieve</li>
-<li>no knowledge about global state(if the system itself doesn’t share state like Memcached server, that’s much easier)</li>
-<li>machines crashing down and network partition become common things, how to maintain high avalibility and tolerate fault like the shared data and computation job.</li>
-<li>how to ensure single-copy strong consistency in replication, how to achieve eventually consistency and to what extent of consistency, how to trade off</li>
-<li>as scale increases, the communication between nodes increases, the performance of read and write may change, how to trade off the performance of read/write, high throughput/low latency</li>
-<li>many others…</li>
-</ul>
-</li>
-<li><p>How to solve these problems?</p>
-<ul>
-<li>global clock like Spanner offering a sync system model, logic clock/vector clock for causality order/arbitrary order/global order</li>
-<li>distributed snapshot</li>
-<li>partition and replication</li>
-<li>leader election and consistency algorithms</li>
-<li>optimization of io and computation tasks, data lacality,DAG…</li>
-</ul>
-</li>
-<li><p>Abstract models - a set of assumptions our system design is based on</p>
-<ul>
-<li>system models -&gt; async or sync</li>
-<li>consistency models -&gt; strong or weak</li>
-<li>failure models -&gt; node failure or network partition</li>
-<li>FLP impossibility -&gt; assumption too strict, algorithms design guide</li>
-<li>BASE</li>
-<li>CAP theory -&gt; design trade-off guide<ul>
-<li>rethinking the CAP from a fault-tolerence point of view:(here fault-tolerence means node failure or network partition)<ul>
-<li>1.if we don not allow any machine going down =&gt; usually it’s a CA system which is not resillient to partition and gain strong consisitency and high availibility</li>
-<li>2.if we allow the minorities of the qorumn going down =&gt; usually it’s a CP system which is resilient to partition and maintains strong consisitency, also it can get some availiblity at the same time </li>
-<li>3.if we do not give strict limitation for the number of machines down =&gt; usually it’s a AP system which can not gain strong consisitency, but can be resilient to partition, also gain high availibility and performance</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>Engineering practice - replication (consistency) model and algorithms </p>
-<ul>
-<li>Concurrency control : global lock/distributed lock/master-slave/majority protocol/biased protocol/quorum consensus…<ul>
-<li>I think actually the concurrency control problem is similar with consistency problem to some extent</li>
-</ul>
-</li>
-<li>sync/async primary and backup replication</li>
-<li><p>2pc</p>
-<ul>
-<li><p>procedures</p>
-<ul>
-<li>clients propose a transaction T to coordinator </li>
-<li>coordinator write “prepare T” to log and send a message “prepare T” to all nodes</li>
-<li>nodes write “no T” to log and send a message “no T” to coordinator or write “ready T” to log and send a message “ready T” to coordinator </li>
-<li>if all nodes return “ready T” then coordinator write “commit T” to log and send a message “commit T” to all nodes else write “abort T” to log and send a message “abort T” to all nodes</li>
-<li>if nodes receive “commit T” then write it to log and do commit operation else write “abort” to log and do abort operation</li>
-</ul>
-</li>
-<li><p>prolems</p>
-<ul>
-<li>cannot tolerate partition</li>
-<li>fault recovery may be blocked =&gt; can be optimized by write the logs with nodes info whose locks are held by coordinator like ready[T, Locked_nodes]</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>3pc</p>
-<ul>
-<li>based on 2pc, a third phase is added, when the coordinator receive “ready T” from all nodes, it first make sure that there are k nodes know the commit other than write to log and send commit message to nodes directly. When the coordinator go down, the nodes can choose a new coordinator, if there are less than k nodes go down, then there must be at least one node know the commit event, then the new coordinator can reschedule the third phase.</li>
-<li>problems<ul>
-<li>cannot tolerate more than k nodes went down</li>
-<li>cannot tolerate network partition<ul>
-<li>if partition 1 has none nodes of the k nodes, the new elected coordinator will abort the commit, but if partition 2 has at least one node of the k nodes, then it will commit. As a result, there is inconsistency.</li>
-</ul>
-</li>
-<li>if the coordinator crashed down before make anyone of the nodes know the commit message?</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>persistent messages</p>
-<ul>
-<li>sender<ul>
-<li>write message with unique id into table “send_message” after transaction T was committed in sender side</li>
-<li>message sender process can read messages after correctly write messages</li>
-<li>when send message failed, resend message until acknowledge, if timeout, then rollback and delete the message in “send message”<ul>
-<li>receiver </li>
-<li>receive the message and insert in table “received_messages”</li>
-<li>if table has message return ack, else commit transaction and return ack.  </li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>atomic broadcast</p>
-</li>
-<li>viewstamp replication</li>
-<li>paxos and its variants</li>
-<li>raft</li>
-<li>zab</li>
-<li>gossip</li>
-</ul>
-</li>
-<li><p>model checking for concurrent and distributed systems </p>
-<ul>
-<li>model checking is a kind of formal method which use mathematical logic(like first-order logic and temporal logic) to reason and verify invariants of systems.It can make the designer understand their systems more closely, also it can disclose some liveness and safety bugs. Usually it is based on some specification language. TLA+ by Leslie Lamport is a nice toolbox which contains the specification, model checker, proof system and a algorithmic language pluscal.I think it’s a nice tool for some critical and complicated systems of which some parts are hard to test. </li>
-<li>Usually you specify a system use TLA+ or pluscal and define some invariants, then use the model checker to check if the invariants are satisfied. So there maybe some corner cases model checker can not disclose if you didn’t realize all the main invariants.  </li>
-</ul>
-</li>
-<li><p>Some systems to analyze </p>
-<ul>
-<li>Redis/Memcached</li>
-<li>Zookeeper/etcd</li>
-<li>NFS/GFS/HDFS/Ceph</li>
-<li>Yarn/Mesos </li>
-<li>BigTable/HBase</li>
-<li>Dynamo/Cassandra </li>
-<li>Spanner</li>
-<li>MapReduce/Streaming/Graph…</li>
-<li>NewSql</li>
-</ul>
-</li>
-<li><p>How to design and realize a distributed systems?</p>
-<ul>
-<li>this is the real deal…</li>
-</ul>
-</li>
-</ul>
-<hr>
-<p>ref:</p>
-<p>(sometimes new stuff will be added)<br>(I have not read all of these, I think something is nice and list here)</p>
-<ul>
-<li>《Distributed Systems : Concepts and Design》  </li>
-<li>《Distributed Algorithms》</li>
-<li>《Replication : Theory and Practice》</li>
-<li><a href="http://book.mixu.net/distsys/" target="_blank" rel="external">http://book.mixu.net/distsys/</a> (very very nice work)</li>
-<li>related papers</li>
-<li>open source projects</li>
-<li><a href="http://the-paper-trail.org/blog/a-brief-tour-of-flp-impossibility/" target="_blank" rel="external">http://the-paper-trail.org/blog/a-brief-tour-of-flp-impossibility/</a></li>
-<li><a href="http://the-paper-trail.org/blog/good-survey-of-the-important-papers-in-distributed-consensus/" target="_blank" rel="external">http://the-paper-trail.org/blog/good-survey-of-the-important-papers-in-distributed-consensus/</a></li>
-<li><a href="http://the-paper-trail.org/blog/consensus-protocols-a-paxos-implementation/" target="_blank" rel="external">http://the-paper-trail.org/blog/consensus-protocols-a-paxos-implementation/</a></li>
-<li><a href="http://the-paper-trail.org/blog/barbara-liskovs-turing-award-and-byzantine-fault-tolerance/" target="_blank" rel="external">http://the-paper-trail.org/blog/barbara-liskovs-turing-award-and-byzantine-fault-tolerance/</a></li>
-<li><a href="http://the-paper-trail.org/blog/consensus-protocols-two-phase-commit/" target="_blank" rel="external">http://the-paper-trail.org/blog/consensus-protocols-two-phase-commit/</a></li>
-<li><a href="http://the-paper-trail.org/blog/consensus-protocols-three-phase-commit/" target="_blank" rel="external">http://the-paper-trail.org/blog/consensus-protocols-three-phase-commit/</a></li>
-<li><a href="http://the-paper-trail.org/blog/consensus-protocols-paxos/" target="_blank" rel="external">http://the-paper-trail.org/blog/consensus-protocols-paxos/</a></li>
-<li><a href="https://raft.github.io/" target="_blank" rel="external">https://raft.github.io/</a></li>
-<li><a href="http://thesecretlivesofdata.com/raft/#home" target="_blank" rel="external">http://thesecretlivesofdata.com/raft/#home</a></li>
-</ul>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>This post is a simple outline about some basic(really basic) ideas behind distributed systems and I will add more (detail) stuff sometime]]>
-    </summary>
     
       <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     

@@ -7,30 +7,33 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Borg论文简记 | feilengcui008</title>
+  <title>Paper Reading - Large-scale cluster management at Google with Borg | feilengcui008</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
   
-    <meta name="keywords" content="Borg,分布式资源管理与调度,容器技术," />
+    <meta name="keywords" content="Borg,Paper,分布式资源管理与调度,容器技术," />
   
 
-  <meta name="description" content="Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。
-0. Abstract
-It achieves high utilization by combining admission control, efficient tas">
+  <meta name="description" content="0. Abstract
+It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation
+
+最重要的三点：装箱与调度算法，资源的抢占/rec">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Borg论文简记">
-<meta property="og:url" content="/2017/03/31/Borg论文简记/index.html">
+<meta property="og:title" content="Paper Reading - Large-scale cluster management at Google with Borg">
+<meta property="og:url" content="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/index.html">
 <meta property="og:site_name" content="feilengcui008">
-<meta property="og:description" content="Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。
-0. Abstract
-It achieves high utilization by combining admission control, efficient tas">
-<meta property="og:updated_time" content="2017-03-31T15:58:35.000Z">
+<meta property="og:description" content="0. Abstract
+It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation
+
+最重要的三点：装箱与调度算法，资源的抢占/rec">
+<meta property="og:updated_time" content="2017-04-01T01:21:07.924Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Borg论文简记">
-<meta name="twitter:description" content="Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。
-0. Abstract
-It achieves high utilization by combining admission control, efficient tas">
+<meta name="twitter:title" content="Paper Reading - Large-scale cluster management at Google with Borg">
+<meta name="twitter:description" content="0. Abstract
+It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation
+
+最重要的三点：装箱与调度算法，资源的抢占/rec">
 
   
 
@@ -139,9 +142,9 @@ It achieves high utilization by combining admission control, efficient tas">
 
 
 <div class="content content-post CENTER">
-   <article id="post-Borg论文简记" class="article article-type-post" itemprop="blogPost">
+   <article id="post-Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Borg论文简记</h1>
+    <h1 class="post-title">Paper Reading - Large-scale cluster management at Google with Borg</h1>
 
     <div class="article-meta">
       <span>
@@ -159,7 +162,7 @@ It achieves high utilization by combining admission control, efficient tas">
       
   <span class="article-category">
     <i class="icon-list"></i>
-    <a class="article-category-link" href="/categories/系统/">系统</a>
+    <a class="article-category-link" href="/categories/系统/">系统</a> / <a class="article-category-link" href="/categories/系统/分布式系统/">分布式系统</a>
   </span>
 
 
@@ -176,7 +179,7 @@ It achieves high utilization by combining admission control, efficient tas">
 
       
         <i class="icon-comment"></i> 
-        <span class="ds-thread-count" data-thread-key="post-Borg论文简记"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+        <span class="ds-thread-count" data-thread-key="post-Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg"><i class="fa fa-spinner fa-spin"></i></span> 条评论
       
       
     </div>
@@ -184,8 +187,7 @@ It achieves high utilization by combining admission control, efficient tas">
 
   <div class="article-content">
     
-      <p>Google论文《Large-scale cluster management at Google with Borg》的一些小记，中间结合了自己之前的一些经历和对相关开源系统如Kubernetes等的了解做的一些思考和注解。</p>
-<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
+      <h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
 <p>It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation</p>
 </blockquote>
 <p>最重要的三点：装箱与调度算法，资源的抢占/reclaim/over-commit，资源的隔离。</p>
@@ -357,8 +359,8 @@ It achieves high utilization by combining admission control, efficient tas">
     
   <section class="duoshuo-comments">
     <!-- 多说评论框 start -->
-    <div class="ds-thread" data-thread-key="post-Borg论文简记" 
-      data-title="Borg论文简记" data-url="/2017/03/31/Borg论文简记/index.html"></div>
+    <div class="ds-thread" data-thread-key="post-Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg" 
+      data-title="Paper Reading - Large-scale cluster management at Google with Borg" data-url="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/index.html"></div>
     <!-- 多说评论框 end -->
   </section>
 
