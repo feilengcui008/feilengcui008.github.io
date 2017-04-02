@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-04-01T01:21:07.924Z</updated>
+  <updated>2017-04-01T09:24:35.427Z</updated>
   <id>/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/"/>
     <id>/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/</id>
     <published>2017-03-31T15:05:00.000Z</published>
-    <updated>2017-04-01T01:21:07.924Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
 <p>It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation</p>
 </blockquote>
@@ -126,7 +126,7 @@
     <link href="/2017/03/20/Raft%E7%AE%80%E5%8D%95%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/"/>
     <id>/2017/03/20/Raft简单实现小结/</id>
     <published>2017-03-20T11:02:13.000Z</published>
-    <updated>2017-03-23T10:06:31.381Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。</p>
 <hr>
 <h3 id="Raft_u5B9E_u73B0"><a href="#Raft_u5B9E_u73B0" class="headerlink" title="Raft实现"></a>Raft实现</h3><p>这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。</p>
@@ -242,7 +242,7 @@
     <link href="/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/"/>
     <id>/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/</id>
     <published>2017-03-19T01:15:32.000Z</published>
-    <updated>2017-04-01T02:39:47.144Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<h4 id="0_Abstract"><a href="#0_Abstract" class="headerlink" title="0 Abstract"></a>0 Abstract</h4><blockquote>
 <p>In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered</p>
 </blockquote>
@@ -378,7 +378,7 @@
     <link href="/2017/03/05/Protobuf%E5%92%8CGRPC-%E4%B8%80/"/>
     <id>/2017/03/05/Protobuf和GRPC-一/</id>
     <published>2017-03-05T10:31:34.000Z</published>
-    <updated>2017-03-06T08:03:09.848Z</updated>
+    <updated>2017-04-01T09:24:34.987Z</updated>
     <content type="html"><![CDATA[<p>数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。</p>
 <hr>
 <h3 id="u7B80_u8981_u63CF_u8FF0"><a href="#u7B80_u8981_u63CF_u8FF0" class="headerlink" title="简要描述"></a>简要描述</h3><ul>
@@ -443,7 +443,7 @@
     <link href="/2016/11/30/Runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/"/>
     <id>/2016/11/30/Runc容器生命周期/</id>
     <published>2016-11-30T09:48:20.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>容器的生命周期涉及到内部的程序实现和面向用户的命令行界面，runc内部容器状态转换操作、runc命令的参数定义的操作、docker client定义的容器操作是不同的，比如对于docker client的create来说，<br>语义和runc就完全不同，这一篇文章分析runc的容器生命周期的抽象、内部实现以及状态转换图。理解了runc的容器状态转换再对比理解docker client提供的容器操作命令的语义会更容易些。</p>
 <hr>
 <h4 id="u5BB9_u5668_u751F_u547D_u5468_u671F_u76F8_u5173_u63A5_u53E3"><a href="#u5BB9_u5668_u751F_u547D_u5468_u671F_u76F8_u5173_u63A5_u53E3" class="headerlink" title="容器生命周期相关接口"></a>容器生命周期相关接口</h4><ul>
@@ -535,7 +535,7 @@
     <link href="/2016/10/16/Python%E4%B8%BB%E8%BF%9B%E7%A8%8Bhang%E4%BD%8F%E7%9A%84%E4%B8%A4%E4%B8%AA%E5%8E%9F%E5%9B%A0/"/>
     <id>/2016/10/16/Python主进程hang住的两个原因/</id>
     <published>2016-10-16T09:46:43.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:34.743Z</updated>
     <content type="html"><![CDATA[<p>最近使用Python遇到两个非常不好定位的问题，表现都是Python主进程hang住。最终定位出一个是subprocess模块的问题，一个是threading.Timer线程的问题。</p>
 <hr>
 <h4 id="subprocess_u6A21_u5757_u4E0D_u5F53_u4F7F_u7528_u7684_u95EE_u9898"><a href="#subprocess_u6A21_u5757_u4E0D_u5F53_u4F7F_u7528_u7684_u95EE_u9898" class="headerlink" title="subprocess模块不当使用的问题"></a>subprocess模块不当使用的问题</h4><p>Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认的buffer size(Linux x86_64下实测是64K，这里有个疑问io.DEFAULT_BUFFER_SIZE是8K，而ulimit -a的pipe size为512 * 8 = 4K?)，父进程如果不使用communicate消耗掉子进程write pipe(stdout/stderr)中的数据，直接进入wait，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住。下面是测试代码。</p>
@@ -571,7 +571,7 @@
     <link href="/2016/10/08/Docker/"/>
     <id>/2016/10/08/Docker/</id>
     <published>2016-10-08T09:44:02.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>本文主要介绍Docker的一些基本概念、Docker的源码分析、Docker的一些issue、Docker周边生态等等。</p>
 <hr>
 <h3 id="u57FA_u672C_u6982_u5FF5"><a href="#u57FA_u672C_u6982_u5FF5" class="headerlink" title="基本概念"></a>基本概念</h3><h4 id="Basics"><a href="#Basics" class="headerlink" title="Basics"></a>Basics</h4><p>docker大体包括三大部分，runtime(container)、image(graphdriver)、registry，runtime提供环境的隔离与资源的隔离和限制，image提供layer、image、rootfs的管理、registry负责镜像存储与分发。当然，还有其他一些比如data volume, network等等，总体来说还是分为计算、存储与网络。</p>
@@ -864,7 +864,7 @@
     <link href="/2016/06/18/Linux%E5%86%85%E6%A0%B8-%E6%8A%A2%E5%8D%A0/"/>
     <id>/2016/06/18/Linux内核-抢占/</id>
     <published>2016-06-18T03:02:55.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>主要介绍内核抢占的相关概念和具体实现，以及抢占对内核调度和内核竞态和同步的一些影响。<br>(所用内核版本3.19.3)</p>
 <hr>
 <h4 id="1-__u57FA_u672C_u6982_u5FF5"><a href="#1-__u57FA_u672C_u6982_u5FF5" class="headerlink" title="1. 基本概念"></a>1. 基本概念</h4><ul>
@@ -970,7 +970,7 @@
     <link href="/2016/06/10/Linux%E5%86%85%E6%A0%B8-%E5%AE%B9%E5%99%A8%E4%B9%8Bnamespace/"/>
     <id>/2016/06/10/Linux内核-容器之namespace/</id>
     <published>2016-06-10T11:27:52.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<h3 id="1-__u4ECB_u7ECD"><a href="#1-__u4ECB_u7ECD" class="headerlink" title="1. 介绍"></a>1. 介绍</h3><p>简单玩了下Linux kernel为容器技术提供的基础设施之一namespace(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核). 这东西主要用来做资源的隔离，我感觉本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的东西是:</p>
 <ul>
 <li>clone</li>
@@ -1061,7 +1061,7 @@
     <link href="/2016/06/03/%E6%95%B0%E8%AE%BA%E4%B9%8B%E5%90%8C%E4%BD%99/"/>
     <id>/2016/06/03/数论之同余/</id>
     <published>2016-06-03T14:20:34.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<h3 id="u57FA_u672C_u6027_u8D28"><a href="#u57FA_u672C_u6027_u8D28" class="headerlink" title="基本性质"></a>基本性质</h3><p>后面两个贼有用</p>
 <p>$ a \equiv b \pmod m \iff a = k*m + b $</p>
 <p>$ a \equiv b \pmod m \wedge  c\equiv d \pmod m \implies a+c \equiv b+d \pmod m \wedge  a<em>c\equiv b</em>d\pmod m $</p>
@@ -1102,7 +1102,7 @@
     <link href="/2016/05/29/Redis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     <id>/2016/05/29/Redis源码分析/</id>
     <published>2016-05-29T13:05:05.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>这一篇或者说一个系列用来记录Redis相关的一些源码分析，不定时更新。</p>
 <p>目前已添加的内容：</p>
 <ul>
@@ -1174,7 +1174,7 @@
     <link href="/2016/05/16/Linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/"/>
     <id>/2016/05/16/Linux下的时间/</id>
     <published>2016-05-16T09:03:34.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<h3 id="u65F6_u949F"><a href="#u65F6_u949F" class="headerlink" title="时钟"></a>时钟</h3><ul>
 <li><p>硬件时钟</p>
 <ul>
@@ -1290,7 +1290,7 @@
     <link href="/2016/04/06/Linux%E4%B8%8B%E8%B0%83%E8%AF%95%E4%B8%8E%E5%88%86%E6%9E%90%E5%B7%A5%E5%85%B7%E7%9A%84%E6%80%BB%E7%BB%93/"/>
     <id>/2016/04/06/Linux下调试与分析工具的总结/</id>
     <published>2016-04-06T13:11:35.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>(此文主要用来记录一些调试，性能测试与分析等工具的用法，备忘)</p>
 <h2 id="Linux_u4E0B_u7684_u8FFD_u8E2A_u548C_u6027_u80FD_u7EDF_u8BA1"><a href="#Linux_u4E0B_u7684_u8FFD_u8E2A_u548C_u6027_u80FD_u7EDF_u8BA1" class="headerlink" title="Linux下的追踪和性能统计"></a>Linux下的追踪和性能统计</h2><h3 id="Linux_u5185_u6838_u63D0_u4F9B_u7684_u57FA_u7840_u8BBE_u65BD"><a href="#Linux_u5185_u6838_u63D0_u4F9B_u7684_u57FA_u7840_u8BBE_u65BD" class="headerlink" title="Linux内核提供的基础设施"></a>Linux内核提供的基础设施</h3><ul>
 <li>tarcepoints =&gt; 静态探测点</li>
@@ -1434,7 +1434,7 @@
     <link href="/2016/03/10/Distributed-Systems-%E9%80%89%E4%B8%BB%E4%B8%8E%E5%90%8C%E6%AD%A5/"/>
     <id>/2016/03/10/Distributed-Systems-选主与同步/</id>
     <published>2016-03-10T13:05:15.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:34.743Z</updated>
     <content type="html"><![CDATA[<p>在上一篇文章中讨论了leader选举对于基本Paxos算法在实际工程应用中的必要性，这一篇文章首先结合raft的选举算法谈谈leader选举的实质和常用方法，然后结合raft算法选举后的日志恢复以及《Paxos Made Simple》里lamport勾勒的multi-paxos的日志恢复来详细分析一下选主后要做的两件重要事情以及俩算法在这块的差异。</p>
 <hr>
 <h3 id="1-raft_u7684_u9009_u4E3B_u7B97_u6CD5_u4EE5_u53CA_u9009_u4E3B_u7B97_u6CD5_u7684_u5B9E_u8D28"><a href="#1-raft_u7684_u9009_u4E3B_u7B97_u6CD5_u4EE5_u53CA_u9009_u4E3B_u7B97_u6CD5_u7684_u5B9E_u8D28" class="headerlink" title="1.raft的选主算法以及选主算法的实质"></a>1.raft的选主算法以及选主算法的实质</h3><p>前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。</p>
@@ -1490,7 +1490,7 @@
     <link href="/2016/03/09/Distributed-Systems-leader-based%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE/"/>
     <id>/2016/03/09/Distributed-Systems-leader-based分布式一致性协议/</id>
     <published>2016-03-09T06:19:04.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>上一篇文章推导了基本Paxos算法，并引出了在实际使用中其存在的问题，然后说明了leader-based分布式一致算法的优势。这篇文章分析一下选主的本质，选出一个主对整个算法的影响，以及采用选主会存在的问题以及基本Paxos协议是怎么样保证这些问题不会影响一致性的。</p>
 <h3 id="1-_u4E3A_u4EC0_u4E48_u9009_u4E3B"><a href="#1-_u4E3A_u4EC0_u4E48_u9009_u4E3B" class="headerlink" title="1.为什么选主"></a>1.为什么选主</h3><p>至于为什么选主？个人认为有如下原因：</p>
 <ul>
@@ -1528,7 +1528,7 @@
     <link href="/2016/03/08/Distributed-Systems-%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D%E5%8F%8APaxos%E7%AE%97%E6%B3%95%E7%9A%84%E6%8E%A8%E5%AF%BC/"/>
     <id>/2016/03/08/Distributed-Systems-一致性协议背景介绍及Paxos算法的推导/</id>
     <published>2016-03-08T11:05:46.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>Paxos算法无疑是分布式系统理论中的经典，由于很多论文、博客都没有详细分析算法的背景以及实际中应用会产生的非常多的细节问题，所以导致很难理解，或者说很难完整理解，实现和测试则是更繁杂，不过这也是这个问题有意思的原因吧:-)。读过一些论文，思考过一些问题，希望能把这个问题的背景，以及各种容错分布式一致性算法设计的逻辑和背景记录下来，当然，内容实在太多，最早得追溯到迪杰斯特拉对并发与分布式问题的讨论吧，所以这个系列准备以Paxos算法为核心，介绍其一系列的衍生算法及其相关的问题。当然，很多东西是通过一些论文结合自己的理解去推测作者当时怎么去思考设计优化这些算法的，至于形式化证明的部分就弱化了。整个系列的最大目的是希望能理清分布式共识问题的背景，主要容错分布式一致性协议的设计逻辑以及它们的联系与区别，后面有机会分析下实际工程中的实现比如ZooKeeper/Etcd/Consul等，最后如果有机会自己简单实现一下:-)</p>
 <p>Contents:</p>
 <ul>
@@ -1704,7 +1704,7 @@
     <link href="/2016/03/03/KMP%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/"/>
     <id>/2016/03/03/KMP简单证明/</id>
     <published>2016-03-03T09:21:15.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。</p>
 <h4 id="u6734_u7D20_u7B97_u6CD5"><a href="#u6734_u7D20_u7B97_u6CD5" class="headerlink" title="朴素算法"></a>朴素算法</h4><p>朴素算法比较明了，不再赘述，下面是简单的代码：</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// time : O(n*m), space : O(1)</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">naive</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;text, <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">string</span> &amp;pattern)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">  <span class="comment">// corner case </span></span><br><span class="line">  <span class="keyword">int</span> len1 = text.length();</span><br><span class="line">  <span class="keyword">int</span> len2 = pattern.length();</span><br><span class="line">  <span class="keyword">if</span> (len2 &gt; len1) <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">  <span class="keyword">int</span> end = len1 - len2;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= end; ++i) &#123;</span><br><span class="line">    <span class="keyword">int</span> j;</span><br><span class="line">    <span class="keyword">for</span> (j = <span class="number">0</span>; j &lt; len2; ++j) &#123;</span><br><span class="line">      <span class="keyword">if</span> (text[i + j] != pattern[j]) &#123;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (j == len2) <span class="keyword">return</span> i;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -1757,7 +1757,7 @@
     <link href="/2016/01/22/Distributed-Systems-%E5%86%8D%E8%B0%882PC%E5%92%8C3PC/"/>
     <id>/2016/01/22/Distributed-Systems-再谈2PC和3PC/</id>
     <published>2016-01-22T08:19:44.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:34.743Z</updated>
     <content type="html"><![CDATA[<p>之前的<a href="http://www.threading.cn/threading/2016/01/21/2PC-and-3PC/" target="_blank" rel="external">一篇文章</a>感觉分析得不太完整，所以再记录点东西。</p>
 <h4 id="u6545_u969C_u7EC4_u5408_u60C5_u51B5"><a href="#u6545_u969C_u7EC4_u5408_u60C5_u51B5" class="headerlink" title="故障组合情况"></a>故障组合情况</h4><p>对于多个节点且每个节点有多个可能状态参与的分布式系统来说，假设在有限的某个时间点上发生故障的概率为0，对于coordinator(proposer/master/leader等)，在发送接收的一轮交互中，可能在发送消息前(t &lt; t1)，发送部分消息(t1 &lt; t &lt; t2)，发送所有消息后并且接收消息前(t2 &lt; t &lt; t3)，接收到部分消息(t3 &lt; t &lt; t4)，接收到所有消息后发生故障(t &gt; t4)；对于每个participant(acceptor/follower/slave)来说，在接收发送的一轮交互中，可能在接收消息前(t’ &lt; t1’)，接收到消息且未发送应答(t1’ &lt; t’ &lt; t2’)，发送应答后(t’ &gt; t2’)发生故障。 </p>
 <p>coordinator和participants在不同的时间段发生故障的组合会有不同的能够保持全局事务状态一致的故障发生时行为以及恢复策略，而且可能不存在能保持全局事务状态一致的相应行为以及恢复策略。对于发生故障时的行为，在程序实现上我们必须用上面提到的时间段来分析，而且假定coordinator广播消息这个动作的过程中不会出现故障(这其实是比较合理的，因为即使只发送了部分消息也可以看做是有一部分participants没有收到消息，这两种情况对于最终的系统全局状态是一样的)，这样程序实现上相应能简化不少。而对于故障恢复的策略以及正确性，我们可以从有节点发生故障后最终整个系统可能处于的全局状态来详细分析论证，虽然对于n个参与节点来说，其状态组合指数级增长，但是其中大多数状态可以用全称量词和存在量词描述，因为很多状态对于恢复策略是一样的。下面以2PC和3PC为例来分析，从中可以比较容易地看出2PC存在的问题，以及3PC为什么能够解决这个问题。2PC和3PC的正常流程可以参考相应的资料，这里不赘述。<br><img src="http://img.blog.csdn.net/20160122164323500" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20160122164133621" alt="这里写图片描述"></p>
@@ -1881,7 +1881,7 @@
     <link href="/2016/01/21/Distributed-Systems-2PC-and-3PC/"/>
     <id>/2016/01/21/Distributed-Systems-2PC-and-3PC/</id>
     <published>2016-01-21T10:16:39.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:35.427Z</updated>
     <content type="html"><![CDATA[<p>  这篇文章主要讨论下解决分布式一致性问题的两种算法：两阶段提交(2PC)和三阶段提交(3PC)。之前感觉2PC和3PC的流程挺简单的，但是真正仔细去分析过后，才发现很多的细节。而这些细节对理解Paxos，Raft，Viewstamp Replication，Atomic Broadcast等其他更复杂的一致性算法有很大的作用。所以才在此记录一下这些细节，尤其是从工程实现的角度来思考。</p>
 <p>  具体的术语，像coordinator,participant具体指代什么，不熟悉的可以参考其他讲2PC和3PC的文章。</p>
 <h3 id="1-_u6B63_u5E38_u4EA4_u4E92_u6D41_u7A0B"><a href="#1-_u6B63_u5E38_u4EA4_u4E92_u6D41_u7A0B" class="headerlink" title="1.正常交互流程"></a>1.正常交互流程</h3><p>这里的正常是指coordinator和participant没有挂掉的。交互流程如下所示，比较容易理解。</p>
@@ -1961,7 +1961,7 @@
     <link href="/2015/12/18/Distributed-Systems-Paxos/"/>
     <id>/2015/12/18/Distributed-Systems-Paxos/</id>
     <published>2015-12-18T07:15:09.000Z</published>
-    <updated>2017-02-21T10:04:40.520Z</updated>
+    <updated>2017-04-01T09:24:34.743Z</updated>
     <content type="html"><![CDATA[<p>本文主要提炼了《Paxos Made Simple》中的一些主要观点，然后加上自己的理解，使用通俗的语言尝试做一些解释。</p>
 <ul>
 <li><p>关于Paxos算法背景和一致性相关问题可以参见原论文</p>

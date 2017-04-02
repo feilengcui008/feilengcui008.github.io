@@ -21,7 +21,7 @@
 <meta property="og:url" content="/2015/10/20/Linux内核-文件系统-页高速缓存/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，">
-<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta property="og:updated_time" content="2017-04-01T09:24:34.987Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux内核-文件系统-页高速缓存">
 <meta name="twitter:description" content="Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，">

@@ -36,3 +36,7 @@
 .about_personal_content .content {
   border-left: 0px;
 }
+
+.toolbox .list-toolbox {
+  display: block;
+}

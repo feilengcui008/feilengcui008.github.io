@@ -21,7 +21,7 @@
 <meta property="og:url" content="/2015/10/31/Linux内核-协议栈-从BSD-socket接口层到传输层1/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="本文接上一篇Linux内核协议栈-初始化流程分析，在上一篇中主要分析了了Linux内核协议栈涉及到的关键初始化函数，在这一篇文章中将分析协议栈的BSD socket和到传输层的流程。采取的方式是分析socket相关的主要系统调用。针对不同的系统调用，其到达的协议层深度可能不同，有的基本只到sock层就够了，但是有些可能需要会涉及到比如tcp的具体细节和更底层的细节。本文基本追溯到传输层的开始，再深">
-<meta property="og:updated_time" content="2017-02-21T10:04:40.520Z">
+<meta property="og:updated_time" content="2017-04-01T09:24:34.743Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux内核-协议栈-从BSD socket接口层到传输层1">
 <meta name="twitter:description" content="本文接上一篇Linux内核协议栈-初始化流程分析，在上一篇中主要分析了了Linux内核协议栈涉及到的关键初始化函数，在这一篇文章中将分析协议栈的BSD socket和到传输层的流程。采取的方式是分析socket相关的主要系统调用。针对不同的系统调用，其到达的协议层深度可能不同，有的基本只到sock层就够了，但是有些可能需要会涉及到比如tcp的具体细节和更底层的细节。本文基本追溯到传输层的开始，再深">
