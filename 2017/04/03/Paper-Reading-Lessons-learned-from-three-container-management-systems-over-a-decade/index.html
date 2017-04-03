@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Paper Reading - Lessons learned from three container-management systems over a decade | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Borg,Kubernetes,Omega,分布式资源管理与调度," />
+  
+
+  <meta name="description" content="INTRODUCTION这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。
+
+Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby redu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Paper Reading - Lessons learned from three container-management systems over a decade">
+<meta property="og:url" content="/2017/04/03/Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="INTRODUCTION这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。
+
+Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby redu">
+<meta property="og:updated_time" content="2017-04-03T06:44:35.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Paper Reading - Lessons learned from three container-management systems over a decade">
+<meta name="twitter:description" content="INTRODUCTION这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。
+
+Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby redu">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+
+  
+    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+  
+
+  <!--
+<div class="post-header CENTER">
+   
+  <div class="toolbox">
+    <a class="toolbox-entry" href="/">
+      <span class="toolbox-entry-text">Menu</span>
+      <i class="icon-angle-down"></i>
+      <i class="icon-home"></i>
+    </a>
+    <ul class="list-toolbox">
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Home
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/archives/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Archives
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/categories/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Categories
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/tags/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            Tags
+          </a>
+        </li>
+      
+        <li class="item-toolbox">
+          <a
+            class="ROUND_RECT"
+            href="/about/"
+            rel="noopener noreferrer"
+            target="_self"
+            >
+            About
+          </a>
+        </li>
+      
+    </ul>
+  </div>
+
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#INTRODUCTION"><span class="toc-text">INTRODUCTION</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CONTAINERS"><span class="toc-text">CONTAINERS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#APPLICATION-ORIENTED_INFRASTRUCTURE"><span class="toc-text">APPLICATION-ORIENTED INFRASTRUCTURE</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#Application_environment"><span class="toc-text">Application environment</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Containers_as_the_unit_of_management"><span class="toc-text">Containers as the unit of management</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Orchestration_is_the_beginning_2C_not_the_end"><span class="toc-text">Orchestration is the beginning, not the end</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#THINGS_TO_AVOID"><span class="toc-text">THINGS TO AVOID</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SOME_OPEN_2C_HARD_PROBLEMS"><span class="toc-text">SOME OPEN, HARD PROBLEMS</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Paper Reading - Lessons learned from three container-management systems over a decade</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2017.04.03</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/分布式资源管理与调度/">分布式资源管理与调度</a> / <a class="article-category-link" href="/categories/分布式资源管理与调度/系统/">系统</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h3 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h3><p><em>这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。</em></p>
+<blockquote>
+<p>Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby reducing costs</p>
+</blockquote>
+<p>最基本的功能，隔离混部提高资源利用率。</p>
+<blockquote>
+<p>These systems provided mechanisms for configuring and updating jobs; predicting resource requirements; dynamically pushing configuration files to running jobs; service discovery and load balancing; auto-scaling; machine- lifecycle management; quota management; and much more</p>
+</blockquote>
+<p>基本功能完善后，建立和完善周边生态。服务发现，负载均衡，配置管理，自动扩缩容，机器生命周期管理，用户资源配额管理，监控，日志等等，整个生态实际上是非常庞大的。</p>
+<blockquote>
+<p>Omega stored the state of the cluster in a centralized Paxos-based transaction- oriented store that was accessed by the different parts of the cluster control plane (such as schedulers), using optimistic concurrency control to handle the occasional conflicts.</p>
+</blockquote>
+<p>基本功能和生态逐渐完善后，拆分调度器，便于实验新的调度算法，在调度装箱算法方面做得更细，进一步优化资源利用率。</p>
+<blockquote>
+<p>Kubernetes was developed with a stronger focus on the experience of developers writing applications that run in a cluster: its main design goal is to make it easy to deploy and manage complex distributed systems, while still benefiting from the improved utilization</p>
+</blockquote>
+<p>内部部分非核心经验提出来开源，提高影响力，建立外部生态。从目前来看，在调度和资源的精细化利用方面，k8s还比较初步，Google应该显然不会很快或者说不会把这些核心的部分开源出来。</p>
+<hr>
+<h3 id="CONTAINERS"><a href="#CONTAINERS" class="headerlink" title="CONTAINERS"></a>CONTAINERS</h3><p><em>容器技术的优势以及其还存在的问题</em></p>
+<blockquote>
+<p>Borg uses containers to co- locate batch jobs with latency-sensitive, user-facing jobs on the same physical machines. The user-facing jobs reserve more resources than they usually need—allowing them to handle load spikes and fail-over—and these mostly-unused resources can be reclaimed to run batch jobs</p>
+</blockquote>
+<p>在离线混部，资源reclaim是提升资源利用率的主要途径，尤其对于中小型公司来说，精细化地研究优化调度算法意义不是太大。</p>
+<blockquote>
+<p>The isolation is not perfect, though: containers cannot prevent interference in resources that the operating-system kernel doesn’t manage, such as level 3 processor caches and memory bandwidth</p>
+</blockquote>
+<p>单机资源隔离方面，新的隔离资源类型以及隔离的性能(避免过多的相互影响)还有待更加完善。</p>
+<blockquote>
+<p>it also includes an image—the files that make up the application that runs inside the container</p>
+</blockquote>
+<p>除了基本的隔离机制，还得有一套部署规范，其中包规范起到核心作用。</p>
+<hr>
+<h3 id="APPLICATION-ORIENTED_INFRASTRUCTURE"><a href="#APPLICATION-ORIENTED_INFRASTRUCTURE" class="headerlink" title="APPLICATION-ORIENTED INFRASTRUCTURE"></a>APPLICATION-ORIENTED INFRASTRUCTURE</h3><p><em>除了数据中心的资源利用率提升以外，基于容器技术的数据中心操作系统在应用开发/运维方面带来的变化</em></p>
+<blockquote>
+<p>Containerization transforms the data center from being machine-oriented to being application-oriented</p>
+</blockquote>
+<p>一个基于容器的数据中心操作系统除了提高资源利用率的基本功能外，还可以作为PaaS/DevOps/CI等面向应用的平台的基础，简化整个研发、上线部署、运维流程。中小型公司应该更看重这一点的价值，因为其规模不大，精细化地去提高资源利用率意义不大，对于大公司来说，两者都有较大的意义。</p>
+<h4 id="Application_environment"><a href="#Application_environment" class="headerlink" title="Application environment"></a>Application environment</h4><blockquote>
+<p>applications share a so-called base image that is installed once on the machine rather than being packaged in each container<br>More modern container image formats such as Docker and ACI harden this abstraction further and get closer to the hermetic ideal by eliminating implicit host OS dependencies and requiring an explicit user command to share image data between containers</p>
+</blockquote>
+<p>对于应用部署环境的依赖来说，这两种方式各有好处，前者不用管理本地镜像缓存等问题，但是无法做到应用环境的近完整隔离，后者提供更大的使用友好性，但是会引入一系列镜像文件存储、传输、缓存等问题。较好的方式应该是结合两者的优势，提供基础镜像概念的同时，规范用户对镜像层的使用规范，且做好镜像的管理、传输优化等。</p>
+<h4 id="Containers_as_the_unit_of_management"><a href="#Containers_as_the_unit_of_management" class="headerlink" title="Containers as the unit of management"></a>Containers as the unit of management</h4><blockquote>
+<p>Building management APIs around containers rather than machines shifts the “primary key” of the data center from machine to application</p>
+</blockquote>
+<p>面向应用管理是提供了很大的透明性，但是往往这个透明性让调试变得很蛋疼，所以做好容器的监控，日志，ui等周边生态很重要。</p>
+<h4 id="Orchestration_is_the_beginning_2C_not_the_end"><a href="#Orchestration_is_the_beginning_2C_not_the_end" class="headerlink" title="Orchestration is the beginning, not the end"></a>Orchestration is the beginning, not the end</h4><blockquote>
+<p>Many different systems have been built in, on, and around Borg to improve upon the basic container-management services that Borg provided.</p>
+</blockquote>
+<p>周边的生态很重要，服务发现，负载均衡，滚动升级，自动扩缩容，日志管理，监控等等。</p>
+<hr>
+<h3 id="THINGS_TO_AVOID"><a href="#THINGS_TO_AVOID" class="headerlink" title="THINGS TO AVOID"></a>THINGS TO AVOID</h3><p><em>一些需要避免的设计缺陷</em></p>
+<blockquote>
+<p>Don’t make the container system manage port numbers</p>
+</blockquote>
+<p>早期应该是没有考虑太多网络隔离相关的事情，端口作为资源来管理相对简单。</p>
+<blockquote>
+<p>Don’t just number containers: give them labels</p>
+</blockquote>
+<p>打标签，由于每个服务的多样属性，标签极大地方便了服务的管理。</p>
+<blockquote>
+<p>Be careful with ownership<br>Don’t expose raw state</p>
+</blockquote>
+<p>这两点体会还不是太深。。。</p>
+<hr>
+<h3 id="SOME_OPEN_2C_HARD_PROBLEMS"><a href="#SOME_OPEN_2C_HARD_PROBLEMS" class="headerlink" title="SOME OPEN, HARD PROBLEMS"></a>SOME OPEN, HARD PROBLEMS</h3><p><em>整个生态中还待解决的问题</em></p>
+<blockquote>
+<p>managing configurations<br>Standing up a service typically also means standing up a series of related services</p>
+</blockquote>
+<p>应用的配置管理，多服务的管理，比如服务之间的部署顺序，自动化一棵服务依赖树的部署和管理。</p>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Home
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Archives
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/categories/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Categories
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/tags/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Tags
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade" 
+      data-title="Paper Reading - Lessons learned from three container-management systems over a decade" data-url="/2017/04/03/Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

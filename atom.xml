@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-04-01T09:24:35.427Z</updated>
+  <updated>2017-04-03T06:44:35.000Z</updated>
   <id>/</id>
   
   <author>
@@ -15,15 +15,110 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title><![CDATA[Paper Reading - Lessons learned from three container-management systems over a decade]]></title>
+    <link href="/2017/04/03/Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade/"/>
+    <id>/2017/04/03/Paper-Reading-Lessons-learned-from-three-container-management-systems-over-a-decade/</id>
+    <published>2017-04-03T06:05:53.000Z</published>
+    <updated>2017-04-03T06:44:35.000Z</updated>
+    <content type="html"><![CDATA[<h3 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h3><p><em>这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。</em></p>
+<blockquote>
+<p>Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby reducing costs</p>
+</blockquote>
+<p>最基本的功能，隔离混部提高资源利用率。</p>
+<blockquote>
+<p>These systems provided mechanisms for configuring and updating jobs; predicting resource requirements; dynamically pushing configuration files to running jobs; service discovery and load balancing; auto-scaling; machine- lifecycle management; quota management; and much more</p>
+</blockquote>
+<p>基本功能完善后，建立和完善周边生态。服务发现，负载均衡，配置管理，自动扩缩容，机器生命周期管理，用户资源配额管理，监控，日志等等，整个生态实际上是非常庞大的。</p>
+<blockquote>
+<p>Omega stored the state of the cluster in a centralized Paxos-based transaction- oriented store that was accessed by the different parts of the cluster control plane (such as schedulers), using optimistic concurrency control to handle the occasional conflicts.</p>
+</blockquote>
+<p>基本功能和生态逐渐完善后，拆分调度器，便于实验新的调度算法，在调度装箱算法方面做得更细，进一步优化资源利用率。</p>
+<blockquote>
+<p>Kubernetes was developed with a stronger focus on the experience of developers writing applications that run in a cluster: its main design goal is to make it easy to deploy and manage complex distributed systems, while still benefiting from the improved utilization</p>
+</blockquote>
+<p>内部部分非核心经验提出来开源，提高影响力，建立外部生态。从目前来看，在调度和资源的精细化利用方面，k8s还比较初步，Google应该显然不会很快或者说不会把这些核心的部分开源出来。</p>
+<hr>
+<h3 id="CONTAINERS"><a href="#CONTAINERS" class="headerlink" title="CONTAINERS"></a>CONTAINERS</h3><p><em>容器技术的优势以及其还存在的问题</em></p>
+<blockquote>
+<p>Borg uses containers to co- locate batch jobs with latency-sensitive, user-facing jobs on the same physical machines. The user-facing jobs reserve more resources than they usually need—allowing them to handle load spikes and fail-over—and these mostly-unused resources can be reclaimed to run batch jobs</p>
+</blockquote>
+<p>在离线混部，资源reclaim是提升资源利用率的主要途径，尤其对于中小型公司来说，精细化地研究优化调度算法意义不是太大。</p>
+<blockquote>
+<p>The isolation is not perfect, though: containers cannot prevent interference in resources that the operating-system kernel doesn’t manage, such as level 3 processor caches and memory bandwidth</p>
+</blockquote>
+<p>单机资源隔离方面，新的隔离资源类型以及隔离的性能(避免过多的相互影响)还有待更加完善。</p>
+<blockquote>
+<p>it also includes an image—the files that make up the application that runs inside the container</p>
+</blockquote>
+<p>除了基本的隔离机制，还得有一套部署规范，其中包规范起到核心作用。</p>
+<hr>
+<h3 id="APPLICATION-ORIENTED_INFRASTRUCTURE"><a href="#APPLICATION-ORIENTED_INFRASTRUCTURE" class="headerlink" title="APPLICATION-ORIENTED INFRASTRUCTURE"></a>APPLICATION-ORIENTED INFRASTRUCTURE</h3><p><em>除了数据中心的资源利用率提升以外，基于容器技术的数据中心操作系统在应用开发/运维方面带来的变化</em></p>
+<blockquote>
+<p>Containerization transforms the data center from being machine-oriented to being application-oriented</p>
+</blockquote>
+<p>一个基于容器的数据中心操作系统除了提高资源利用率的基本功能外，还可以作为PaaS/DevOps/CI等面向应用的平台的基础，简化整个研发、上线部署、运维流程。中小型公司应该更看重这一点的价值，因为其规模不大，精细化地去提高资源利用率意义不大，对于大公司来说，两者都有较大的意义。</p>
+<h4 id="Application_environment"><a href="#Application_environment" class="headerlink" title="Application environment"></a>Application environment</h4><blockquote>
+<p>applications share a so-called base image that is installed once on the machine rather than being packaged in each container<br>More modern container image formats such as Docker and ACI harden this abstraction further and get closer to the hermetic ideal by eliminating implicit host OS dependencies and requiring an explicit user command to share image data between containers</p>
+</blockquote>
+<p>对于应用部署环境的依赖来说，这两种方式各有好处，前者不用管理本地镜像缓存等问题，但是无法做到应用环境的近完整隔离，后者提供更大的使用友好性，但是会引入一系列镜像文件存储、传输、缓存等问题。较好的方式应该是结合两者的优势，提供基础镜像概念的同时，规范用户对镜像层的使用规范，且做好镜像的管理、传输优化等。</p>
+<h4 id="Containers_as_the_unit_of_management"><a href="#Containers_as_the_unit_of_management" class="headerlink" title="Containers as the unit of management"></a>Containers as the unit of management</h4><blockquote>
+<p>Building management APIs around containers rather than machines shifts the “primary key” of the data center from machine to application</p>
+</blockquote>
+<p>面向应用管理是提供了很大的透明性，但是往往这个透明性让调试变得很蛋疼，所以做好容器的监控，日志，ui等周边生态很重要。</p>
+<h4 id="Orchestration_is_the_beginning_2C_not_the_end"><a href="#Orchestration_is_the_beginning_2C_not_the_end" class="headerlink" title="Orchestration is the beginning, not the end"></a>Orchestration is the beginning, not the end</h4><blockquote>
+<p>Many different systems have been built in, on, and around Borg to improve upon the basic container-management services that Borg provided.</p>
+</blockquote>
+<p>周边的生态很重要，服务发现，负载均衡，滚动升级，自动扩缩容，日志管理，监控等等。</p>
+<hr>
+<h3 id="THINGS_TO_AVOID"><a href="#THINGS_TO_AVOID" class="headerlink" title="THINGS TO AVOID"></a>THINGS TO AVOID</h3><p><em>一些需要避免的设计缺陷</em></p>
+<blockquote>
+<p>Don’t make the container system manage port numbers</p>
+</blockquote>
+<p>早期应该是没有考虑太多网络隔离相关的事情，端口作为资源来管理相对简单。</p>
+<blockquote>
+<p>Don’t just number containers: give them labels</p>
+</blockquote>
+<p>打标签，由于每个服务的多样属性，标签极大地方便了服务的管理。</p>
+<blockquote>
+<p>Be careful with ownership<br>Don’t expose raw state</p>
+</blockquote>
+<p>这两点体会还不是太深。。。</p>
+<hr>
+<h3 id="SOME_OPEN_2C_HARD_PROBLEMS"><a href="#SOME_OPEN_2C_HARD_PROBLEMS" class="headerlink" title="SOME OPEN, HARD PROBLEMS"></a>SOME OPEN, HARD PROBLEMS</h3><p><em>整个生态中还待解决的问题</em></p>
+<blockquote>
+<p>managing configurations<br>Standing up a service typically also means standing up a series of related services</p>
+</blockquote>
+<p>应用的配置管理，多服务的管理，比如服务之间的部署顺序，自动化一棵服务依赖树的部署和管理。</p>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h3 id="INTRODUCTION"><a href="#INTRODUCTION" class="headerlink" title="INTRODUCTION"></a>INTRODUCTION</h3><p><em>这一部分精要地描述了Google的三大资源管理与调度]]>
+    </summary>
+    
+      <category term="Borg" scheme="/tags/Borg/"/>
+    
+      <category term="Kubernetes" scheme="/tags/Kubernetes/"/>
+    
+      <category term="Omega" scheme="/tags/Omega/"/>
+    
+      <category term="分布式资源管理与调度" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6/"/>
+    
+      <category term="分布式资源管理与调度" scheme="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6/"/>
+    
+      <category term="系统" scheme="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86%E4%B8%8E%E8%B0%83%E5%BA%A6/%E7%B3%BB%E7%BB%9F/"/>
+    
+  </entry>
+  
+  <entry>
     <title><![CDATA[Paper Reading - Large-scale cluster management at Google with Borg]]></title>
     <link href="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/"/>
     <id>/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/</id>
     <published>2017-03-31T15:05:00.000Z</published>
-    <updated>2017-04-01T09:24:35.427Z</updated>
+    <updated>2017-04-03T06:42:59.000Z</updated>
     <content type="html"><![CDATA[<h4 id="0-_Abstract"><a href="#0-_Abstract" class="headerlink" title="0. Abstract"></a>0. Abstract</h4><blockquote>
 <p>It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation</p>
 </blockquote>
 <p>最重要的三点：装箱与调度算法，资源的抢占/reclaim/over-commit，资源的隔离。</p>
+<hr>
 <h4 id="2-1_The_workload"><a href="#2-1_The_workload" class="headerlink" title="2.1 The workload"></a>2.1 The workload</h4><blockquote>
 <p>we classify higher-priority Borg jobs as “production” (prod) ones, and the rest as “non-production” (non-prod). Most long-running server jobs are prod; most batch jobs are non-prod……The discrepancies between allocation and usage will prove important in…</p>
 </blockquote>
@@ -56,6 +151,7 @@
 <p>To enable this, Borg creates a stable “Borg name service” (BNS) name for each task that includes the cell name, job name, and task number…</p>
 </blockquote>
 <p>服务发现，创建Service或者Batch Job的task实例时，注册task的唯一标识与对应ip和端口。</p>
+<hr>
 <h4 id="3-2_Scheduling"><a href="#3-2_Scheduling" class="headerlink" title="3.2 Scheduling"></a>3.2 Scheduling</h4><blockquote>
 <p>The schedul- ing algorithm has two parts: feasibility checking, to find ma- chines on which the task could run, and scoring, which picks one of the feasible machines…</p>
 </blockquote>
@@ -72,6 +168,7 @@
 <p>If the machine selected by the scoring phase doesn’t have enough available resources to fit the newtask, Borg preempts (kills) lower-priority tasks, from lowest to highest priority, until it does.We add the preempted tasks to the scheduler’s pending queue, rather than migrate or hibernate them…</p>
 </blockquote>
 <p>在调度时，高优先级的Job是可以看到低优先级Job的资源的，实际分配下发任务时，可能需要抢占低优先级Job的资源，被kill掉的低优先级的task会重新调度。</p>
+<hr>
 <h4 id="5-5_Resource_reclamation"><a href="#5-5_Resource_reclamation" class="headerlink" title="5.5 Resource reclamation"></a>5.5 Resource reclamation</h4><blockquote>
 <p>This whole pro- cess is called resource reclamation. The estimate is called the task’s reservation, and is computed by the Borgmas- ter every few seconds, using fine-grained usage (resource- consumption) information captured by the Borglet. The ini- tial reservation is set equal to the resource request (the limit); after 300 s, to allow for startup transients, it decays slowly towards the actual usage plus a safety margin. The reserva- tion is rapidly increased if the usage exceeds it…</p>
 </blockquote>
@@ -80,6 +177,7 @@
 <p>for non-prod tasks, it uses the reservations of existing tasks so the new tasks can be scheduled into reclaimed resources</p>
 </blockquote>
 <p>在调度的时候，non-prod优先级的Job是可以看到可以reclaimed的资源的，也就是，单机除去每个task实际请求的limit资源量，加上每个task被reclaimed的资源量，而每个task可以被reclaim的资源量计算方法是：limit - (一段时间内task实际使用的量+安全边界宽度)。显然，prod级别的Job在调度的时候必须使用limit来计算资源要求，不能用reclaim的资源。除了基本的高优先级Job抢占低优先级Job的资源，一个提高资源利用率的重要技术是资源的超发，prod级别的预留资源和实际使用的资源的差值可以用来跑低优先级的任务，best-effort的任务，对于在线Job来说不能被抢占，对于离线Job来说，只要整机的资源足够，且满足所有在线的Job后任然足够，则不会被抢占，对于best-effort来说，其看到的资源量实际上比一个离线的Job更多，可以被调度到一台可能资源被预留了百分之百的机器，使用此机器的reclaimed的资源，一旦prod需要重新使用这部分资源，best-effort的Job会被杀掉，所以best-effort的可用性较低。但是通过这种方式，大大提高了机器资源的利用率。</p>
+<hr>
 <h4 id="6-1_Security_isolation"><a href="#6-1_Security_isolation" class="headerlink" title="6.1 Security isolation"></a>6.1 Security isolation</h4><blockquote>
 <p>VMs and security sandboxing techniques are used to run external software by Google’s AppEngine (GAE) [38] and Google Compute Engine (GCE).We run each hostedVMin a KVM process [54] that runs as a Borg task…</p>
 </blockquote>
@@ -92,6 +190,7 @@
 <p>A second split is between compressible resources (e.g.,CPU cycles, disk I/O bandwidth) that are rate-based and can be reclaimed from a task by decreasing its quality of service without killing it; and non-compressible resources (e.g., memory, disk space) which generally cannot be re- claimed without killing the task. If a machine runs out of non-compressible resources, the Borglet immediately termi- nates tasks, from lowest to highest priority, until the remain- ing reservations can be met. If the machine runs out of com- pressible resources, the Borglet throttles usage (favoring LS tasks) so that short load spikes can be handled without killing any tasks. If things do not improve, Borgmaster will remove one or more tasks from the machine…</p>
 </blockquote>
 <p>这部分实际上是单机资源的精细化控制，如何尽量保证task的存活率的同时，减小资源隔离性能的相互影响，如何根据当前机器上service，batch job，best effort的任务消耗的资源量，来对将来可能需要消耗的资源量做预估和微调。比如，如果service对可压缩资源比如cpu的需求量增加，那么可以throttle其他低优先级的任务一段时间比如几分钟，而不直接杀死低优先级任务，因为可能只是短暂的流量尖峰。另一个是，对于可压缩资源，task可以适当消耗超过limit的部分。这一块也是挺精细复杂的。</p>
+<hr>
 <h4 id="u8D44_u6E90_u5229_u7528_u7387_u5C0F_u7ED3"><a href="#u8D44_u6E90_u5229_u7528_u7387_u5C0F_u7ED3" class="headerlink" title="资源利用率小结"></a>资源利用率小结</h4><ul>
 <li>提高资源利用率的一些核心思路：<ul>
 <li>在离线混部，混部完肯定能大幅提高资源利用率</li>
@@ -242,11 +341,12 @@
     <link href="/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/"/>
     <id>/2017/03/19/Paper-Reading-In-Search-of-an-Understandable-Consensus-Algorithm-Raft/</id>
     <published>2017-03-19T01:15:32.000Z</published>
-    <updated>2017-04-01T09:24:35.427Z</updated>
+    <updated>2017-04-03T06:43:59.000Z</updated>
     <content type="html"><![CDATA[<h4 id="0_Abstract"><a href="#0_Abstract" class="headerlink" title="0 Abstract"></a>0 Abstract</h4><blockquote>
 <p>In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered</p>
 </blockquote>
 <p>Raft强化Leader的作用，明确划分了协议各个阶段(leader election, log replication)的边界，并且让leader election中的一部分重要内容-新leader的状态恢复变得很直观简单，并且和普通的日志复制请求与心跳请求整合到同一个RPC。这在后面的分析会看到。</p>
+<hr>
 <h4 id="1_Introduction"><a href="#1_Introduction" class="headerlink" title="1 Introduction"></a>1 Introduction</h4><blockquote>
 <p>Strong leader: Raft uses a stronger form of leader- ship than other consensus algorithms. For example, log entries only flow fromthe leader to other servers. This simplifies themanagement of the replicated log and makes Raft easier to understand</p>
 </blockquote>
@@ -259,15 +359,18 @@
 <p>Membership changes: Raft’s mechanism for changing the set of servers in the cluster uses a new joint consensus approach where the majorities of two different configurations overlap during transi-tions…</p>
 </blockquote>
 <p>成员组变更使用joint-consensus，也是两阶段形式。这里通过限制每次变更的server数量到一个，貌似可以做一些简化(具体参考下<a href="https://coreos.com/etcd/docs/latest/op-guide/runtime-reconf-design.html" target="_blank" rel="external">etcd的设计和实现</a>)</p>
+<hr>
 <h4 id="2_Replicated_state_machines"><a href="#2_Replicated_state_machines" class="headerlink" title="2 Replicated state machines"></a>2 Replicated state machines</h4><blockquote>
 <p>Replicated state machines are typically implemented using a replicated log, as shown in Figure 1. Each server stores a log containing a series of commands, which its state machine executes in order…</p>
 <p>Keeping the replicated log consistent is the job of the consensus algorithm.</p>
 </blockquote>
 <p>一致性协议的通常用法是作为复制状态机的日志复制模块，日志基本上是状态机一致性和持久性的基石，在计算机的系统领域有着及其重要的作用，可参考这篇很棒的文章-<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying" target="_blank" rel="external">The Log: What every software engineer should know about real-time data’s unifying abstraction</a></p>
+<hr>
 <h4 id="3_Whats_u2019s_wrong_with_Paxos_3F"><a href="#3_Whats_u2019s_wrong_with_Paxos_3F" class="headerlink" title="3 Whats’s wrong with Paxos?"></a>3 Whats’s wrong with Paxos?</h4><blockquote>
 <p>Paxos’ opaqueness derives from its choice of the single-decree subset as its foundation. Single-decree Paxos is dense and subtle … The composition rules for multi- Paxos add significant additional complexity and subtlety</p>
 </blockquote>
 <p>Basic Paxos本身面向并发决议的场景，多个参与者可以同时提出决议，且Basic Paxos解决的是对单个值达成决议，实际应用中往往需要对多个值达成决议，就需要组合多轮Basic Paxos，而基于Basic Paxos的Multi-Paxos并没有比较好地在论文中描述如何组合多轮Basic Paxos，实现起来有很多细节问题。但是，面向单个值的设计也是Basic Paxos和Multi-Paxos的优势，对于每条日志可以单独提交，而不用像raft需要等待前面所有日志提交，这在后面Raft的详细描述中可看到。</p>
+<hr>
 <h4 id="4_Designing_for_understandability"><a href="#4_Designing_for_understandability" class="headerlink" title="4 Designing for understandability"></a>4 Designing for understandability</h4><blockquote>
 <p>in Raft we separated leader election, log replication, safety, andmembership changes.</p>
 </blockquote>
@@ -276,6 +379,7 @@
 <p>logs are not allowed to have holes, and Raft limits the ways in which logs can become inconsistent with each other.</p>
 </blockquote>
 <p>Raft不允许日志有空洞，这大大简化了其leader election后状态恢复的过程，但是同时也限制了其日志只能顺序提交。</p>
+<hr>
 <h4 id="5-1_Raft_basics"><a href="#5-1_Raft_basics" class="headerlink" title="5.1 Raft basics"></a>5.1 Raft basics</h4><blockquote>
 <p>At any given time each server is in one of three states: leader, follower, or candidate</p>
 </blockquote>
@@ -320,6 +424,7 @@
 <p>broadcastTime≪electionTimeout≪MTBF</p>
 </blockquote>
 <p>尤其注意RPC请求的时间一定要远小于election timeout，否则会很久选不出主。</p>
+<hr>
 <h4 id="6_Cluster_membership_changes"><a href="#6_Cluster_membership_changes" class="headerlink" title="6 Cluster membership changes"></a>6 Cluster membership changes</h4><blockquote>
 <p>The leader first creates the Cold,new configuration entry in its log and commits it to Cold,new (a majority of Cold and a majority of Cnew). Then it creates the Cnew entry and commits it to a majority of Cnew. There is no point in time in which Cold and Cnew can both make decisions independently</p>
 </blockquote>
@@ -332,6 +437,7 @@
 <p>if a server receives a RequestVote RPC within the minimum election timeout of hearing from a cur- rent leader, it does not update its term or grant its vote</p>
 </blockquote>
 <p>leader lease，表明leader很可能还未过期，此时先不投票。</p>
+<hr>
 <h4 id="7_Log_compaction"><a href="#7_Log_compaction" class="headerlink" title="7 Log compaction"></a>7 Log compaction</h4><blockquote>
 <p>Raft also includes a small amount of metadata in the snapshot: the last included index is the index of the last entry in the log that the snapshot replaces (the last en- try the state machine had applied), and the last included term is the term of this entry. These are preserved to sup- port the AppendEntries consistency check for the first log entry following the snapshot, since that entry needs a pre- vious log index and term. To enable cluster membership changes (Section 6), the snapshot also includes the latest configuration in the log as of last included index</p>
 </blockquote>
@@ -340,6 +446,7 @@
 <p>Although servers normally take snapshots indepen-dently, the leader must occasionally send snapshots to followers that lag behind. This happens when the leader has already discarded the next log entry that it needs to send to a follower</p>
 </blockquote>
 <p>leader需要发送状态机的snapshot数据给follower，不能靠follower自身的日志，因为有可能leader的日志还没完全复制到某个follower，此时leader发生了snapshot，把之前的log entry都丢掉了。</p>
+<hr>
 <h4 id="8_Client_interaction"><a href="#8_Client_interaction" class="headerlink" title="8 Client interaction"></a>8 Client interaction</h4><blockquote>
 <p>The solution is for clients to assign unique serial numbers to every command</p>
 </blockquote>
@@ -349,6 +456,7 @@
 <p>Second, a leadermust checkwhether it has been deposed before processing a read-only request. Raft handles this by having the leader exchange heartbeat messages with a majority of the cluster before responding to read-only requests. Alternatively, the leader could rely on the heartbeat mechanism to provide a form of lease.</p>
 </blockquote>
 <p>如何保证读请求读到最新的数据: (1) 保证leader上的状态机的数据最新，每次选主后主动复制一条nop日志，提交之前term的所有日志，让状态机保持最新；(2) leader响应的时候保证自己是最新的leader，两个办法，一个是响应前发一条消息，如果得到多数派应答，则说明是最新，第二种是leader lease，leader如果在某个lease时间段内没有收到多数派的心跳回复就自动变为follower，每个leader刚选出时，等待lease的时间才开始处理请求。</p>
+<hr>
 <h4 id="u5C0F_u7ED3"><a href="#u5C0F_u7ED3" class="headerlink" title="小结"></a>小结</h4><p>保证协议safety性质的前提下，通过增加以下三个条件来简化Leader恢复或者说View Change过程中的状态恢复，保证日志从Leader上单向流动到Follower(而这个过程又可以合并到AppendEntries日志复制的逻辑中，即consistency check)，这个过程往往是关键和最复杂的步骤。</p>
 <ul>
 <li>选主的时候满足发请求的节点和被请求的节点日志至少一样新，保证选主成功后Leader上的日志最新</li>
@@ -1949,150 +2057,6 @@
       <category term="2PC" scheme="/tags/2PC/"/>
     
       <category term="3PC" scheme="/tags/3PC/"/>
-    
-      <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
-    
-      <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Distributed Systems-Paxos]]></title>
-    <link href="/2015/12/18/Distributed-Systems-Paxos/"/>
-    <id>/2015/12/18/Distributed-Systems-Paxos/</id>
-    <published>2015-12-18T07:15:09.000Z</published>
-    <updated>2017-04-01T09:24:34.743Z</updated>
-    <content type="html"><![CDATA[<p>本文主要提炼了《Paxos Made Simple》中的一些主要观点，然后加上自己的理解，使用通俗的语言尝试做一些解释。</p>
-<ul>
-<li><p>关于Paxos算法背景和一致性相关问题可以参见原论文</p>
-</li>
-<li><p>算法涉及的主要对象</p>
-<ul>
-<li>action 对一条记录(某个变量)的一次操作(这一点只是本人便于后面理解加上的)<ul>
-<li>这里选用操作这个词，而不是值，因为一个在对某个变量达成某个值的共识前可能已经经过多个更新操作，所以为了区别，使用操作作为每次proposal的对象，而操作的值代表具体的修改动作，而且这也算是状态机复制(SMR)的一个基本组成单元，个人感觉更易于理解。比如action(log_id, log_content)，log_id全局标识了此action的唯一性，log_content通常是针对某条记录的修改，可看做action的值。       </li>
-</ul>
-</li>
-<li>proposer <ul>
-<li>发起proposal的机器，注意在Paxos算法中允许多台机器同时发起proposal，并且有可能由于并发获取”需要达成一致的下一操作(action)”，从而使得不同的proposal针对同一个”需要达成一致的下一操作”达成共识，但是算法保证了其达成共识的action的值相同。</li>
-</ul>
-</li>
-<li>acceptor <ul>
-<li>接受来自proposer的proposal，并根据对于proposer的prepare和accept消息做出响应。</li>
-</ul>
-</li>
-<li>learner <ul>
-<li>从错误中恢复的机器，需要重新学习出错之前最后一次accpet的proposal id之后的所有proposal</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>Paxos instance </p>
-<ul>
-<li>针对某个”需要达成一致的操作(action)”运行一次Paxos算法的完整过程。</li>
-</ul>
-</li>
-<li><p>算法推导逻辑</p>
-<ul>
-<li>P0. To ensure data integrity under fault tolerence, a proposal is succeeded only when more than half machines accepted the proposal. </li>
-<li>notice: P1[a] stands for requirement and algorithm for acceptors; P2[abc] stands for requirement and algorithm for proposer.</li>
-<li>P1. An acceptor must accept the first proposal that it receives<br>  =&gt; problem : maybe two proposal are proposed at the same time and two less-than-half machine quorums receive separately these two different proposals, then these two proposals can not be succeeded.<br>  =&gt; so we must allow each acceptor to receive multiple proposals for the same value<br>  =&gt; so we must give each proposal a global unique and increasing id  </li>
-<li>P1a. An acceptor can accept a proposal numbered n iff it has not responed to a prepare request having a number greater than n<br>  =&gt; P1a -&gt; P1 because this can ensure acceptor do not receive the before proposals which arrive later<br>  =&gt; so we ignore these proposal whose id  is &lt;= accepted and prepared id of acceptors  </li>
-<li>P2. If a proposal with value v is chosen, then every higher-numbered proposal that is chosen has value v<br>  =&gt; this is because we must ensure there is only a specific value chosen for a specific paxos instance which may contains multiple proposals </li>
-<li>P2a. if a proposal with value v is chosen, then every higher-numbered proposal accepted by any acceptor has value v<br>  =&gt; notice: P2a -&gt; P2 </li>
-<li>P2b. if a proposal with value v is chosen, then every higher-numbered proposal issued by any proposer has value v<br>  =&gt; notice: P2b -&gt; P2a -&gt; P2 </li>
-<li><p>P2c. for any v and n, if a proposal with value v and number n is issued, then there is a set S consisting of a majority of acceptors such that either</p>
-<ul>
-<li>(a) no acceptor in S has accepted any proposal numbered less than n</li>
-<li>(b) v is set to the value of the highest-numbered proposal among all proposals numbered less than n and accepted by the acceptors in S<br>=&gt; notice: P2c -&gt; P2b -&gt; P2a -&gt; P2<br>=&gt; this is the specific algorithm for proposer in prepare phase</li>
-</ul>
-</li>
-<li><p>总结</p>
-<ul>
-<li>根据上面的推导，核心的就两点，P1a和P2c，P1a规定了acceptor的行为，P2c规定了proposer的行为，由于P2c的需求，决定了需要有prepare阶段，这阶段主要是为了accept阶段为当前proposal设置正确的值。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>算法基本流程<br>论文上主要有prepare和accept两个阶段，省略了选action(值)和选proposal id的阶段</p>
-<ul>
-<li>0.数据结构 <ul>
-<li>每台机器需要记录最大accpeted的proposal id(latest_accepted_id)和对应的accepted的操作(latest_accepted_action)以及最大promised的proposal id(latest_promised_id)，这些数据需要刷盘。</li>
-</ul>
-</li>
-<li>1.选择需要达成一致的操作 <ul>
-<li>来自客户端的请求，比如 Action{write A 12} =&gt; 通常这作为需要达成的某个操作的值，还需要一个全局唯一的id标识这个操作，比如对于某个log记录达成一致，需要寻找下一次需要记录的log id，这就需要向其他节点询问其记录的最近log id，并取最大值+1作为下一次需要达成一致的”记录日志这个操作(action)”的action(log) id。而这个过程可能会产生并发问题，即不同的机器可能针对同一个log id发起proposal，这一点后面阶段保证了一旦达成了proposal，则后续所有proposal都以相同的操作(值)达成。</li>
-</ul>
-</li>
-<li>2.选择proposal id <ul>
-<li>proposal id需要保证全局唯一递增(这个后面补充)。</li>
-</ul>
-</li>
-<li><p>3.prepare </p>
-<ul>
-<li>假设2中选择的proposal id为n，proposer发送prepare(n)给大多数机器<ul>
-<li>对于acceptor，如果(n &gt; latest_promised_id) /\ (n &gt; latest_promised_id)<ul>
-<li>如果acceptor已经有latest_accepted_id(说明之前对于同一个操作已经达到proposal了)，则返回对应于latest_accepted_id的操作的值，为了accept阶段保证当前的proposal和以前已经达成的proposal最终操作值一样。</li>
-<li>如果acceptor没有latest_accepted_id(说明之前还未达成proposal)，则不用返回值(accept阶段可以使用任意proposed的值)　</li>
-<li>令latest_accepted_id = latest_promised_id = n，并保证不再接受proposal id小于latest_promised_id的proposal<ul>
-<li>否则acceptor返回拒绝，重新开始算法。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>4.accept </p>
-<ul>
-<li>proposer收到大多数的机器对prepare的回复<ul>
-<li>如果返回消息中latest_accepted_action集合不为空，则将当前proposal的action设置为对应于最大latest_accepted_id的latest_accepted_action，发送accept(n, action)消息</li>
-<li>如果返回消息中latest_accepted_action集合为空，则直接使用当前proposal的action(也就是论文中所说的any value)，发送accept(n, action)消息　</li>
-</ul>
-</li>
-<li>如果acceptor收到accept(n, action)消息时<ul>
-<li>latest_promised_id &gt; n(说明有更新的)，则放弃当前proposal，重新进入算法。</li>
-<li>否则接受proposal，完成此次proposal</li>
-</ul>
-</li>
-<li>如果proposer收到大多数acceptor的成功消息，则成功返回给客户端，否则重新进入算法，由于liveness requirement，一个proposed的value必须eventually chosen，所以要么客户端返回成功，要么客户端请求超时，对于超时，客户端需要重新发起读的请求，此时可能已经成功了，否则继续重新发超时请求。</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<ul>
-<li><p>几点辅助理解的说明</p>
-<ul>
-<li><p>多数是为了保证至少会有一台机器记录了上次达成的proposal的值，这样保证在不多于n/2台机器挂掉的条件下，在每次proposal的过程中，至少有一台机器有前面所有的proposal值的记录，从而保证所有的数据的完整。</p>
-</li>
-<li><p>一轮paxos instance 是针对某个变量的一次操作的，而不是同一个变量。比如针对同一变量的一次操作打一次log，而这个log id应当是唯一的，而且针对这条log可能会有多次proposal，但是只要有一次proposal已经达成，那么针对这条log的proposal只能使用相同的log值更新(这也是为什么在prepare返回阶段，如果有一个acceptor已经达成过proposal，则返回其值替换当前proposal值)。</p>
-</li>
-<li><p>对某个唯一的记录比如log或者变量的某次操作达成一致，那么proposer在发起proposal之前必定要到某个地方取下次需要达成一致的值，比如下一条日志记录的id，某个变量的下一个版本(某个变量的下一次操作)。而由于proposer可能有多个，那么在并发发起proposal时，不同的proposal可能会针对相同的某次操作，这时对于后达成的proposal来说，只能将其propose的值换为已经达成的proposal的值，而这个过程是通过prepare阶段accptor返回的结果集是否空来判断的。如果结果集不为空，说明针对此次操作，之前已经达成了一致，则后续proposal只能使用相同值；如果为空，那么可以使用此次proposal的值(也就是论文中所说的any value)。另外，在accept阶段，如果有accptor的最小promise　id大于当前proposal id，那么说明已经有更更大proposal id的proposal先到达了(此时不管之前是否已经达成一致)，此时需要放弃当前次的proposal </p>
-</li>
-</ul>
-</li>
-</ul>
-<hr>
-<p>下面给一个一轮Paxos的伪代码<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 一轮Paxos协议的流程</span></span><br><span class="line"><span class="comment"># 此处为了清晰将proposer和acceptor的逻辑分开写了，实际上原论文中一个server既可以做proposer也可以做acceptor</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 对每一个值(比如logid唯一的一条日志)可能会同时发起写请求(比如两个客户端并发访问qorumn里面的两个server)</span></span><br><span class="line"><span class="comment"># 所以此时这两个server都是proposer，针对同一条logid发起不同ballot number的决议请求。此时，如果是ballot number </span></span><br><span class="line"><span class="comment"># 小的那个决议请求先达到多数派，那么应该保证后到的ballot number的请求使用相同的值。所以Acceptor需要做的事情如下：</span></span><br><span class="line"><span class="comment"># prepare phase:</span></span><br><span class="line"><span class="comment"># 1.如果请求的req_ballot_id比当前server已经应答过的last_ballot_id小，此时直接忽略，因为有更新的投票决议。</span></span><br><span class="line"><span class="comment"># 2.如果请求的req_ballot_id大于等于当前server已经应答过的last_ballot_id，此时使用req_ballot_id更新last_ballot_id，并返回last_voted_value，注意这个可以是空，说明要么是当前这个server以前未参与此值的多数派投票，要么是此值还未达成过多数派投票。</span></span><br><span class="line"><span class="comment"># commit phase:</span></span><br><span class="line"><span class="comment"># 1.如果commit消息数据中的ballot_id与last_ballot_id不同，则放弃</span></span><br><span class="line"><span class="comment"># 2.否则更新相应的值，并写日志</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Acceptor</span><span class="params">(object)</span>:</span></span><br><span class="line">    last_ballot_id = <span class="keyword">None</span> <span class="comment">#我正在等着</span></span><br><span class="line">    last_voted_value = <span class="keyword">None</span></span><br><span class="line">    last_voted_ballot_id = <span class="keyword">None</span> </span><br><span class="line">    servers = []</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handleProposalRequest</span><span class="params">(self, reqData)</span>:</span></span><br><span class="line">        req_ballot_id = reqData.ballot_id</span><br><span class="line">        <span class="keyword">if</span> req_ballot_id &lt;= self.last_ballot_id:</span><br><span class="line">            <span class="keyword">pass</span> <span class="comment"># return nothing </span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            self.last_ballot_id = req_ballot_id </span><br><span class="line">            <span class="keyword">return</span> (self.last_ballot_id, self.last_voted_value, self.last_voted_ballot_id)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handleCommitRequest</span><span class="params">(self, reqData)</span>:</span></span><br><span class="line">        commit_ballot_id = reqData.last_sent_ballot_id</span><br><span class="line">        client_value = reqData.client_req_value </span><br><span class="line">        <span class="keyword">if</span> commit_ballot_id != self.last_ballot_id:</span><br><span class="line">            <span class="keyword">pass</span> </span><br><span class="line">        self.last_ballot_id = self.last_voted_ballot_id = reqData.last_sent_ballot_id</span><br><span class="line">        self.last_voted_value = client_value </span><br><span class="line">        writelog((self.last_ballot_id, self.last_voted_ballot_id, self.last_voted_value))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">writelog</span><span class="params">(self, data)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span> </span><br><span class="line"></span><br><span class="line"><span class="comment"># 1.如果有acceptor接收到其他proposal发出的更大ballot_id的决议请求，那么放弃此次决议　</span></span><br><span class="line"><span class="comment"># 2.如果为达到多数派，放弃此次决议</span></span><br><span class="line"><span class="comment"># 3.如果acceptor中返回的last_voted_value不为空，则将当前proposal的值设置为相同值，进入commit阶段，否则直接用client_req_value作为值进入commit</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Proposer</span><span class="params">(object)</span>:</span></span><br><span class="line">    last_sent_ballot_id = <span class="keyword">None</span> </span><br><span class="line">    client_req_value = <span class="keyword">None</span> </span><br><span class="line">    res_data = []</span><br><span class="line">    servers = []</span><br><span class="line">    quorumn_number = <span class="number">5</span></span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sendRequest</span><span class="params">(self, data)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span> </span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">sendProposal</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.last_sent_ballot_id += <span class="number">1</span></span><br><span class="line">        reqData.ballot_id = self.last_sent_ballot_id</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> self.servers:</span><br><span class="line">            sendRequest(i, reqData)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">readData</span><span class="params">(server)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handleEachProposalResponse</span><span class="params">(self, server)</span>:</span></span><br><span class="line">        resData = self.readData(server)</span><br><span class="line">        self.res_data.append((resData.last_ballot_id, resData.last_voted_value, resData.last_voted_ballot_id))</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">handleProposalResponse</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> servers:</span><br><span class="line">            handleEachProposalResponse(servers[i])</span><br><span class="line">        res_ballot_id = max([i[<span class="number">0</span>] <span class="keyword">for</span> i <span class="keyword">in</span> self.res_data])</span><br><span class="line">        <span class="keyword">if</span> res_ballot_id &gt; self.last_sent_ballot_id:</span><br><span class="line">            <span class="keyword">pass</span> <span class="comment"># maybe another proposer has finished a proposal for the value, what should we give back to client? </span></span><br><span class="line">        <span class="keyword">elif</span> len(res_data) &lt; (self.quorumn_number / <span class="number">2</span> + <span class="number">1</span>):</span><br><span class="line">            <span class="keyword">pass</span> <span class="comment"># failed, maybe timeout due to network or server crash?</span></span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            voted_data = [(i[<span class="number">1</span>], i[<span class="number">2</span>]) <span class="keyword">for</span> i <span class="keyword">in</span> self.res_data]</span><br><span class="line">            voted_data.sort()</span><br><span class="line">            <span class="keyword">if</span> voted_data[<span class="number">0</span>][<span class="number">1</span>] <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">                self.client_req_value = voted_data[<span class="number">0</span>][<span class="number">1</span>] </span><br><span class="line">            self.commit((self.last_sent_ballot_id, self.client_req_value))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">commit</span><span class="params">(self, reqData)</span>:</span></span><br><span class="line">        <span class="keyword">pass</span></span><br></pre></td></tr></table></figure></p>
-<hr>
-<ul>
-<li>ref:<ul>
-<li><a href="http://research.microsoft.com/en-us/um/people/lamport/pubs/paxos-simple.pdf" target="_blank" rel="external">Paxos Made Simple</a></li>
-</ul>
-</li>
-</ul>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>本文主要提炼了《Paxos Made Simple》中的一些主要观点，然后加上自己的理解，使用通俗的语言尝试做一些解释。</p>
-<ul>
-<li><p>关于Paxos算法背景和一致性相关问题可以参见原论文</p>
-</li>
-<li><p>算法涉及的主要对象</p>
-<u]]>
-    </summary>
-    
-      <category term="一致性算法" scheme="/tags/%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95/"/>
     
       <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     

@@ -23,7 +23,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="0 Abstract
 In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to">
-<meta property="og:updated_time" content="2017-04-01T09:24:35.427Z">
+<meta property="og:updated_time" content="2017-04-03T06:43:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Paper Reading - In Search of an Understandable Consensus Algorithm(Raft)">
 <meta name="twitter:description" content="0 Abstract
@@ -196,6 +196,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered</p>
 </blockquote>
 <p>Raft强化Leader的作用，明确划分了协议各个阶段(leader election, log replication)的边界，并且让leader election中的一部分重要内容-新leader的状态恢复变得很直观简单，并且和普通的日志复制请求与心跳请求整合到同一个RPC。这在后面的分析会看到。</p>
+<hr>
 <h4 id="1_Introduction"><a href="#1_Introduction" class="headerlink" title="1 Introduction"></a>1 Introduction</h4><blockquote>
 <p>Strong leader: Raft uses a stronger form of leader- ship than other consensus algorithms. For example, log entries only flow fromthe leader to other servers. This simplifies themanagement of the replicated log and makes Raft easier to understand</p>
 </blockquote>
@@ -208,15 +209,18 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>Membership changes: Raft’s mechanism for changing the set of servers in the cluster uses a new joint consensus approach where the majorities of two different configurations overlap during transi-tions…</p>
 </blockquote>
 <p>成员组变更使用joint-consensus，也是两阶段形式。这里通过限制每次变更的server数量到一个，貌似可以做一些简化(具体参考下<a href="https://coreos.com/etcd/docs/latest/op-guide/runtime-reconf-design.html" target="_blank" rel="external">etcd的设计和实现</a>)</p>
+<hr>
 <h4 id="2_Replicated_state_machines"><a href="#2_Replicated_state_machines" class="headerlink" title="2 Replicated state machines"></a>2 Replicated state machines</h4><blockquote>
 <p>Replicated state machines are typically implemented using a replicated log, as shown in Figure 1. Each server stores a log containing a series of commands, which its state machine executes in order…</p>
 <p>Keeping the replicated log consistent is the job of the consensus algorithm.</p>
 </blockquote>
 <p>一致性协议的通常用法是作为复制状态机的日志复制模块，日志基本上是状态机一致性和持久性的基石，在计算机的系统领域有着及其重要的作用，可参考这篇很棒的文章-<a href="https://engineering.linkedin.com/distributed-systems/log-what-every-software-engineer-should-know-about-real-time-datas-unifying" target="_blank" rel="external">The Log: What every software engineer should know about real-time data’s unifying abstraction</a></p>
+<hr>
 <h4 id="3_Whats_u2019s_wrong_with_Paxos_3F"><a href="#3_Whats_u2019s_wrong_with_Paxos_3F" class="headerlink" title="3 Whats’s wrong with Paxos?"></a>3 Whats’s wrong with Paxos?</h4><blockquote>
 <p>Paxos’ opaqueness derives from its choice of the single-decree subset as its foundation. Single-decree Paxos is dense and subtle … The composition rules for multi- Paxos add significant additional complexity and subtlety</p>
 </blockquote>
 <p>Basic Paxos本身面向并发决议的场景，多个参与者可以同时提出决议，且Basic Paxos解决的是对单个值达成决议，实际应用中往往需要对多个值达成决议，就需要组合多轮Basic Paxos，而基于Basic Paxos的Multi-Paxos并没有比较好地在论文中描述如何组合多轮Basic Paxos，实现起来有很多细节问题。但是，面向单个值的设计也是Basic Paxos和Multi-Paxos的优势，对于每条日志可以单独提交，而不用像raft需要等待前面所有日志提交，这在后面Raft的详细描述中可看到。</p>
+<hr>
 <h4 id="4_Designing_for_understandability"><a href="#4_Designing_for_understandability" class="headerlink" title="4 Designing for understandability"></a>4 Designing for understandability</h4><blockquote>
 <p>in Raft we separated leader election, log replication, safety, andmembership changes.</p>
 </blockquote>
@@ -225,6 +229,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>logs are not allowed to have holes, and Raft limits the ways in which logs can become inconsistent with each other.</p>
 </blockquote>
 <p>Raft不允许日志有空洞，这大大简化了其leader election后状态恢复的过程，但是同时也限制了其日志只能顺序提交。</p>
+<hr>
 <h4 id="5-1_Raft_basics"><a href="#5-1_Raft_basics" class="headerlink" title="5.1 Raft basics"></a>5.1 Raft basics</h4><blockquote>
 <p>At any given time each server is in one of three states: leader, follower, or candidate</p>
 </blockquote>
@@ -269,6 +274,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>broadcastTime≪electionTimeout≪MTBF</p>
 </blockquote>
 <p>尤其注意RPC请求的时间一定要远小于election timeout，否则会很久选不出主。</p>
+<hr>
 <h4 id="6_Cluster_membership_changes"><a href="#6_Cluster_membership_changes" class="headerlink" title="6 Cluster membership changes"></a>6 Cluster membership changes</h4><blockquote>
 <p>The leader first creates the Cold,new configuration entry in its log and commits it to Cold,new (a majority of Cold and a majority of Cnew). Then it creates the Cnew entry and commits it to a majority of Cnew. There is no point in time in which Cold and Cnew can both make decisions independently</p>
 </blockquote>
@@ -281,6 +287,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>if a server receives a RequestVote RPC within the minimum election timeout of hearing from a cur- rent leader, it does not update its term or grant its vote</p>
 </blockquote>
 <p>leader lease，表明leader很可能还未过期，此时先不投票。</p>
+<hr>
 <h4 id="7_Log_compaction"><a href="#7_Log_compaction" class="headerlink" title="7 Log compaction"></a>7 Log compaction</h4><blockquote>
 <p>Raft also includes a small amount of metadata in the snapshot: the last included index is the index of the last entry in the log that the snapshot replaces (the last en- try the state machine had applied), and the last included term is the term of this entry. These are preserved to sup- port the AppendEntries consistency check for the first log entry following the snapshot, since that entry needs a pre- vious log index and term. To enable cluster membership changes (Section 6), the snapshot also includes the latest configuration in the log as of last included index</p>
 </blockquote>
@@ -289,6 +296,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>Although servers normally take snapshots indepen-dently, the leader must occasionally send snapshots to followers that lag behind. This happens when the leader has already discarded the next log entry that it needs to send to a follower</p>
 </blockquote>
 <p>leader需要发送状态机的snapshot数据给follower，不能靠follower自身的日志，因为有可能leader的日志还没完全复制到某个follower，此时leader发生了snapshot，把之前的log entry都丢掉了。</p>
+<hr>
 <h4 id="8_Client_interaction"><a href="#8_Client_interaction" class="headerlink" title="8 Client interaction"></a>8 Client interaction</h4><blockquote>
 <p>The solution is for clients to assign unique serial numbers to every command</p>
 </blockquote>
@@ -298,6 +306,7 @@ In order to enhance understandability, Raft separates the key elements of consen
 <p>Second, a leadermust checkwhether it has been deposed before processing a read-only request. Raft handles this by having the leader exchange heartbeat messages with a majority of the cluster before responding to read-only requests. Alternatively, the leader could rely on the heartbeat mechanism to provide a form of lease.</p>
 </blockquote>
 <p>如何保证读请求读到最新的数据: (1) 保证leader上的状态机的数据最新，每次选主后主动复制一条nop日志，提交之前term的所有日志，让状态机保持最新；(2) leader响应的时候保证自己是最新的leader，两个办法，一个是响应前发一条消息，如果得到多数派应答，则说明是最新，第二种是leader lease，leader如果在某个lease时间段内没有收到多数派的心跳回复就自动变为follower，每个leader刚选出时，等待lease的时间才开始处理请求。</p>
+<hr>
 <h4 id="u5C0F_u7ED3"><a href="#u5C0F_u7ED3" class="headerlink" title="小结"></a>小结</h4><p>保证协议safety性质的前提下，通过增加以下三个条件来简化Leader恢复或者说View Change过程中的状态恢复，保证日志从Leader上单向流动到Follower(而这个过程又可以合并到AppendEntries日志复制的逻辑中，即consistency check)，这个过程往往是关键和最复杂的步骤。</p>
 <ul>
 <li>选主的时候满足发请求的节点和被请求的节点日志至少一样新，保证选主成功后Leader上的日志最新</li>
