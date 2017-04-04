@@ -49,3 +49,7 @@
 .toolbox .toolbox-entry {
   background-color: #fff;
 }
+
+.toolbox .list-toolbox .item-toolbox a.ROUND_RECT {
+  padding: 0 18px;
+}
