@@ -65,7 +65,7 @@
 
 
   
-    <span id="toolbox-mobile" class="toolbox-mobile">Menu</span>
+    <span id="toolbox-mobile" class="toolbox-mobile">M</span>
   
 
   <!--
@@ -73,7 +73,7 @@
    
   <div class="toolbox">
     <a class="toolbox-entry" href="/">
-      <span class="toolbox-entry-text">Menu</span>
+      <span class="toolbox-entry-text">M</span>
       <i class="icon-angle-down"></i>
       <i class="icon-home"></i>
     </a>
@@ -523,6 +523,21 @@
   }
 </script>
 
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 <!-- mathjax config similar to math.stackexchange -->
 
 <script type="text/x-mathjax-config">
