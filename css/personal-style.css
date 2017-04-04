@@ -40,3 +40,11 @@
 .toolbox .list-toolbox {
   display: block;
 }
+
+.toolbox .list-toolbox .item-toolbox a {
+  background-color: #fff;
+}
+
+.toolbox .toolbox-entry {
+  background-color: #fff;
+}
