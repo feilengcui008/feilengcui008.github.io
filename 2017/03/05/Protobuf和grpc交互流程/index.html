@@ -7,7 +7,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Protobuf和GRPC(一) | feilengcui008</title>
+  <title>Protobuf和GRPC交互流程 | feilengcui008</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -24,8 +24,8 @@ ProtobufProtobuf主要由三大部分构成:
 Core: 包括核心的数据结构比如Message和Service等等
 Compiler: proto文件的Tokeniz">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Protobuf和GRPC(一)">
-<meta property="og:url" content="/2017/03/05/Protobuf和GRPC-一/index.html">
+<meta property="og:title" content="Protobuf和GRPC交互流程">
+<meta property="og:url" content="/2017/03/05/Protobuf和grpc交互流程/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
 
@@ -35,9 +35,9 @@ ProtobufProtobuf主要由三大部分构成:
 
 Core: 包括核心的数据结构比如Message和Service等等
 Compiler: proto文件的Tokeniz">
-<meta property="og:updated_time" content="2017-04-01T09:24:34.987Z">
+<meta property="og:updated_time" content="2017-04-23T07:46:22.753Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Protobuf和GRPC(一)">
+<meta name="twitter:title" content="Protobuf和GRPC交互流程">
 <meta name="twitter:description" content="数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
 
 简要描述
@@ -119,28 +119,6 @@ Compiler: proto文件的Tokeniz">
         <li class="item-toolbox">
           <a
             class="ROUND_RECT"
-            href="/categories/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Categories
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="ROUND_RECT"
-            href="/tags/"
-            rel="noopener noreferrer"
-            target="_self"
-            >
-            Tags
-          </a>
-        </li>
-      
-        <li class="item-toolbox">
-          <a
-            class="ROUND_RECT"
             href="/about/"
             rel="noopener noreferrer"
             target="_self"
@@ -165,9 +143,9 @@ Compiler: proto文件的Tokeniz">
 
 
 <div class="content content-post CENTER">
-   <article id="post-Protobuf和GRPC-一" class="article article-type-post" itemprop="blogPost">
+   <article id="post-Protobuf和grpc交互流程" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Protobuf和GRPC(一)</h1>
+    <h1 class="post-title">Protobuf和GRPC交互流程</h1>
 
     <div class="article-meta">
       <span>
@@ -202,7 +180,7 @@ Compiler: proto文件的Tokeniz">
 
       
         <i class="icon-comment"></i> 
-        <span class="ds-thread-count" data-thread-key="post-Protobuf和GRPC-一"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+        <span class="ds-thread-count" data-thread-key="post-Protobuf和grpc交互流程"><i class="fa fa-spinner fa-spin"></i></span> 条评论
       
       
     </div>
@@ -311,28 +289,6 @@ Compiler: proto文件的Tokeniz">
           <li class="item-toolbox">
             <a
               class="ROUND_RECT"
-              href="/categories/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Categories
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="ROUND_RECT"
-              href="/tags/"
-              rel="noopener noreferrer"
-              target="_self"
-              >
-              Tags
-            </a>
-          </li>
-        
-          <li class="item-toolbox">
-            <a
-              class="ROUND_RECT"
               href="/about/"
               rel="noopener noreferrer"
               target="_self"
@@ -356,8 +312,8 @@ Compiler: proto文件的Tokeniz">
     
   <section class="duoshuo-comments">
     <!-- 多说评论框 start -->
-    <div class="ds-thread" data-thread-key="post-Protobuf和GRPC-一" 
-      data-title="Protobuf和GRPC(一)" data-url="/2017/03/05/Protobuf和GRPC-一/index.html"></div>
+    <div class="ds-thread" data-thread-key="post-Protobuf和grpc交互流程" 
+      data-title="Protobuf和GRPC交互流程" data-url="/2017/03/05/Protobuf和grpc交互流程/index.html"></div>
     <!-- 多说评论框 end -->
   </section>
 
