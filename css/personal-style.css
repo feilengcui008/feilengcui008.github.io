@@ -76,3 +76,11 @@
   font-weight: bold;
   font-size: 14px;
 }
+
+.item-year a.text-year {
+  font-size: 16px;
+}
+
+.item-year {
+  margin-top: 15px;
+}
