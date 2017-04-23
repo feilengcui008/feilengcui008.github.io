@@ -94,3 +94,11 @@
   width: 200px;
   margin-top: 125px;
 }
+
+.item-post .post-title {
+  max-width: 280px;
+}
+
+.personal_content {
+  width: 380px;
+}
