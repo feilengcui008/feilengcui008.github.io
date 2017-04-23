@@ -56,6 +56,8 @@
   padding: 0 18px;
 }
 
+
+/*
 .toolbox {
   display: none;
 }
@@ -63,6 +65,7 @@
 .content.content-about .dot {
   display: none;
 }
+*/
 
 .content.content-about .about-list .about-item .text {
   padding-left: 125px;
@@ -83,4 +86,11 @@
 
 .item-year {
   margin-top: 15px;
+}
+
+.aboutdiv {
+  margin: 0px auto;
+  font-weight: bold;
+  width: 200px;
+  margin-top: 125px;
 }
