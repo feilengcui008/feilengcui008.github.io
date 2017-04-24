@@ -37,7 +37,7 @@
 实现此Service对应的ServiceDesc，ServiceDesc描述了服务名、处理此服务的接口类型、单次调用的方法数组、流式方法数组、其他元数据。
 实现Service接口具体业务逻辑的结构体
 实例化Server，">
-<meta property="og:updated_time" content="2017-04-23T14:19:35.038Z">
+<meta property="og:updated_time" content="2017-04-24T08:57:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Grpc-go服务端源码分析">
 <meta name="twitter:description" content="基本设计
@@ -98,7 +98,7 @@
 
   <div id="toc" class="toc-article">
     <strong class="toc-title">Posts List</strong>
-    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u57FA_u672C_u8BBE_u8BA1"><span class="toc-text">基本设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B"><span class="toc-text">服务端主要流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u603B_u7ED3"><span class="toc-text">总结</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#u57FA_u672C_u8BBE_u8BA1"><span class="toc-text">基本设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B"><span class="toc-text">服务端主要流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u603B_u7ED3"><span class="toc-text">总结</span></a></li></ol>
   </div>
 
 
@@ -149,7 +149,7 @@
 
   <div class="article-content">
     
-      <h3 id="u57FA_u672C_u8BBE_u8BA1"><a href="#u57FA_u672C_u8BBE_u8BA1" class="headerlink" title="基本设计"></a>基本设计</h3><ul>
+      <h2 id="u57FA_u672C_u8BBE_u8BA1"><a href="#u57FA_u672C_u8BBE_u8BA1" class="headerlink" title="基本设计"></a>基本设计</h2><ul>
 <li><p>服务抽象</p>
 <ul>
 <li>一个Server可包含多个Service，每个Service包含多个业务逻辑方法，应用开发者需要:<ul>
@@ -182,7 +182,7 @@
 </li>
 <li>Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。</li>
 <li>客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。</li>
-<li>客户端的每个http2请求会打开一个新的流。流可以从两边关闭，但是grpc-go的实现中，都是从服务端关闭，客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。</li>
+<li>客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。</li>
 <li>grpc-go中的单次方法和流式方法<ul>
 <li>无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此”复用”这个流。</li>
 <li>客户端如果是流式方法，需要显示调用CloseSend，表示数据发送的结束</li>
@@ -194,7 +194,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B"><a href="#u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B" class="headerlink" title="服务端主要流程"></a>服务端主要流程</h3><p>由于比较多，所以分以下几个部分解读主要逻辑:<br><figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">实例化Server</span><br><span class="line">注册Service</span><br><span class="line">监听并接收连接请求</span><br><span class="line">连接与请求处理</span><br><span class="line">连接的处理细节<span class="comment">(http2连接的建立)</span></span><br><span class="line">新请求的处理细节<span class="comment">(新流的打开和帧数据的处理)</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B"><a href="#u670D_u52A1_u7AEF_u4E3B_u8981_u6D41_u7A0B" class="headerlink" title="服务端主要流程"></a>服务端主要流程</h2><p>由于比较多，所以分以下几个部分解读主要逻辑:<br><figure class="highlight gcode"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">实例化Server</span><br><span class="line">注册Service</span><br><span class="line">监听并接收连接请求</span><br><span class="line">连接与请求处理</span><br><span class="line">连接的处理细节<span class="comment">(http2连接的建立)</span></span><br><span class="line">新请求的处理细节<span class="comment">(新流的打开和帧数据的处理)</span></span><br></pre></td></tr></table></figure></p>
 <ul>
 <li>实例化Server</li>
 </ul>
@@ -217,7 +217,7 @@
 </li>
 </ul>
 <hr>
-<h3 id="u603B_u7ED3"><a href="#u603B_u7ED3" class="headerlink" title="总结"></a>总结</h3><p>至此，服务端的主要流程就基本走完了，整个处理流程还有很多加密、授权、http2连接的控制信息(比如窗口大小的设置等)、KeepAlive逻辑以及穿插在各个地方的统计、追踪、日志处理等细节，这些细节对理解grpc-go的实现影响不大，所以不再细说。整个流程下来，多少可以看到Go的很多特性极大地方便了grpc的实现，用goroutine代替多路复用的回调，io的抽象与缓冲。同时，http2整个的模型其实和基于多路复用实现的grpc框架底层数据传输协议有些类似，http2的一个帧类似于某个格式化和序列化后的请求数据或响应数据，但是传统的rpc协议并没有流对应的概念，要实现”流的复用”也不是太容易，请求的下层直接是tcp连接，另外http2是通用的标准化协议，而且复用连接之后其性能也不差。</p>
+<h2 id="u603B_u7ED3"><a href="#u603B_u7ED3" class="headerlink" title="总结"></a>总结</h2><p>至此，服务端的主要流程就基本走完了，整个处理流程还有很多加密、授权、http2连接的控制信息(比如窗口大小的设置等)、KeepAlive逻辑以及穿插在各个地方的统计、追踪、日志处理等细节，这些细节对理解grpc-go的实现影响不大，所以不再细说。整个流程下来，多少可以看到Go的很多特性极大地方便了grpc的实现，用goroutine代替多路复用的回调，io的抽象与缓冲。同时，http2整个的模型其实和基于多路复用实现的grpc框架底层数据传输协议有些类似，http2的一个帧类似于某个格式化和序列化后的请求数据或响应数据，但是传统的rpc协议并没有流对应的概念，要实现”流的复用”也不是太容易，请求的下层直接是tcp连接，另外http2是通用的标准化协议，而且复用连接之后其性能也不差。</p>
 
     
   </div>
