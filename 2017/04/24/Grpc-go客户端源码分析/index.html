@@ -23,7 +23,7 @@
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="基本设计grpc-go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。
 另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实">
-<meta property="og:updated_time" content="2017-04-24T09:00:09.849Z">
+<meta property="og:updated_time" content="2017-04-24T09:00:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Grpc-go客户端源码分析">
 <meta name="twitter:description" content="基本设计grpc-go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。

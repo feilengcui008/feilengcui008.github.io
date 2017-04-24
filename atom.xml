@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-04-24T09:00:09.849Z</updated>
+  <updated>2017-04-24T09:00:10.000Z</updated>
   <id>/</id>
   
   <author>
@@ -19,7 +19,7 @@
     <link href="/2017/04/24/Grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"/>
     <id>/2017/04/24/Grpc-go客户端源码分析/</id>
     <published>2017-04-24T07:33:49.000Z</published>
-    <updated>2017-04-24T09:00:09.849Z</updated>
+    <updated>2017-04-24T09:00:10.000Z</updated>
     <content type="html"><![CDATA[<h2 id="u57FA_u672C_u8BBE_u8BA1"><a href="#u57FA_u672C_u8BBE_u8BA1" class="headerlink" title="基本设计"></a>基本设计</h2><p>grpc-go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。</p>
 <p>另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实现(目前只实现了轮询方式)，另一种方式是外部的load balancer。</p>
 <ul>
