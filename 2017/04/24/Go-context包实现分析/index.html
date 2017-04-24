@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Go context包实现分析 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Go," />
+  
+
+  <meta name="description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go context包实现分析">
+<meta property="og:url" content="/2017/04/24/Go-context包实现分析/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
+<meta property="og:updated_time" content="2017-04-24T13:50:16.917Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go context包实现分析">
+<meta name="twitter:description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+  <div class="sidebar-toggle">
+  <a href="/"><span class="hfont">H</span></a>
+</div>
+
+
+  
+
+  <!--
+<div class="post-header">
+   
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#u57FA_u672C_u8BBE_u8BA1"><span class="toc-text">基本设计</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u5177_u4F53_u5B9E_u73B0"><span class="toc-text">具体实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u7B80_u5355_u4F8B_u5B50"><span class="toc-text">简单例子</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Go-context包实现分析" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Go context包实现分析</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2017.04.24</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/编程语言/">编程语言</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Go-context包实现分析"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以这种模型可以比较优雅地处理程序的多个逻辑部分，而context很好地实现了这个模型。对于请求响应的形式(比如http)尤其适合这种模型。下面分析下context包的具体实现。</p>
+<hr>
+<h2 id="u57FA_u672C_u8BBE_u8BA1"><a href="#u57FA_u672C_u8BBE_u8BA1" class="headerlink" title="基本设计"></a>基本设计</h2><ul>
+<li>context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。</li>
+<li>cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。</li>
+<li>emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数</li>
+<li>timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。</li>
+<li>cancelCtx的cancel有几种方式<ul>
+<li>主动调用cancel</li>
+<li>其父ctx被cancel，触发子ctx的cancel</li>
+<li>time.Timer事件触发timerCtx的cancel回调</li>
+</ul>
+</li>
+<li>当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理</li>
+</ul>
+<hr>
+<h2 id="u5177_u4F53_u5B9E_u73B0"><a href="#u5177_u4F53_u5B9E_u73B0" class="headerlink" title="具体实现"></a>具体实现</h2><ul>
+<li><p>Context接口</p>
+<figure class="highlight cs"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">type Context <span class="keyword">interface</span> &#123;</span><br><span class="line">  <span class="comment">// 只用于timerCtx，即WithDeadline和WithTimeout</span></span><br><span class="line">  Deadline() (deadline time.Time, ok <span class="keyword">bool</span>)</span><br><span class="line">  <span class="comment">// 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan</span></span><br><span class="line">  Done() &lt;-chan <span class="keyword">struct</span>&#123;&#125;</span><br><span class="line">  <span class="comment">// 错误信息</span></span><br><span class="line">  Err() error</span><br><span class="line">  <span class="comment">// 只用于valueCtx</span></span><br><span class="line">  Value(key <span class="keyword">interface</span>&#123;&#125;) <span class="keyword">interface</span>&#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>几种主要Context的实现</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cancelCtx</span></span><br><span class="line">type cancelCtx <span class="class"><span class="keyword">struct</span> </span>&#123;</span><br><span class="line">  <span class="type">Context</span></span><br><span class="line">  mu       sync.<span class="type">Mutex</span>            </span><br><span class="line">  done     chan <span class="class"><span class="keyword">struct</span></span>&#123;&#125;         </span><br><span class="line">  <span class="comment">// 主要用于存储子cancelCtx和timerCtx</span></span><br><span class="line">  <span class="comment">// 当此ctx被cancel时，会自动cancel其所有children中的ctx</span></span><br><span class="line">  children <span class="built_in">map</span>[canceler]<span class="class"><span class="keyword">struct</span></span>&#123;&#125; </span><br><span class="line">  err      error                 </span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// timeCtx</span></span><br><span class="line">type timerCtx <span class="class"><span class="keyword">struct</span> </span>&#123;</span><br><span class="line">  cancelCtx</span><br><span class="line">  <span class="comment">// 借助计时器触发timeout事件</span></span><br><span class="line">  timer *time.<span class="type">Timer</span></span><br><span class="line">  deadline time.<span class="type">Time</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// valueCtx </span></span><br><span class="line">type valueCtx <span class="class"><span class="keyword">struct</span> </span>&#123;</span><br><span class="line">  <span class="type">Context</span></span><br><span class="line">  key, val interface&#123;&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// cancel逻辑</span></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="params">(<span class="built_in">c</span> *cancelCtx)</span></span> cancel(removeFromParent bool, err error) &#123;</span><br><span class="line">  <span class="comment">/* ... */</span></span><br><span class="line">  <span class="built_in">c</span>.err = err</span><br><span class="line">  <span class="comment">// 如果在第一次调用Done之前就调用cancel，则done为nil</span></span><br><span class="line">  <span class="keyword">if</span> <span class="built_in">c</span>.done == <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="built_in">c</span>.done = closedchan</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    close(<span class="built_in">c</span>.done)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">for</span> child := range <span class="built_in">c</span>.children &#123;</span><br><span class="line">    <span class="comment">// <span class="doctag">NOTE:</span> acquiring the child's lock while holding parent's lock.</span></span><br><span class="line">    <span class="comment">// 不能将子ctx从当前移除，由于移除需要拿当前ctx的锁</span></span><br><span class="line">    child.cancel(<span class="literal">false</span>, err)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// 直接置为nil让gc处理子ctx的回收?</span></span><br><span class="line">  <span class="built_in">c</span>.children = <span class="literal">nil</span></span><br><span class="line">  <span class="built_in">c</span>.mu.<span class="type">Unlock</span>()</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 把自己从parent里移除，注意这里需要拿parent的锁</span></span><br><span class="line">  <span class="keyword">if</span> removeFromParent &#123;</span><br><span class="line">    removeChild(<span class="built_in">c</span>.<span class="type">Context</span>, <span class="built_in">c</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>外部接口</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Background</span></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">Background</span><span class="params">()</span></span> <span class="type">Context</span> &#123;</span><br><span class="line">  <span class="comment">// 直接返回默认的顶层ctx</span></span><br><span class="line">  <span class="keyword">return</span> background</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WithCancel</span></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">WithCancel</span><span class="params">(parent Context)</span></span> (ctx <span class="type">Context</span>, cancel <span class="type">CancelFunc</span>) &#123;</span><br><span class="line">  <span class="comment">// 实例化cancelCtx</span></span><br><span class="line">  <span class="built_in">c</span> := newCancelCtx(parent)</span><br><span class="line">  <span class="comment">// 如果parent是cancelCtx类型，则注册到parent.children，否则启用</span></span><br><span class="line">  <span class="comment">// 新的goroutine专门负责此ctx的cancel，当parent被cancel后，自动</span></span><br><span class="line">  <span class="comment">// 回调child的cancel</span></span><br><span class="line">  propagateCancel(parent, &amp;<span class="built_in">c</span>)</span><br><span class="line">  <span class="keyword">return</span> &amp;<span class="built_in">c</span>, <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="built_in">c</span>.cancel(<span class="literal">true</span>, <span class="type">Canceled</span>) &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WithDeadline</span></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">WithDeadline</span><span class="params">(parent Context, deadline time.Time)</span></span> (<span class="type">Context</span>, <span class="type">CancelFunc</span>) &#123;</span><br><span class="line">  <span class="comment">// 如果parent是deadline，且比当前早，则直接返回cancelCtx</span></span><br><span class="line">  <span class="keyword">if</span> cur, ok := parent.<span class="type">Deadline</span>(); ok &amp;&amp; cur.<span class="type">Before</span>(deadline) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="type">WithCancel</span>(parent)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">c</span> := &amp;timerCtx&#123;</span><br><span class="line">    cancelCtx: newCancelCtx(parent),</span><br><span class="line">    deadline:  deadline,</span><br><span class="line">  &#125;</span><br><span class="line">  propagateCancel(parent, <span class="built_in">c</span>)</span><br><span class="line">  d := time.<span class="type">Until</span>(deadline)</span><br><span class="line">  <span class="comment">// 已经过了</span></span><br><span class="line">  <span class="keyword">if</span> d &lt;= <span class="number">0</span> &#123;</span><br><span class="line">    <span class="built_in">c</span>.cancel(<span class="literal">true</span>, <span class="type">DeadlineExceeded</span>) <span class="comment">// deadline has already passed</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">c</span>, <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="built_in">c</span>.cancel(<span class="literal">true</span>, <span class="type">Canceled</span>) &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">c</span>.mu.<span class="type">Lock</span>()</span><br><span class="line">  <span class="keyword">defer</span> <span class="built_in">c</span>.mu.<span class="type">Unlock</span>()</span><br><span class="line">  <span class="keyword">if</span> <span class="built_in">c</span>.err == <span class="literal">nil</span> &#123;</span><br><span class="line">    <span class="comment">// time.Timer到时则自动回调cancel</span></span><br><span class="line">    <span class="built_in">c</span>.timer = time.<span class="type">AfterFunc</span>(d, <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">      <span class="built_in">c</span>.cancel(<span class="literal">true</span>, <span class="type">DeadlineExceeded</span>)</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">c</span>, <span class="func"><span class="keyword">func</span><span class="params">()</span></span> &#123; <span class="built_in">c</span>.cancel(<span class="literal">true</span>, <span class="type">Canceled</span>) &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// WithTimeout</span></span><br><span class="line"><span class="func"><span class="keyword">func</span> <span class="title">WithTimeout</span><span class="params">(parent Context, timeout time.Duration)</span></span> (<span class="type">Context</span>, <span class="type">CancelFunc</span>) &#123;</span><br><span class="line">  <span class="comment">// 直接使用WithDeadline的实现即可</span></span><br><span class="line">  <span class="keyword">return</span> <span class="type">WithDeadline</span>(parent, time.<span class="type">Now</span>().<span class="type">Add</span>(timeout))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="u7B80_u5355_u4F8B_u5B50"><a href="#u7B80_u5355_u4F8B_u5B50" class="headerlink" title="简单例子"></a>简单例子</h2><figure class="highlight aspectj"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> main</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> (</span><br><span class="line">  <span class="string">"context"</span></span><br><span class="line">  <span class="string">"fmt"</span></span><br><span class="line">  <span class="string">"time"</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func OuterLogicWithContext(ctx context.Context, fn func(ctx context.Context) <span class="keyword">error</span>) <span class="keyword">error</span> &#123;</span><br><span class="line">  go fn(ctx)</span><br><span class="line">  <span class="keyword">for</span> &#123;</span><br><span class="line">    select &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">      fmt.Println(<span class="string">"OuterLogicWithContext ended"</span>)</span><br><span class="line">      <span class="keyword">return</span> ctx.Err()</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func InnerLogicWithContext(ctx context.Context) <span class="keyword">error</span> &#123;</span><br><span class="line">Loop:</span><br><span class="line">  <span class="keyword">for</span> &#123;</span><br><span class="line">    select &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">      <span class="keyword">break</span> Loop</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  fmt.Println(<span class="string">"InnerLogicWithContext ended"</span>)</span><br><span class="line">  <span class="keyword">return</span> ctx.Err()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">  ctx := context.Background()</span><br><span class="line">  var cancel context.CancelFunc</span><br><span class="line">  ctx, cancel = context.WithCancel(ctx)</span><br><span class="line">  ctx, cancel = context.WithTimeout(ctx, time.Second)</span><br><span class="line">  go OuterLogicWithContext(ctx, InnerLogicWithContext)</span><br><span class="line">  time.Sleep(time.Second * 3)</span><br><span class="line">  // has been canceled by timer</span><br><span class="line">  cancel()</span><br><span class="line">  fmt.Println(<span class="string">"main ended"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Home
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Archives
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Go-context包实现分析" 
+      data-title="Go context包实现分析" data-url="/2017/04/24/Go-context包实现分析/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
