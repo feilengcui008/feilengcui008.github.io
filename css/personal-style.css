@@ -91,8 +91,9 @@
 .aboutdiv {
   margin: 0px auto;
   font-weight: bold;
-  width: 200px;
+  width: 300px;
   margin-top: 125px;
+  padding-left: 20px;
 }
 
 .item-post .post-title {
@@ -101,4 +102,27 @@
 
 .personal_content {
   width: 380px;
+}
+
+.sidebar-toggle {
+    position: fixed;
+    right: 50%;
+    bottom: 0px;
+    width: 22px;
+    top: 0;
+    height: 22px;
+    background: #222;
+    /* line-height: 0;
+    padding: 5px; */
+    z-index: 1050;
+    cursor: pointer;
+    font-weight: bold;
+    -webkit-transform: translateZ(0);
+}
+
+.sidebar-toggle .hfont {
+  font-size: 20px;
+  color: white;
+  font-weight: bold;
+  margin-left: 4px;
 }
