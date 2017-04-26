@@ -106,11 +106,12 @@
 
 .sidebar-toggle-parent {
     position: absolute;
-    top: 30px;
+    /*top: 30px;*/
+    margin-top: 30px;
     width: 100%;
     height: 100%;
     text-align: center;
-    z-index: -1;
+    /*z-index: -1;*/
 }
 
 .sidebar-toggle {
