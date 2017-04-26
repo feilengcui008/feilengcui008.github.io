@@ -104,6 +104,14 @@
   width: 380px;
 }
 
+.sidebar-toggle-parent {
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    height: 100%;
+    text-align: center
+}
+
 .sidebar-toggle {
     position: fixed;
     left: 49.1%;
@@ -124,7 +132,6 @@
   font-size: 20px;
   color: white;
   font-weight: bold;
-  margin-left: 4px;
 }
 
 .content-home .slogan {
