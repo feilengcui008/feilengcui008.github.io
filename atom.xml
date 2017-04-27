@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-04-24T13:50:16.917Z</updated>
+  <updated>2017-04-27T08:58:18.138Z</updated>
   <id>/</id>
   
   <author>
@@ -13,6 +13,78 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[Go的自举]]></title>
+    <link href="/2017/04/27/Go%E7%9A%84%E8%87%AA%E4%B8%BE/"/>
+    <id>/2017/04/27/Go的自举/</id>
+    <published>2017-04-27T07:37:35.000Z</published>
+    <updated>2017-04-27T08:58:18.138Z</updated>
+    <content type="html"><![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+<h2 id="u57FA_u672C_u6D41_u7A0B"><a href="#u57FA_u672C_u6D41_u7A0B" class="headerlink" title="基本流程"></a>基本流程</h2><p>Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):</p>
+<ul>
+<li><ol>
+<li>go_old -&gt; dist: 用老版本的Go编译出新代码的dist工具</li>
+</ol>
+</li>
+<li><ol>
+<li>go_old + dist -&gt; asm, compile, link: 用老版本的Go和dist工具编译出bootstrap工具，asm用于汇编源码中的.s文件，输出.o对象文件；compile用于编译源码中的.go文件，输出归档打包后的.a文件；link用于链接二进制文件。这里还要依赖外部的pack程序，负责归档打包编译的库。</li>
+</ol>
+</li>
+</ul>
+<p>到这里，dist/asm/compile/link都是链接的老的runtime，所以其运行依赖于go_old。</p>
+<ul>
+<li><ol>
+<li>asm, compile, link -&gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。</li>
+</ol>
+</li>
+<li><ol>
+<li>go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。</li>
+</ol>
+</li>
+</ul>
+<p>一句话总结，借用老的runtime编译新的代码逻辑(编译器、链接器、新的runtime)生成新代码的编译、链接工具，并用这些工具重新编译新代码和工具本身。</p>
+<hr>
+<h2 id="u5177_u4F53_u5B9E_u73B0"><a href="#u5177_u4F53_u5B9E_u73B0" class="headerlink" title="具体实现"></a>具体实现</h2><ul>
+<li><p>生成dist</p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make.bash</span></span><br><span class="line"># 编译cmd/<span class="built_in">dist</span>，需要在host os和host arch下编译(<span class="built_in">dist</span>需要在本地机器运行)，因此这里把环境变量清掉了</span><br><span class="line"># 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!!</span><br><span class="line">GOROOT=<span class="string">"$GOROOT_BOOTSTRAP"</span> GOOS=<span class="string">""</span> GOARCH=<span class="string">""</span> <span class="string">"$GOROOT_BOOTSTRAP/bin/go"</span> build -o cmd/<span class="built_in">dist</span>/<span class="built_in">dist</span> ./cmd/<span class="built_in">dist</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成bootstrap二进制文件和库</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make.bash</span></span><br><span class="line"><span class="comment"># 设置环境变量</span></span><br><span class="line"><span class="keyword">eval</span> $(./cmd/dist/dist env -p || <span class="keyword">echo</span> FAIL=<span class="keyword">true</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量</span></span><br><span class="line"><span class="comment"># 这里可提供GOARCH和GOOS环境变量交叉编译</span></span><br><span class="line">./cmd/dist/dist bootstrap <span class="variable">$buildall</span> <span class="variable">$GO_DISTFLAGS</span> -v <span class="comment"># builds go_bootstrap</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新生成当前平台的go</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// make.bash</span><br><span class="line">// std, cmd, all在go里有特殊的含义，这里重新编译了所有标准库和默认工具的二进制程序</span><br><span class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$GOHOSTARCH</span>"</span> != <span class="string">"<span class="variable">$GOARCH</span>"</span> -o <span class="string">"<span class="variable">$GOHOSTOS</span>"</span> != <span class="string">"<span class="variable">$GOOS</span>"</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">"##### Building packages and commands for host, <span class="variable">$GOHOSTOS</span>/<span class="variable">$GOHOSTARCH</span>."</span></span><br><span class="line">  <span class="comment"># 重置GOOS和GOARCH环境变量，不会影响外层的环境变量</span></span><br><span class="line">  CC=<span class="variable">$CC</span> GOOS=<span class="variable">$GOHOSTOS</span> GOARCH=<span class="variable">$GOHOSTARCH</span> \</span><br><span class="line">    <span class="string">"<span class="variable">$GOTOOLDIR</span>"</span>/go_bootstrap install -gcflags <span class="string">"<span class="variable">$GO_GCFLAGS</span>"</span> -ldflags <span class="string">"<span class="variable">$GO_LDFLAGS</span>"</span> -v std cmd</span><br><span class="line">  <span class="built_in">echo</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成目标平台的Go</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=<span class="variable">$CC</span>_FOR_TARGET <span class="string">"$GOTOOLDIR"</span>/go_bootstrap install <span class="variable">$GO</span>_FLAGS -gcflags <span class="string">"$GO_GCFLAGS"</span> -ldflags <span class="string">"$GO_LDFLAGS"</span> -v std cmd</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>dist bootstrap逻辑</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cmd/dist</span></span><br><span class="line">dist的bootstrap逻辑不具体分析了，基本过程是先编译好<span class="keyword">asm</span>, compile, link工具，然后用它们编译cmd/go及其依赖的runtime和标准库。中间主要是用compile编译.go文件、<span class="keyword">asm</span>汇编.s文件和用link/pack链接归档打包目标文件的过程。</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="u5C0F_u95EE_u9898"><a href="#u5C0F_u95EE_u9898" class="headerlink" title="小问题"></a>小问题</h2><p>分析代码中遇到几个值得注意的小问题:</p>
+<ul>
+<li>bash环境变量<ul>
+<li>bash脚本单行命令中修改环境变量只影响其后执行的程序，而不会覆盖当前环境变量。</li>
+</ul>
+</li>
+<li>go tool的二进制程序安装路径<ul>
+<li><code>go install</code>命令会自动将tool类型的二进制文件安装到<code>$GOROOT/pkg/tool/</code>目录下。</li>
+</ul>
+</li>
+</ul>
+]]></content>
+    <summary type="html">
+    <![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+<h2 id="u57FA_u672C_u6D41_]]>
+    </summary>
+    
+      <category term="Go" scheme="/tags/Go/"/>
+    
+      <category term="编程语言" scheme="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[Go context包实现分析]]></title>
@@ -1814,178 +1886,6 @@
       <category term="Paxos" scheme="/tags/Paxos/"/>
     
       <category term="分布式一致性" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7/"/>
-    
-      <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Distributed Systems-一致性协议背景介绍及Paxos算法的推导]]></title>
-    <link href="/2016/03/08/Distributed-Systems-%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%E8%83%8C%E6%99%AF%E4%BB%8B%E7%BB%8D%E5%8F%8APaxos%E7%AE%97%E6%B3%95%E7%9A%84%E6%8E%A8%E5%AF%BC/"/>
-    <id>/2016/03/08/Distributed-Systems-一致性协议背景介绍及Paxos算法的推导/</id>
-    <published>2016-03-08T11:05:46.000Z</published>
-    <updated>2017-04-16T07:26:05.285Z</updated>
-    <content type="html"><![CDATA[<p>Paxos算法无疑是分布式系统理论中的经典，由于很多论文、博客都没有详细分析算法的背景以及实际中应用会产生的非常多的细节问题，所以导致很难理解，或者说很难完整理解，实现和测试则是更繁杂，不过这也是这个问题有意思的原因吧:-)。读过一些论文，思考过一些问题，希望能把这个问题的背景，以及各种容错分布式一致性算法设计的逻辑和背景记录下来，当然，内容实在太多，最早得追溯到迪杰斯特拉对并发与分布式问题的讨论吧，所以这个系列准备以Paxos算法为核心，介绍其一系列的衍生算法及其相关的问题。当然，很多东西是通过一些论文结合自己的理解去推测作者当时怎么去思考设计优化这些算法的，至于形式化证明的部分就弱化了。整个系列的几个目标:</p>
-<ul>
-<li>理清分布式共识问题的背景</li>
-<li>主要容错分布式一致性协议的设计逻辑以及它们的联系与区别</li>
-<li>简单实现Raft和Paxos</li>
-<li>分析实际工程中的系统实现比如ZooKeeper/Etcd/Consul等</li>
-<li>容错分布式一致性协议在主流分布式系统中的应用</li>
-</ul>
-<hr>
-<p>这一篇文章主要简单介绍一下分布式共识和一致性协议的背景和Paxos算法，以及我所理解的它的设计逻辑，并按照这个逻辑尝试非形式化地推导出Paxos算法，并与Lamport原始论文中的描述相对应。这篇文章主要指basic Paxos，而不是其他变形比如Multi-Paxos及其他的leader-based的分布式一致算法，比如Raft/Viewstamped Replication/Zab，后续文章会着重分析leader-based的分布式一致算法。</p>
-<hr>
-<h3 id="1-__u5206_u5E03_u5F0F_u7CFB_u7EDF_u57FA_u672C_u6982_u5FF5_u56DE_u987E"><a href="#1-__u5206_u5E03_u5F0F_u7CFB_u7EDF_u57FA_u672C_u6982_u5FF5_u56DE_u987E" class="headerlink" title="1. 分布式系统基本概念回顾"></a>1. 分布式系统基本概念回顾</h3><ul>
-<li><p>分布式系统的基本特点</p>
-<ul>
-<li>部分故障<ul>
-<li>容错</li>
-</ul>
-</li>
-<li>没有全局时钟<ul>
-<li>事件定序 : 原子时钟，Lamport Clock，Vector Clock等</li>
-<li>副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致 </li>
-</ul>
-</li>
-<li>通信延时影响性能和扩展性<ul>
-<li>保证系统正确性下较少消息传递，减少共享状态，使用缓存等等</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>系统模型</p>
-<ul>
-<li>同步和异步<ul>
-<li>同步</li>
-<li>异步(执行时间和消息传递时间没有上限)</li>
-</ul>
-</li>
-<li>网络模型<ul>
-<li>可靠</li>
-<li>消息丢失，重复传递，消息乱序</li>
-</ul>
-</li>
-<li>故障模型<ul>
-<li>crash-failure fault</li>
-<li>byzantine fault</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>一致性</p>
-<ul>
-<li>data-central <ul>
-<li>严格一致性(strict consistency)</li>
-<li>线性一致性(linear consistency)</li>
-<li>顺序一致性(sequential consistency)</li>
-<li>因果一致性(casual consistency)</li>
-<li>弱一致性(weak consistency)</li>
-<li>最终一致性(eventual consistency)</li>
-</ul>
-</li>
-<li>client-central<ul>
-<li>单调读一致性(Monotonic Reads Consistency)</li>
-<li>单调写一致性(Monotonic Writes Consistency)</li>
-<li>读写一致性(Read Your Writes Consistency)</li>
-<li>写读一致性(Write Follows Read Consistency)</li>
-</ul>
-</li>
-<li>其他</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3 id="2-_u5206_u5E03_u5F0F_u5171_u8BC6_u95EE_u9898_u53CA_u5BB9_u9519_u5206_u5E03_u5F0F_u4E00_u81F4_u6027_u534F_u8BAE"><a href="#2-_u5206_u5E03_u5F0F_u5171_u8BC6_u95EE_u9898_u53CA_u5BB9_u9519_u5206_u5E03_u5F0F_u4E00_u81F4_u6027_u534F_u8BAE" class="headerlink" title="2.分布式共识问题及容错分布式一致性协议"></a>2.分布式共识问题及容错分布式一致性协议</h3><p>导致对Paxos理解困难的一个原因是对分布式共识问题本身没有较好的理解。先举个简单例子，然后再说明其需要满足的safety和liveness条件。</p>
-<p>例子：多个人在食堂决定吃什么菜，不能事先商量好，每个人都可以同时提出一样菜，中间可能有些人临时去上厕所了，待会重新回来，要保证的是最终只有一种菜被接受，而且重新回来的人在需要的时候能够知道这次吃饭到底吃的是什么菜。这里需要注意的是：“同时”说明并发的，有些提议的值可能被覆盖的；“有人临时上厕所”说明需要容错，即在机器挂掉下的分布式一致；“重新回来”说明机器recover后能知道之前决议的结果；</p>
-<p>分布式共识问题通常需要满足Safety和Liveness的要求，具体来说就是：</p>
-<ul>
-<li><p>Safety</p>
-<ul>
-<li>只有被提出的值才有可能通过决议</li>
-<li>最终只有一个值被接受</li>
-<li>一个参与者只有在决议达成之后才可能知道决议的值</li>
-</ul>
-</li>
-<li><p>Liveness</p>
-<ul>
-<li>最终能对某个值达成决议</li>
-<li>如果有一个值达成了决议，那么这个值能最终被参与者学习到</li>
-</ul>
-</li>
-<li><p>对于Liveness的问题想多说点，在FLP定理中讨论的模型是完全异步，crash-failure fault但网络可靠这种假设比较严格的模型，并证明了在此系统模型下不存在完整的分布式一致性算法能解决分布式共识问题(注意是完整，如果我们放弃一些Safety或者Liveness的要求，比如保证严格的Safety而使用随机化等方法保证一定概率的Liveness，这样的算法是能实现的，而这也是Paxos一类算法的取舍，毕竟放弃了Safety没太大意义了），而通常像Paxos和类Paxos算法讨论的模型比FLP中的模型更松：完全异步，网络不可靠，crash-failure fault甚至byzantine fault，所以Paxos类算法本质上也没办法完美解决Liveness的问题，Lamport的原始论文中只提到选主(选出distinguished proposer)来解决这个问题，但是至于选主本身的Liveness和容错问题并没有详细讨论，这在后面选主相关部分还会涉及到。</p>
-</li>
-</ul>
-<hr>
-<h3 id="3-_u591A_u6570_u6D3E"><a href="#3-_u591A_u6570_u6D3E" class="headerlink" title="3.多数派"></a>3.多数派</h3><p>这里把多数派拿出来的原因是因为我觉得他是设计容错分布式一致性算法的前提和基础。基于前面对分布式一致问题的说明以及其需要满足的条件，我们先来看看safety的要求，关于liveness在后面会分析。为了方便说明，我们把需要设置值的叫做一个项，比如下一个日志槽位，一次决议就是针对某个项设置值。</p>
-<p>简单来说：<br>=&gt; </p>
-<ul>
-<li>对于某个项，在没有值时，可以从提出的多个值中任意选择一个（这里意味着多个参与者可以对同一个需要达成共识的项并发发起proposal，并且各自提出不同的值，无法保证按照提出的顺序，只是保证一旦对某个值达成决议，那么后续的proposal只能重新使用已经达成决议的值，其实这也是基本的safety要求啦，也是分布式共识问题的要求），并且保证后面的决议也只能设置同一个值。</li>
-</ul>
-<p>=&gt; </p>
-<ul>
-<li>那么，在容错的要求下，很显然我们必须保证后续的某次决议中至少有一台存活机器知道这个项的值，而且我们允许每次决议期间有一些机器能离开(网络分区，挂掉等)</li>
-</ul>
-<p>=&gt; </p>
-<ul>
-<li>显然多数派能满足上面的要求，在2f+1台机器下，对于每次决议都允许最多f台机器挂掉，并且能保证之前达成决议的所有项的值都至少有一台存活的机器知道</li>
-</ul>
-<p>好了，我们推导出了多数派能够为分布式一致性算法提供容错的基础，下面我们基于此来尝试设计Paxos算法。</p>
-<hr>
-<h3 id="4-Paxos_u7B97_u6CD5"><a href="#4-Paxos_u7B97_u6CD5" class="headerlink" title="4.Paxos算法"></a>4.Paxos算法</h3><p>上面多数派保证了在每次决议时都有存活机器知道之前所有达成决议的项的值。那么，怎么保证后续针对之前某个项的决议只能设置项本身的值？</p>
-<p>先简要回顾下Paxos算法的核心部分:</p>
-<ul>
-<li><p>达成一轮共识的流程</p>
-<ul>
-<li>对于每一轮，比如针对下一个日志槽位(其实Paxos完全可以乱序，并不一定要按照日志槽位顺序)达成某个值的共识来说，每个参与者需要记录并持久化的数据有当前已见过的最大的proposal number(last_seen_proposal_id)，已经对某个proposer投票的最近的proposal number(last_voted_proposal_id)以及对应的值(last_voted_proposal_value)。</li>
-<li>阶段1<ul>
-<li>proposer选择一个proposal number向多数派的acceptor发送prepare请求（注意可以并发）</li>
-<li>acceptor接受到prepare请求后，如果请求中的poposal number大于last_voted_proposal_id，则更新last_voted_proposal_id，如果last_voted_proposal_value不为空，则带上返回prepare-ack消息；反之，则拒绝这个proposal，不返回或者带上last_voted_proposal_id返回拒绝消息，提醒proposal更新last_seen_proposal_id提高性能（原论文描述是保证不再接受比请求的proposal number小的其他决议请求，并返回已经达成的决议值，如果有的话，这里只是用具体实现描述出来了）</li>
-</ul>
-</li>
-<li>阶段2<ul>
-<li>如果proposer收到acceptor多数派的prepare-ack消息，则从收到的消息中找出最大的proposal id以及其对应的proposal value，如果这个value不为空，则使用这个value作为最终决议值，否则可以使用任意值（比如客户端请求的值），然后发送accept消息</li>
-<li>如果acceptor收到proposer的accept请求，则接受，除非收到新的更高proposal number的决议请求并投票了。</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p>学习一个已经达成共识的值</p>
-<ul>
-<li>每次acceptor受到决议的时候都将决议发送给learner。这里和membership management以及日志恢复等相关联了，后面会涉及到，这里不多说</li>
-</ul>
-</li>
-<li><p>进展性的解决</p>
-<ul>
-<li>Paxos算法里Lamport只是简单提到选主来解决紧张性问题，没有具体分析</li>
-</ul>
-</li>
-</ul>
-<p>OK，回到本节开始的问题<br>=&gt; </p>
-<ul>
-<li><p>自然而然，分两个阶段，因为我们事先不知道针对此项是否已经达成决议（这里实际上已经暗含着Paxos算法的主要设计原则之一，即给每个决议请求编号，区分已达成的决议，后发起的决议，以及过时的决议），所以需要prepare阶段询问存活的机器，如果已经达成过，那么至少会有一台机器知道这个值，那么我们就用这个值进入accept阶段，在accept阶段，如果有多数派都同意了这个值，那么决议达成。这就是Paxos的两阶段流程。另外，为了保证能正确恢复，Paxos算法的两阶段中，在请求响应的地方需要持久化某些状态值，这个可以参考原论文。</p>
-</li>
-<li><p>当然，其中采用全局递增的标识给决议编号在定义两个决议的两个阶段的互相交错时的行为上起着决定性作用(这一点实际上是由于并发提决议导致的，对于leader-based的算法比如raft实际上在一个term期间内只有一个有效的leader，所有决议只能由这个leader发出，所以不存在这个问题，对于每个“”客户端请求决议”term的值不需要增加，但是当进入选主的状态时，可能会有并发的candidate发起选主决议了，此时实际上又回到了基本的Paxos，raft采用随机timeout的简单方法来解决基本Paxos的livelock问题)这一点需要较形式化地分析，不好像上述那样以逻辑推演的方式一步一步导出，因为涉及的状态转换较多。</p>
-</li>
-<li><p>关于liveness的问题，可能存在多个proposer交替抢占导致的livelock问题，导致针对某个项无法达成某个值的决议。这个在前面也提到FLP定理所限制的。</p>
-</li>
-</ul>
-<hr>
-<h3 id="5-leader-based_u5BB9_u9519_u5206_u5E03_u5F0F_u4E00_u81F4_u6027_u7B97_u6CD5"><a href="#5-leader-based_u5BB9_u9519_u5206_u5E03_u5F0F_u4E00_u81F4_u6027_u7B97_u6CD5" class="headerlink" title="5.leader-based容错分布式一致性算法"></a>5.leader-based容错分布式一致性算法</h3><p>这一节为后面的文章做个铺垫:-)。从前面的分析可以看到，基本Paxos在面对多个proposer并发提起决议的时候可能导致livelock的问题，虽然Lamport原论文提到每一轮Paxos开始前选出一个distinguished proposer（leader/master），但是并没有详细说明与强化leader这个概念，这也是后面很多leader-based容错分布式一致性算法强调的一点，而强leader的概念能带来很多工程上实现的简化与优化。另外对于多个client的并发请求可能导致某些值的丢失，比如对于日志的replication，client1访问proposer1，client2访问proposer2，而proposer1和proposer2都同时针对当前下一个日志项，此时可能导致某个client的值的覆盖丢失。所以实际中往往会选出一个leader，唯一一个能接受客户端请求提起决议。</p>
-<p>除了解决上面的问题，选主还能为算法优化与简化带来更大空间。比如raft对选主做限制，保证leader上的日志都是最新且连续的，在一定程度上简化了lamport在《paxos made simple》中简单提及的multi-Paxos在leader日志恢复的步骤，另外，batch决议请求，让leader保证最新日志优化读请求(leader lease/follower lease)等。</p>
-<p>实际上选主避免并发决议的问题后一切都相对容易理解了，只是在后续leader的日志恢复以及新recover机器的日志恢复，以及整个集群的恢复方面还会走基本Paxos的两个阶段，而在这些具体的恢复方法和步骤在不同的算法中是不同的，而从Multi-Paxos/ViewStamp replication/Zab/Raft来看，尤其是近两年来的Raft，基本上是在保证基本的容错下的safety和liveness之外加上各种限制条件来简化leader选举，日志恢复，日志复制几个阶段以及其他比如membership management，snapshot等功能的。本质上在leader-based的一致性算法中，在leader选举和日志恢复可能会用到基本Paxos，选主后的log replication实际上就是仅仅用了多数派。后面会更详细讨论。</p>
-<hr>
-<p>ref：<br><a href="https://github.com/feilengcui008/distributed_systems_readings" target="_blank" rel="external">整理的一些资料</a></p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>Paxos算法无疑是分布式系统理论中的经典，由于很多论文、博客都没有详细分析算法的背景以及实际中应用会产生的非常多的细节问题，所以导致很难理解，或者说很难完整理解，实现和测试则是更繁杂，不过这也是这个问题有意思的原因吧:-)。读过一些论文，思考过一些问题，希望能把这个问题的]]>
-    </summary>
-    
-      <category term="Paxos" scheme="/tags/Paxos/"/>
-    
-      <category term="分布式一致性算法" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E7%AE%97%E6%B3%95/"/>
-    
-      <category term="分布式系统" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/"/>
     
       <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
     

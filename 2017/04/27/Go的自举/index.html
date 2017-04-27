@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Go的自举 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Go," />
+  
+
+  <meta name="description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
+
+
+go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
+
+
+
+go_old +">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Go的自举">
+<meta property="og:url" content="/2017/04/27/Go的自举/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
+
+
+go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
+
+
+
+go_old +">
+<meta property="og:updated_time" content="2017-04-27T08:58:18.138Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go的自举">
+<meta name="twitter:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
+
+
+go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
+
+
+
+go_old +">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+
+  
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+  <div class="sidebar-toggle-parent">
+  <div class="sidebar-toggle">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+</div>
+
+
+  
+
+  <!--
+<div class="post-header">
+   
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#u57FA_u672C_u6D41_u7A0B"><span class="toc-text">基本流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u5177_u4F53_u5B9E_u73B0"><span class="toc-text">具体实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#u5C0F_u95EE_u9898"><span class="toc-text">小问题</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Go的自举" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Go的自举</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2017.04.27</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/编程语言/">编程语言</a>
+  </span>
+
+
+
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+        <i class="icon-comment"></i> 
+        <span class="ds-thread-count" data-thread-key="post-Go的自举"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+<h2 id="u57FA_u672C_u6D41_u7A0B"><a href="#u57FA_u672C_u6D41_u7A0B" class="headerlink" title="基本流程"></a>基本流程</h2><p>Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):</p>
+<ul>
+<li><ol>
+<li>go_old -&gt; dist: 用老版本的Go编译出新代码的dist工具</li>
+</ol>
+</li>
+<li><ol>
+<li>go_old + dist -&gt; asm, compile, link: 用老版本的Go和dist工具编译出bootstrap工具，asm用于汇编源码中的.s文件，输出.o对象文件；compile用于编译源码中的.go文件，输出归档打包后的.a文件；link用于链接二进制文件。这里还要依赖外部的pack程序，负责归档打包编译的库。</li>
+</ol>
+</li>
+</ul>
+<p>到这里，dist/asm/compile/link都是链接的老的runtime，所以其运行依赖于go_old。</p>
+<ul>
+<li><ol>
+<li>asm, compile, link -&gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。</li>
+</ol>
+</li>
+<li><ol>
+<li>go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。</li>
+</ol>
+</li>
+</ul>
+<p>一句话总结，借用老的runtime编译新的代码逻辑(编译器、链接器、新的runtime)生成新代码的编译、链接工具，并用这些工具重新编译新代码和工具本身。</p>
+<hr>
+<h2 id="u5177_u4F53_u5B9E_u73B0"><a href="#u5177_u4F53_u5B9E_u73B0" class="headerlink" title="具体实现"></a>具体实现</h2><ul>
+<li><p>生成dist</p>
+<figure class="highlight processing"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make.bash</span></span><br><span class="line"># 编译cmd/<span class="built_in">dist</span>，需要在host os和host arch下编译(<span class="built_in">dist</span>需要在本地机器运行)，因此这里把环境变量清掉了</span><br><span class="line"># 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!!</span><br><span class="line">GOROOT=<span class="string">"$GOROOT_BOOTSTRAP"</span> GOOS=<span class="string">""</span> GOARCH=<span class="string">""</span> <span class="string">"$GOROOT_BOOTSTRAP/bin/go"</span> build -o cmd/<span class="built_in">dist</span>/<span class="built_in">dist</span> ./cmd/<span class="built_in">dist</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成bootstrap二进制文件和库</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// make.bash</span></span><br><span class="line"><span class="comment"># 设置环境变量</span></span><br><span class="line"><span class="keyword">eval</span> $(./cmd/dist/dist env -p || <span class="keyword">echo</span> FAIL=<span class="keyword">true</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量</span></span><br><span class="line"><span class="comment"># 这里可提供GOARCH和GOOS环境变量交叉编译</span></span><br><span class="line">./cmd/dist/dist bootstrap <span class="variable">$buildall</span> <span class="variable">$GO_DISTFLAGS</span> -v <span class="comment"># builds go_bootstrap</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>重新生成当前平台的go</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// make.bash</span><br><span class="line">// std, cmd, all在go里有特殊的含义，这里重新编译了所有标准库和默认工具的二进制程序</span><br><span class="line"><span class="keyword">if</span> [ <span class="string">"<span class="variable">$GOHOSTARCH</span>"</span> != <span class="string">"<span class="variable">$GOARCH</span>"</span> -o <span class="string">"<span class="variable">$GOHOSTOS</span>"</span> != <span class="string">"<span class="variable">$GOOS</span>"</span> ]; <span class="keyword">then</span></span><br><span class="line">  <span class="built_in">echo</span> <span class="string">"##### Building packages and commands for host, <span class="variable">$GOHOSTOS</span>/<span class="variable">$GOHOSTARCH</span>."</span></span><br><span class="line">  <span class="comment"># 重置GOOS和GOARCH环境变量，不会影响外层的环境变量</span></span><br><span class="line">  CC=<span class="variable">$CC</span> GOOS=<span class="variable">$GOHOSTOS</span> GOARCH=<span class="variable">$GOHOSTARCH</span> \</span><br><span class="line">    <span class="string">"<span class="variable">$GOTOOLDIR</span>"</span>/go_bootstrap install -gcflags <span class="string">"<span class="variable">$GO_GCFLAGS</span>"</span> -ldflags <span class="string">"<span class="variable">$GO_LDFLAGS</span>"</span> -v std cmd</span><br><span class="line">  <span class="built_in">echo</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>生成目标平台的Go</p>
+<figure class="highlight xquery"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CC=<span class="variable">$CC</span>_FOR_TARGET <span class="string">"$GOTOOLDIR"</span>/go_bootstrap install <span class="variable">$GO</span>_FLAGS -gcflags <span class="string">"$GO_GCFLAGS"</span> -ldflags <span class="string">"$GO_LDFLAGS"</span> -v std cmd</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>dist bootstrap逻辑</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// cmd/dist</span></span><br><span class="line">dist的bootstrap逻辑不具体分析了，基本过程是先编译好<span class="keyword">asm</span>, compile, link工具，然后用它们编译cmd/go及其依赖的runtime和标准库。中间主要是用compile编译.go文件、<span class="keyword">asm</span>汇编.s文件和用link/pack链接归档打包目标文件的过程。</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<hr>
+<h2 id="u5C0F_u95EE_u9898"><a href="#u5C0F_u95EE_u9898" class="headerlink" title="小问题"></a>小问题</h2><p>分析代码中遇到几个值得注意的小问题:</p>
+<ul>
+<li>bash环境变量<ul>
+<li>bash脚本单行命令中修改环境变量只影响其后执行的程序，而不会覆盖当前环境变量。</li>
+</ul>
+</li>
+<li>go tool的二进制程序安装路径<ul>
+<li><code>go install</code>命令会自动将tool类型的二进制文件安装到<code>$GOROOT/pkg/tool/</code>目录下。</li>
+</ul>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Home
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Archives
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+
+    
+  <section class="duoshuo-comments">
+    <!-- 多说评论框 start -->
+    <div class="ds-thread" data-thread-key="post-Go的自举" 
+      data-title="Go的自举" data-url="/2017/04/27/Go的自举/index.html"></div>
+    <!-- 多说评论框 end -->
+  </section>
+
+
+
+
+  <script type="text/javascript">
+  var duoshuoQuery = {short_name:"feilengcui008"};
+  (function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0]
+     || document.getElementsByTagName('body')[0]).appendChild(ds);
+  })();
+  </script>
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
