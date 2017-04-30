@@ -166,11 +166,11 @@
   </entry>
   
   <entry>
-    <title><![CDATA[Go context包实现分析]]></title>
-    <link href="/2017/04/24/Go-context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/"/>
-    <id>/2017/04/24/Go-context包实现分析/</id>
+    <title><![CDATA[Go的context包实现分析]]></title>
+    <link href="/2017/04/24/Go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/"/>
+    <id>/2017/04/24/Go的context包实现分析/</id>
     <published>2017-04-24T13:07:23.000Z</published>
-    <updated>2017-04-24T13:50:16.917Z</updated>
+    <updated>2017-04-30T07:10:38.541Z</updated>
     <content type="html"><![CDATA[<p>Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以这种模型可以比较优雅地处理程序的多个逻辑部分，而context很好地实现了这个模型。对于请求响应的形式(比如http)尤其适合这种模型。下面分析下context包的具体实现。</p>
 <hr>
 <h2 id="u57FA_u672C_u8BBE_u8BA1"><a href="#u57FA_u672C_u8BBE_u8BA1" class="headerlink" title="基本设计"></a>基本设计</h2><ul>

@@ -7,7 +7,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Go context包实现分析 | feilengcui008</title>
+  <title>Go的context包实现分析 | feilengcui008</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -17,13 +17,13 @@
 
   <meta name="description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Go context包实现分析">
-<meta property="og:url" content="/2017/04/24/Go-context包实现分析/index.html">
+<meta property="og:title" content="Go的context包实现分析">
+<meta property="og:url" content="/2017/04/24/Go的context包实现分析/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
-<meta property="og:updated_time" content="2017-04-24T13:50:16.917Z">
+<meta property="og:updated_time" content="2017-04-30T07:10:38.541Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Go context包实现分析">
+<meta name="twitter:title" content="Go的context包实现分析">
 <meta name="twitter:description" content="Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以">
 
   
@@ -82,9 +82,9 @@
 
 
 <div class="content content-post CENTER">
-   <article id="post-Go-context包实现分析" class="article article-type-post" itemprop="blogPost">
+   <article id="post-Go的context包实现分析" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Go context包实现分析</h1>
+    <h1 class="post-title">Go的context包实现分析</h1>
 
     <div class="article-meta">
       <span>
@@ -119,7 +119,7 @@
 
       
         <i class="icon-comment"></i> 
-        <span class="ds-thread-count" data-thread-key="post-Go-context包实现分析"><i class="fa fa-spinner fa-spin"></i></span> 条评论
+        <span class="ds-thread-count" data-thread-key="post-Go的context包实现分析"><i class="fa fa-spinner fa-spin"></i></span> 条评论
       
       
     </div>
@@ -236,8 +236,8 @@
     
   <section class="duoshuo-comments">
     <!-- 多说评论框 start -->
-    <div class="ds-thread" data-thread-key="post-Go-context包实现分析" 
-      data-title="Go context包实现分析" data-url="/2017/04/24/Go-context包实现分析/index.html"></div>
+    <div class="ds-thread" data-thread-key="post-Go的context包实现分析" 
+      data-title="Go的context包实现分析" data-url="/2017/04/24/Go的context包实现分析/index.html"></div>
     <!-- 多说评论框 end -->
   </section>
 
