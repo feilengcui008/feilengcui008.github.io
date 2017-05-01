@@ -21,7 +21,7 @@
 <meta property="og:url" content="/2017/04/30/Go接口详解/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="Go接口的设计和实现是Go整个类型系统的一大特点，接口组合、duck typing等特性实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解”著名”的nil返回值问题、反射、type switch、type assertion等原理。本文主要基于Go1.9的源码介绍接口的内部实现及其使用相关的">
-<meta property="og:updated_time" content="2017-05-01T15:55:07.781Z">
+<meta property="og:updated_time" content="2017-05-01T15:58:48.633Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go接口详解">
 <meta name="twitter:description" content="Go接口的设计和实现是Go整个类型系统的一大特点，接口组合、duck typing等特性实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解”著名”的nil返回值问题、反射、type switch、type assertion等原理。本文主要基于Go1.9的源码介绍接口的内部实现及其使用相关的">
@@ -165,9 +165,9 @@
 <li>空接口(interface{})的itab优化<br>当将数据赋值给空接口时，由于空接口没有方法，所以interface的tab会直接指向数据的具体类型。在Go的reflect包中，reflect.TypeOf和reflect.ValueOf的参数都是空接口，因此所有参数都会先转换为空接口类型。这样反射就实现了对所有参数类型获取实际数据类型的统一。这在后面反射的基本实现中会分析到。</li>
 <li>数据长度较小时的优化<br>此时会将数据直接存放到data字段中，而不再用额外的指针指向堆上的内存。</li>
 </ul>
-<p>再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9中非基础类型中:</p>
+<p>再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9种非基础类型中:</p>
 <ul>
-<li>array传递会拷贝整块数据内存</li>
+<li>array传递会拷贝整块数据内存，传递长度为len(arr) * Sizeof(elem)</li>
 <li>string、slice、interface传递的是其runtime的实现，所以长度是固定的，分别为16、24、16字节(amd64)</li>
 <li>map、func、chan、pointer传递的是指针，所以长度固定为8字节(amd64)</li>
 <li>struct传递的是所有字段的内存拷贝，所以长度是所有字段的长度和</li>
