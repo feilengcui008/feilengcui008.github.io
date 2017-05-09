@@ -4,7 +4,7 @@
   
   <link href="/atom.xml" rel="self"/>
   <link href="/"/>
-  <updated>2017-05-01T15:58:48.633Z</updated>
+  <updated>2017-05-09T15:08:03.204Z</updated>
   <id>/</id>
   
   <author>
@@ -13,6 +13,82 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title><![CDATA[Go调度详解]]></title>
+    <link href="/2017/05/09/Go%E8%B0%83%E5%BA%A6%E8%AF%A6%E8%A7%A3/"/>
+    <id>/2017/05/09/Go调度详解/</id>
+    <published>2017-05-09T11:40:07.000Z</published>
+    <updated>2017-05-09T15:08:03.204Z</updated>
+    <content type="html"><![CDATA[<h3 id="u57FA_u672C_u5355_u5143"><a href="#u57FA_u672C_u5355_u5143" class="headerlink" title="基本单元"></a>基本单元</h3><p>Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。</p>
+<hr>
+<h3 id="u8C03_u5EA6_u7684_u6574_u4F53_u6D41_u7A0B"><a href="#u8C03_u5EA6_u7684_u6574_u4F53_u6D41_u7A0B" class="headerlink" title="调度的整体流程"></a>调度的整体流程</h3><ul>
+<li>关于g0栈和g栈<br>由于m是实际执行体，m的整个代码逻辑基本上就是整个调度逻辑。类似于Linux的内核栈和用户栈，Go的m也有两类栈：一类是系统栈(或者叫调度栈)，主要用于运行runtime的程序逻辑；另一类是g栈，用于运行g的程序逻辑。每个m在创建时会分配一个默认的g叫g0，g0不执行任何代码逻辑，只是用来存放m的调度栈等信息。当要执行Go runtime的一些逻辑比如创建g、新建m等，都会首先切换到g0栈然后执行，而执行g任务时，会切换到g的栈上。在调度栈和g栈上不断切换使整个调度过程复杂了不少。</li>
+<li>关于m的spinning自旋<br>在Go的调度中，m一旦被创建则不会退出。在系统调用、cgocall、lockOSThread时，为了防止阻塞其他g的执行，Go会新建或者唤醒m(os线程)执行其他的g，所以可能导致m的增加。如何保证m数量不会太多，同时有足够的线程使p(cpu)不会空闲？主要的手段是通过多路复用和m的spinning。多路复用解决网络和文件io时的阻塞(与net poll类似，Go1.8.1的代码中为os.File加了poll接口)，避免每次读写的系统调用消耗线程。而m的spinning的作用是尽量保证始终有m处于spinning寻找g(并不是执行g，充分利用多cpu)的同时，不会有太多m同时处于spinning(浪费cpu)。不同于一般意义的自旋，m处于自旋是指m的本地队列、全局队列、poller都没有g可运行时，m进入自旋并尝试从其他p偷取(steal)g，每当一个spinning的m获取到g后，会退出spinning并尝试唤醒新的m去spinning。所以，一旦总的spinning的m数量大于0时，就不用唤醒新的m了去spinning浪费cpu了。</li>
+</ul>
+<p>下面是整个调度的流程图</p>
+<ul>
+<li><p>schedule<br><img src="/images/schedule.png" alt=""></p>
+</li>
+<li><p>findrunnable<br><img src="/images/findrunnable.png" alt=""></p>
+</li>
+</ul>
+<hr>
+<h3 id="m_u7684_u89C6_u89D2_u770B_u8C03_u5EA6"><a href="#m_u7684_u89C6_u89D2_u770B_u8C03_u5EA6" class="headerlink" title="m的视角看调度"></a>m的视角看调度</h3><p>Go中的m大概可分为以下几种:</p>
+<ul>
+<li>系统线程，比如sysmon，其运行不需要p</li>
+<li>lockedm，与某个g绑定，未拿到对应的lockedg时睡眠，等待被唤醒，无法被调度</li>
+<li>陷入syscall的m，执行系统调用中，返回时进入调度逻辑</li>
+<li>cgo的m，cgo的调用实际上使用了lockedm和syscall</li>
+<li>正在执行goroutine的m</li>
+<li>正在执行调度逻辑的m</li>
+</ul>
+<p>什么时候可能需要新建或者唤醒m:</p>
+<ul>
+<li>有新的可运行g或者拿到可运行的g<ul>
+<li>goready，将g入队列</li>
+<li>newproc，新建g并入队列</li>
+<li>m从schedule拿到g，自身退出spinning</li>
+</ul>
+</li>
+<li>有p资源被释放handoff(p)</li>
+</ul>
+<p>m何时交出资源p，并进入睡眠:</p>
+<ul>
+<li>lockedm主动交出p</li>
+<li>处于syscall中，并被sysmon抢占(超过10ms)交出p</li>
+<li>cgocall被sysmon抢占交出p，或由于lockedm主动交出p</li>
+<li>findrunnable没找到可运行的g，主动交出p，进入睡眠</li>
+</ul>
+<hr>
+<h3 id="g_u7684_u89C6_u89D2_u770B_u8C03_u5EA6"><a href="#g_u7684_u89C6_u89D2_u770B_u8C03_u5EA6" class="headerlink" title="g的视角看调度"></a>g的视角看调度</h3><p>与goroutine相关的调度逻辑:</p>
+<ul>
+<li>go(runtime.newproc)产生新的g，放到本地队列或全局队列</li>
+<li>gopark，g置为waiting状态，等待显示goready唤醒，在poller中用得较多</li>
+<li>goready，g置为runnable状态，放入全局队列</li>
+<li>gosched，g显示调用runtime.Gosched或被抢占，置为runnable状态，放入全局队列</li>
+<li>goexit，g执行完退出，g所属m切换到g0栈，重新进入schedule</li>
+<li>g陷入syscall<ul>
+<li>net io和部分file io，没有事件则gopark</li>
+<li>普通的阻塞系统调用，返回时m重新进入schedule</li>
+</ul>
+</li>
+<li>g陷入cgocall<ul>
+<li>lockedm加上syscall的处理逻辑</li>
+</ul>
+</li>
+<li>g执行超过10ms被sysmon抢占</li>
+</ul>
+]]></content>
+    <summary type="html">
+    <![CDATA[<h3 id="u57FA_u672C_u5355_u5143"><a href="#u57FA_u672C_u5355_u5143" class="headerlink" title="基本单元"></a>基本单元</h3><p>Go调度相关的四个基本单元是g、m、p、sche]]>
+    </summary>
+    
+      <category term="Go" scheme="/tags/Go/"/>
+    
+      <category term="编程语言" scheme="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/"/>
+    
+  </entry>
   
   <entry>
     <title><![CDATA[Go接口详解]]></title>
@@ -1886,62 +1962,6 @@
       <category term="工具" scheme="/tags/%E5%B7%A5%E5%85%B7/"/>
     
       <category term="编程语言" scheme="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/"/>
-    
-  </entry>
-  
-  <entry>
-    <title><![CDATA[Distributed Systems-选主与同步]]></title>
-    <link href="/2016/03/10/Distributed-Systems-%E9%80%89%E4%B8%BB%E4%B8%8E%E5%90%8C%E6%AD%A5/"/>
-    <id>/2016/03/10/Distributed-Systems-选主与同步/</id>
-    <published>2016-03-10T13:05:15.000Z</published>
-    <updated>2017-04-01T09:24:34.743Z</updated>
-    <content type="html"><![CDATA[<p>在上一篇文章中讨论了leader选举对于基本Paxos算法在实际工程应用中的必要性，这一篇文章首先结合raft的选举算法谈谈leader选举的实质和常用方法，然后结合raft算法选举后的日志恢复以及《Paxos Made Simple》里lamport勾勒的multi-paxos的日志恢复来详细分析一下选主后要做的两件重要事情以及俩算法在这块的差异。</p>
-<hr>
-<h3 id="1-raft_u7684_u9009_u4E3B_u7B97_u6CD5_u4EE5_u53CA_u9009_u4E3B_u7B97_u6CD5_u7684_u5B9E_u8D28"><a href="#1-raft_u7684_u9009_u4E3B_u7B97_u6CD5_u4EE5_u53CA_u9009_u4E3B_u7B97_u6CD5_u7684_u5B9E_u8D28" class="headerlink" title="1.raft的选主算法以及选主算法的实质"></a>1.raft的选主算法以及选主算法的实质</h3><p>前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。</p>
-<p>关于raft选主的详细描述可以参考原论文</p>
-<ul>
-<li>raft选主时的term实际上对应基本Paxos中的proposal id</li>
-<li>raft选主时的要求即每个term期间只能最多有一个leader实际上对应于基本Paxos的每个proposal要么达成决议要么没达成决议</li>
-<li>raft选主时的随机timeout实际上是为了防止基本Paxos livelock的问题，这也是FLP定理所决定的</li>
-<li>raft选举时与基本Paxos的区别在于，raft选举不要求在某个term(proposal id)选出一个leader(达成决议后)不需要后续的某个term(proposal id)选出同一台机器作为leader(使用同一个值达成决议)，而是可以每次重新选一个机器(proposal选不同值)，当然我们可以使用一定方法，增大选某台机器的概率，比如为每台机器设置rank值。</li>
-<li>raft选举时，当candidate和leader接受到更大的term时立即更新term转为follower，在下一次超时前自然不能再提proposal，实际上对应于基本Paxos第一阶段acceptor接收到proposal id更大的proposal时更新proposal id放弃当前的proposal(在选主中实际上就对应放弃我candidate和leader的身份，本质上就是proposer的身份)</li>
-</ul>
-<p>所以选主本质上是可以通过基本Paxos算法来保证的，选主没有完全使用Paxos算法，可以看作使用了Paxos算法的某个子算法解决了比容错分布式一致问题限制稍微小的问题。当然，我们可以在选主时加上额外的限制条件，只要能保证可能选出一个主。</p>
-<hr>
-<h3 id="2-_u9009_u4E3B_u540E_u65E5_u5FD7_u7684_u540C_u6B65"><a href="#2-_u9009_u4E3B_u540E_u65E5_u5FD7_u7684_u540C_u6B65" class="headerlink" title="2.选主后日志的同步"></a>2.选主后日志的同步</h3><p>选出新的leader后，它至少要负责做两件事情，一件是确定下一次客户请求应该用哪个日志槽位或者说项，另一件是确定整个集群的机器过去已经提交过的最近的项(或者说日志)，确定这两个值的过程实际上就是日志恢复的过程，下面对两种算法具体分析。这里补充一点之前文章漏掉的东西，基本Paxos算法实际上有三个阶段，最后一个阶段是提交阶段，只是通常leader-based算法为了优化网络开销，将第三阶段和第二阶段合并了，而在每次执行第二阶段是带上leader已经提交过的日志号，所以新leader还需要确定最近被提交过的日志，而这种优化也引入了另外的复杂性。</p>
-<ul>
-<li><p>对于raft来说</p>
-<ul>
-<li><p>由于选主时额外的限制条件以及log replication时的consistency check保证(关于这两者是什么东西，不细说，基本上这就是raft简化了multi-paxos最核心的东西吧)，所以每个新leader一定有最新的日志，所以对于下一条日志槽位的选取，只需要读取最后一条日志来判断就行了。关于raft的log replication，后面有机会再说。</p>
-</li>
-<li><p>而对于已提交日志的判断，由于存在可能已经形成多数派，也就是在内存中形成了多数派，但是还没有机器commited到磁盘，这时，新的leader无法判断这条日志是已经提交还是没有提交(参见原论文5.4.2节)，raft的做法是不管这条可能被新leader覆盖掉的日志，只需要保证在新的term期间，提交一条日志，那么由于consistency check，自然会提交之前的日志。</p>
-</li>
-</ul>
-</li>
-<li><p>对于multi-paxos来说</p>
-<ul>
-<li><p>由于在log replication说，不像raft那样保证一个顺序应答(不能保证线性一致性，能保证顺序一致性)，也就是保证一个日志槽位达成多数派后才接受下一个请求，multi-paxos可以在一个日志槽位还没有达成多数派时并发处理另外一个日志槽位，所以新leader在恢复确认下一个可用日志槽位以及已提交日志时更麻烦。</p>
-</li>
-<li><p>lamport原论文描述的方法是，对于明确知道已提交的日志(这一点我们可以通过给每一条已提交日志加一个标示，这样可以减少日志恢复的时间)，不用再次进行基本Paxos的决议，而对于未明确知道已提交的日志，则进行基本Paxos的二个阶段来确认已达成多数派的值，对于中间空洞且之前没有达成过多数派的，直接写一条空操作的日志，至于为什么会产生这种情况，可以参考原论文。一旦所有日志都经过这种方法恢复后，下一个可用日志槽位和最近已提交日志号也就能确定了。</p>
-</li>
-</ul>
-</li>
-</ul>
-<p>对比上面两者恢复的过程，我们可以看到raft是怎么简化multi-paxos的。一旦新的leader确定了上面那两件事情，就可以进入正常的log replication阶段了，也就仅仅是多数派的事情了。</p>
-<hr>
-<h3 id="3-log_replication_uFF0C_u5BA2_u6237_u7AEF_u4EA4_u4E92_uFF0Cmembership_u7BA1_u7406_uFF0Cleader_lease_u7B49"><a href="#3-log_replication_uFF0C_u5BA2_u6237_u7AEF_u4EA4_u4E92_uFF0Cmembership_u7BA1_u7406_uFF0Cleader_lease_u7B49" class="headerlink" title="3.log replication，客户端交互，membership管理，leader lease等"></a>3.log replication，客户端交互，membership管理，leader lease等</h3><p>这一节为后面的文章做个铺垫，对于log replication实际上不会涉及太多状态的reason，所以也就比较容易理解，基本上是类似简化的两阶段提交，后面会介绍下raft的log replication。对于客户端交互，leader什么时候返回结果，客户端怎么超时重试，以及怎么保证请求的幂等，membership management，以及leader lease等一些优化手段。</p>
-]]></content>
-    <summary type="html">
-    <![CDATA[<p>在上一篇文章中讨论了leader选举对于基本Paxos算法在实际工程应用中的必要性，这一篇文章首先结合raft的选举算法谈谈leader选举的实质和常用方法，然后结合raft算法选举后的日志恢复以及《Paxos Made Simple》里lamport勾勒的multi-pa]]>
-    </summary>
-    
-      <category term="Paxos" scheme="/tags/Paxos/"/>
-    
-      <category term="Raft" scheme="/tags/Raft/"/>
-    
-      <category term="分布式一致性" scheme="/tags/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7/"/>
-    
-      <category term="系统" scheme="/categories/%E7%B3%BB%E7%BB%9F/"/>
     
   </entry>
   
