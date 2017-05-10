@@ -51,8 +51,33 @@ It achieves high utilization by combining admission control, efficient task-pack
   
 
   
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?0ec48383082394fc4799be50b16421bf";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
 
   
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
 
 
   
@@ -117,6 +142,11 @@ It achieves high utilization by combining admission control, efficient task-pack
 
 
       
+        <span>
+          <i class="icon-comment"></i>
+          <a href="http://feilengcui008.github.io//2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/#disqus_thread"></a>
+        </span>
+      
 
       
       <i class="fa fa-eye"></i> 
@@ -126,9 +156,6 @@ It achieves high utilization by combining admission control, efficient task-pack
         </span>
       
 
-      
-        <i class="icon-comment"></i> 
-        <span class="ds-thread-count" data-thread-key="post-Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg"><i class="fa fa-spinner fa-spin"></i></span> 条评论
       
       
     </div>
@@ -298,29 +325,33 @@ It achieves high utilization by combining admission control, efficient task-pack
   
       <div class="fexo-comments comments-post">
     
-
-    
-  <section class="duoshuo-comments">
-    <!-- 多说评论框 start -->
-    <div class="ds-thread" data-thread-key="post-Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg" 
-      data-title="Paper Reading - Large-scale cluster management at Google with Borg" data-url="/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/index.html"></div>
-    <!-- 多说评论框 end -->
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
   </section>
 
-
-
-
-  <script type="text/javascript">
-  var duoshuoQuery = {short_name:"feilengcui008"};
-  (function() {
-    var ds = document.createElement('script');
-    ds.type = 'text/javascript';ds.async = true;
-    ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-    ds.charset = 'UTF-8';
-    (document.getElementsByTagName('head')[0]
-     || document.getElementsByTagName('body')[0]).appendChild(ds);
-  })();
+  <script>
+    var disqus_shortname = 'feilengcui';
+    
+    var disqus_url = '/2017/03/31/Paper-Reading-Large-scale-cluster-management-at-Google-with-Borg/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
   </script>
+
+  <script id="dsq-count-scr" src="//feilengcui.disqus.com/count.js" async></script>
+
+
+
+    
+
+
 
 
     
@@ -359,50 +390,5 @@ It achieves high utilization by combining admission control, efficient task-pack
   }
 </script>
 
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-            processEscapes: true
-        }
-    });
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax();
-        for (var i = 0; i < all.length; ++i)
-            all[i].SourceElement().parentNode.className += ' has-jax';
-    });
-</script>
-<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-<!-- mathjax config similar to math.stackexchange -->
-
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({
-    tex2jax: {
-      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-      processEscapes: true
-    }
-  });
-</script>
-
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Config({
-      tex2jax: {
-        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
-      }
-    });
-</script>
-
-<script type="text/x-mathjax-config">
-    MathJax.Hub.Queue(function() {
-        var all = MathJax.Hub.getAllJax(), i;
-        for(i=0; i < all.length; i += 1) {
-            all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-    });
-</script>
-
-<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-</script>
 </body>
 </html>
