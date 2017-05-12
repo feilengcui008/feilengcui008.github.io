@@ -119,7 +119,7 @@
 
 .sidebar-toggle {
     position: fixed;
-    left: 49.1%;
+    /*left: 49.1%; */
     bottom: 0px;
     width: 22px;
     top: 0;
@@ -155,4 +155,27 @@
 
 .pagination {
   z-index: 500;
+}
+
+.leftspan {
+  text-align: left;
+}
+
+.rightspan {
+  text-align: right;
+  float: right;
+}
+
+.itemdiv {
+  width: 200px;
+  margin:0 auto;
+}
+
+.descdiv {
+  margin:0 auto;
+  text-align: center;
+}
+
+.aboutdiv {
+  padding-left: 0px;
 }
