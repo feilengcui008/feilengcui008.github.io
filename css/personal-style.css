@@ -98,7 +98,7 @@
 
 .item-post .post-title {
   max-width: 280px;
-  margin-left: 10px;
+  margin-left: 15px;
 }
 
 .personal_content {
@@ -182,5 +182,9 @@
 }
 
 .item-post:before {
-  display: none;
+  left: 0px;
+}
+
+.item-post .post-date { 
+  float: right;
 }
