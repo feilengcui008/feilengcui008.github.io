@@ -193,3 +193,7 @@ body {
   float: right;
   margin-right: 10px;
 }
+
+code, pre, samp {
+    font-family: Go-Regular;
+    }
