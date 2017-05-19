@@ -7,7 +7,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Linux网络编程之简单总结 | feilengcui008</title>
+  <title>Linux网络编程小结 | feilengcui008</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -15,25 +15,25 @@
     <meta name="keywords" content="C/C++,Linux编程," />
   
 
-  <meta name="description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理/内存管理/VFS/协议栈等许多相关的知识，尤其是并发。所以不仅仅只是会使用socket那么简单。
-网络编程模型几个相关概念：
+  <meta name="description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。
 
-阻塞/非阻塞阻塞和非阻塞通常是指文件描述符本身的属性，拿socket来说，当socket读缓冲区中没有数据时或者写缓冲区满时，都会造成我们rea">
+网络编程模型
+阻塞和非阻塞阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者writ">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Linux网络编程之简单总结">
+<meta property="og:title" content="Linux网络编程小结">
 <meta property="og:url" content="/2015/03/04/Linux网络编程之简单总结/index.html">
 <meta property="og:site_name" content="feilengcui008">
-<meta property="og:description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理/内存管理/VFS/协议栈等许多相关的知识，尤其是并发。所以不仅仅只是会使用socket那么简单。
-网络编程模型几个相关概念：
+<meta property="og:description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。
 
-阻塞/非阻塞阻塞和非阻塞通常是指文件描述符本身的属性，拿socket来说，当socket读缓冲区中没有数据时或者写缓冲区满时，都会造成我们rea">
-<meta property="og:updated_time" content="2017-04-01T09:24:35.427Z">
+网络编程模型
+阻塞和非阻塞阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者writ">
+<meta property="og:updated_time" content="2017-05-19T08:09:47.409Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Linux网络编程之简单总结">
-<meta name="twitter:description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理/内存管理/VFS/协议栈等许多相关的知识，尤其是并发。所以不仅仅只是会使用socket那么简单。
-网络编程模型几个相关概念：
+<meta name="twitter:title" content="Linux网络编程小结">
+<meta name="twitter:description" content="网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。
 
-阻塞/非阻塞阻塞和非阻塞通常是指文件描述符本身的属性，拿socket来说，当socket读缓冲区中没有数据时或者写缓冲区满时，都会造成我们rea">
+网络编程模型
+阻塞和非阻塞阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者writ">
 
   
 
@@ -110,7 +110,7 @@
 
   <div id="toc" class="toc-article">
     <strong class="toc-title">Posts List</strong>
-    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B"><span class="toc-text">网络编程模型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898"><span class="toc-text">值得注意的问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u5E94_u7528_u5C42_u4E4B_u5916"><span class="toc-text">应用层之外</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#u76F8_u5173_u8D44_u6E90"><span class="toc-text">相关资源</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B"><span class="toc-text">网络编程模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5E38_u89C1_u7F51_u7EDC_u5E93_u91C7_u7528_u7684_u6A21_u578B_28_u53EA_u770Bepoll_29_uFF1A"><span class="toc-text">常见网络库采用的模型(只看epoll)：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898"><span class="toc-text">值得注意的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5E94_u7528_u5C42_u4E4B_u5916"><span class="toc-text">应用层之外</span></a></li></ol>
   </div>
 
 
@@ -118,7 +118,7 @@
 <div class="content content-post CENTER">
    <article id="post-Linux网络编程之简单总结" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Linux网络编程之简单总结</h1>
+    <h1 class="post-title">Linux网络编程小结</h1>
 
     <div class="article-meta">
       <span>
@@ -163,43 +163,35 @@
 
   <div class="article-content">
     
-      <p>网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理/内存管理/VFS/协议栈等许多相关的知识，尤其是并发。所以不仅仅只是会使用socket那么简单。</p>
-<h4 id="u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B"><a href="#u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B" class="headerlink" title="网络编程模型"></a>网络编程模型</h4><p>几个相关概念：</p>
-<ul>
-<li><p><em>阻塞/非阻塞</em><br>阻塞和非阻塞通常是指文件描述符本身的属性，拿socket来说，当socket读缓冲区中没有数据时或者写缓冲区满时，都会造成我们read/recv或者write/send系统调用阻塞。而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。当然这只是理解阻塞和非阻塞的一个简单例子，并不全面。在Linux下我们可以通过accept4/fcntl等函数设置socket为非阻塞。</p>
+      <p>网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。</p>
+<hr>
+<h3 id="u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B"><a href="#u7F51_u7EDC_u7F16_u7A0B_u6A21_u578B" class="headerlink" title="网络编程模型"></a>网络编程模型</h3><ul>
+<li><p>阻塞和非阻塞<br>阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl等函数设置socket为非阻塞。</p>
 </li>
-<li><p><em>同步/异步</em><br>同步和异步可以分两层理解。一个是编程方式上的同步和异步，另一个是同步IO和异步IO。<br>同步IO和异步IO更多地是我们怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor，同步通常是我们主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成后的回调函数，提交完读写的请求控制权就返回到进程。</p>
+<li><p>同步/异步<br>同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成后的回调函数，提交完读写的请求控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的<code>std::async/std::future</code>等等，更多的是用回调或者线程的方式组织代码逻辑。</p>
 </li>
-<li><p><em>IO复用</em><br>IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生，select是一种比较通用的多路复用技术，很多平台都支持，poll是Linux平台下对select做的改进，而epoll可以说是目前Linux平台下性能最高的一种multiplexing技术，当然你得用好，尤其是LT和ET两种触发方式的使用。</p>
+<li><p>IO复用<br>IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，很多平台都支持，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。</p>
 </li>
 </ul>
-<p>下面简单总结了常见的服务器端使用的网络编程模型(包含线程模型)</p>
-<p>先看看常见组件采用的模型(只看epoll)：</p>
-<ul>
-<li>nginx：master进程+多个worker进程，每个进程一个epoll eventloop</li>
-<li>memcached： 主线程+多个worker线程，每个线程一个epoll eventloop</li>
-<li>tornado：单线程，一个epoll eventloop</li>
-<li>libevent：对于Linux平台封装了epoll</li>
-<li>libev：对于Linux平台封装了epoll</li>
-<li>boost.asio：对于Linux平台封装了epoll</li>
-<li>muduo：对于Linux平台封装了epoll</li>
-<li>nodejs的libuv：基于libev对epoll的封装</li>
+<hr>
+<h3 id="u5E38_u89C1_u7F51_u7EDC_u5E93_u91C7_u7528_u7684_u6A21_u578B_28_u53EA_u770Bepoll_29_uFF1A"><a href="#u5E38_u89C1_u7F51_u7EDC_u5E93_u91C7_u7528_u7684_u6A21_u578B_28_u53EA_u770Bepoll_29_uFF1A" class="headerlink" title="常见网络库采用的模型(只看epoll)："></a>常见网络库采用的模型(只看epoll)：</h3><ul>
+<li>nginx：master进程+多个worker进程，one eventloop per process</li>
+<li>memcached：主线程+多个worker线程，one eventloop per thread</li>
+<li>tornado：单线程，one eventloop per thread</li>
+<li>muduo：网络库，one eventloop per thread</li>
+<li>libevent、libev、boost.asio：网络库，跨平台eventloop封装</li>
 <li>…</li>
 </ul>
-<p>所以排除掉传统的单线程，多进程，多线程等模型，常见的高性能网络编程模型通常是one eventloop per thread与多线程的组合，或者为了处理耗时的任务再加上threadpool。通常为了更好地性能与并发，以master/worker的形式来配置进程线程模型。其实说到底各种高性能网络库或者框架还是在玩epoll+非阻塞，基础设施OS层面已经准备好了，最终看谁优化做得好。</p>
-<h4 id="u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898"><a href="#u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898" class="headerlink" title="值得注意的问题"></a>值得注意的问题</h4><ul>
-<li><em>选择线程模型</em><br>单线程下不用考虑同步等问题，one eventloop，相对容易很多<br>多线程下要考虑多线程编程可能产生的各种竞争同步问题，协调各个thread里面的eventloop。<br>多进程下要考虑各个eventloop thread的通信等问题</li>
-<li><em>socket的读写</em><br>尤其是epoll LT和ET方式下的读写，还有怎么优雅地处理各种错误。</li>
-<li><em>协议的设计</em><br>使用文本还是二进制？json，xml，pb等等？</li>
-<li><em>TCP/IP协议本身的深入理解</em></li>
-<li><em>日志</em></li>
-<li><em>……</em></li>
+<p>排除掉传统的单线程、多进程、多线程等模型，常见的高性能网络编程模型通常是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。</p>
+<hr>
+<h3 id="u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898"><a href="#u503C_u5F97_u6CE8_u610F_u7684_u95EE_u9898" class="headerlink" title="值得注意的问题"></a>值得注意的问题</h3><ul>
+<li>选择线程模型<br>单线程下不用考虑同步等问题，one eventloop，相对容易很多。多线程下要考虑多线程编程可能产生的各种竞争同步问题，协调各个thread里面的eventloop。多进程下要考虑各个eventloop thread的通信等问题</li>
+<li>socket的读写<br>尤其是epoll LT和ET方式下的读写，还有怎么优雅地处理各种错误。</li>
+<li>协议的设计<br>使用文本还是二进制？json，xml，pb等等？</li>
+<li>……</li>
 </ul>
-<h4 id="u5E94_u7528_u5C42_u4E4B_u5916"><a href="#u5E94_u7528_u5C42_u4E4B_u5916" class="headerlink" title="应用层之外"></a>应用层之外</h4><p>前面都是基于应用层对于C10K这类问题的解决方案，在更高并发要求的环境下就得在内核态下做手脚了，如零拷贝等技术，直接越过内核协议栈，实现高速数据包的传递。相应的内核模块也早有实现。主要的技术点在于数据平面与控制平面分离、减少不必要的系统调用、用户态驱动uio/vfio等减少内存拷贝、内存池减少内存分配、减少缓存失效、batch syscall、用户态协议栈…相应的技术方案大多数是围绕这些点来做优化整合。比如OSDI ‘14上的best awarded paper-Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</p>
-<h4 id="u76F8_u5173_u8D44_u6E90"><a href="#u76F8_u5173_u8D44_u6E90" class="headerlink" title="相关资源"></a>相关资源</h4><ul>
-<li>书籍：<br>《UNIX环境高级编程》<br>《UNIX网络编程》两卷<br>《TCP/IP协议》三卷<br>《Linux内核设计与实现》<br>《深入理解Linux内核》<br>《Linux多线程服务端编程》</li>
-<li>各种开源组件：<br>nginx、memcached、beanstalkd、libevent、libev、muduo、boost.asio、ace、tornado、swoole等等</li>
-</ul>
+<hr>
+<h3 id="u5E94_u7528_u5C42_u4E4B_u5916"><a href="#u5E94_u7528_u5C42_u4E4B_u5916" class="headerlink" title="应用层之外"></a>应用层之外</h3><p>前面都是基于应用层对于C10K这类问题的解决方案，在更高并发要求的环境下就得在内核态下做手脚了，如零拷贝等技术，直接越过内核协议栈，实现高速数据包的传递。相应的内核模块也早有实现。主要的技术点在于数据平面与控制平面分离、减少不必要的系统调用、用户态驱动uio/vfio等减少内存拷贝、内存池减少内存分配、减少缓存失效、batch syscall、用户态协议栈等等。相应的技术方案大多数是围绕这些点来做优化整合。比如OSDI ‘14上的best awarded paper-Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</p>
 
     
   </div>

@@ -7,7 +7,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Distributed Systems - Raft实现小结 | feilengcui008</title>
+  <title>Raft实现小结 | feilengcui008</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -19,15 +19,15 @@
 
 Raft">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Distributed Systems - Raft实现小结">
+<meta property="og:title" content="Raft实现小结">
 <meta property="og:url" content="/2017/03/20/Raft实现小结/index.html">
 <meta property="og:site_name" content="feilengcui008">
 <meta property="og:description" content="上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。
 
 Raft">
-<meta property="og:updated_time" content="2017-04-16T07:18:55.497Z">
+<meta property="og:updated_time" content="2017-05-19T06:18:03.602Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Distributed Systems - Raft实现小结">
+<meta name="twitter:title" content="Raft实现小结">
 <meta name="twitter:description" content="上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。
 
 Raft">
@@ -115,7 +115,7 @@ Raft">
 <div class="content content-post CENTER">
    <article id="post-Raft实现小结" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Distributed Systems - Raft实现小结</h1>
+    <h1 class="post-title">Raft实现小结</h1>
 
     <div class="article-meta">
       <span>

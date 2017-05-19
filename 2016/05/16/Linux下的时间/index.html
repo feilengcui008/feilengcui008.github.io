@@ -47,7 +47,7 @@ hwclock命令
 
 
 通常内核在boot以及从低电量中恢复时，会读取RTC更">
-<meta property="og:updated_time" content="2017-04-01T09:24:35.427Z">
+<meta property="og:updated_time" content="2017-05-19T06:40:42.442Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Linux下的时间">
 <meta name="twitter:description" content="时钟
@@ -140,7 +140,7 @@ hwclock命令
 
   <div id="toc" class="toc-article">
     <strong class="toc-title">Posts List</strong>
-    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u949F"><span class="toc-text">时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u95F4"><span class="toc-text">时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u7CFB_u7EDF_u65F6_u95F4_u7684_u64CD_u4F5C"><span class="toc-text">系统时间的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5B9A_u65F6_u5668"><span class="toc-text">定时器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4"><span class="toc-text">分布式系统的时间</span></a></li></ol>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u949F"><span class="toc-text">时钟</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u65F6_u95F4"><span class="toc-text">时间</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u7CFB_u7EDF_u65F6_u95F4_u7684_u64CD_u4F5C"><span class="toc-text">系统时间的操作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u5B9A_u65F6_u5668"><span class="toc-text">定时器</span></a></li></ol>
   </div>
 
 
@@ -286,9 +286,6 @@ hwclock命令
 <li><p>pipe + select/poll/epoll<br>一端另起线程定时触发，另一端放到多路复用中</p>
 </li>
 </ul>
-<hr>
-<h3 id="u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4"><a href="#u5206_u5E03_u5F0F_u7CFB_u7EDF_u7684_u65F6_u95F4" class="headerlink" title="分布式系统的时间"></a>分布式系统的时间</h3><p>扯点其他的东西:-)。时间是个复杂而有意思的东西，在单机上不同处理器不同进程不同线程可以读到同一个系统时钟CLOCK_REALTIME，而且在一定时间范围内t1~t2发生的事件，即使在t1之前，t2之后系统时间与真实时间发生了一定偏移，只要时间戳的相对顺序没乱，那么我们就可以完全确定t1~t2时间戳之间不同线程发生事件的顺序。但是不同机器之间的系统时间总会互相漂移(ntp局域网0.1ms左右，互联网1-50ms左右)，导致我们没法直接使用系统时间(google的原子钟也是将一个时间段作为时间点的，只要这个时间段比较小，那么性能应该可以接收)，所以需要logic clock以及衍生出来的vector clock或者version number等。</p>
-<p>没有全局时钟是分布式系统需要一致性算法的一个重要原因，因为我们没办法根据单机的系统时间戳来判断多台机器之间事件的先后顺序，那么对于一个新的节点，我们要把之前所有的时间atomic broadcast到这个新节点就会出现问题，所以这也是分布式一致性算法(Paxos/Raft/Viewstamp Replication/Zab)解决的一个问题，当然再加上网络的异步，以及无法获知各个节点的全局状态，以及机器crash等各种问题，这些算法往往加入了容错性。</p>
 
     
   </div>

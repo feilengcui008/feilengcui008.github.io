@@ -81,7 +81,7 @@
 }
 
 .item-year a.text-year {
-  font-size: 16px;
+  font-size: 10px;
 }
 
 .item-year {
@@ -98,6 +98,7 @@
 
 .item-post .post-title {
   max-width: 280px;
+  margin-left: 10px;
 }
 
 .personal_content {

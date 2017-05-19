@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Linux内核编译与启动流程 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Linux内核," />
+  
+
+  <meta name="description" content="编译流程
+1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下
+2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux内核编译与启动流程">
+<meta property="og:url" content="/2015/09/20/Linux内核编译与启动流程/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="编译流程
+1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下
+2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设">
+<meta property="og:image" content="http://img.blog.csdn.net/20150920225335155">
+<meta property="og:updated_time" content="2017-05-19T07:00:32.970Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux内核编译与启动流程">
+<meta name="twitter:description" content="编译流程
+1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下
+2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?680ac17b792b826fa89a5e326d73e316";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+  <div class="sidebar-toggle-parent">
+  <div class="sidebar-toggle">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+</div>
+
+
+  
+
+  <!--
+<div class="post-header">
+   
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#u7F16_u8BD1_u6D41_u7A0B"><span class="toc-text">编译流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#u542F_u52A8_u6D41_u7A0B"><span class="toc-text">启动流程</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Linux内核编译与启动流程" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux内核编译与启动流程</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2015.09.20</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/系统/">系统</a>
+  </span>
+
+
+
+      
+        <span>
+          <i class="icon-comment"></i>
+          <a href="http://feilengcui008.github.io//2015/09/20/Linux内核编译与启动流程/#disqus_thread"></a>
+        </span>
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <h3 id="u7F16_u8BD1_u6D41_u7A0B"><a href="#u7F16_u8BD1_u6D41_u7A0B" class="headerlink" title="编译流程"></a>编译流程</h3><ul>
+<li>1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下</li>
+<li>2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设配置的压缩工具是gzip)。</li>
+<li>3.使用生成的compressed/mkpiggy为compressed/vmlinux.bin.gz添加解压缩程序头，生成compressed/piggy.S，进而生成compressed/piggy.o。</li>
+<li>4.将compressed/head_64.o，compressed/misc.o，compressed/piggy.o链接为compressed/vmlinux。</li>
+<li>5.回到boot目录，用objcopy为compressed/vmlinux去掉符号等信息生成boot/vmlinux.bin。</li>
+<li>6.将boot/setup.bin与boot/vmlinux.bin链接，生成bzImage。</li>
+<li>7.将各个设置为动态编译的模块链接为内核模块kmo。</li>
+<li>8.over，maybe copy bzImage to /boot and kmods to /lib.</li>
+</ul>
+<p>下面是内核镜像的组成:<br><img src="http://img.blog.csdn.net/20150920225335155" alt="这里写图片描述"></p>
+<hr>
+<h3 id="u542F_u52A8_u6D41_u7A0B"><a href="#u542F_u52A8_u6D41_u7A0B" class="headerlink" title="启动流程"></a>启动流程</h3><p>早期版本的linux内核，如0.1，是通过自带的bootsect.S/setup.S引导，现在需要通过bootloader如grub/lilo来引导。grub的作用大致如下:</p>
+<ul>
+<li>1.grub安装时将stage1 512字节和所在分区文件系统类型对应的stage1.5文件分别写入mbr和之后的扇区。</li>
+<li>2.bios通过中断加载mbr的512个字节的扇区到0x7c00地址，跳转到0x07c0:0x0000执行。</li>
+<li>3.通过bios中断加载/boot/grub下的stage2，读取/boot/grub/menu.lst配置文件生成启动引导菜单。</li>
+<li>4.加载/boot/vmlinuz-xxx-xx与/boot/inird-xxx，将控制权交给内核。 </li>
+</ul>
+<p>下面是较为详细的步骤:</p>
+<ul>
+<li><p>1.BIOS加载硬盘第一个扇区(MBR 512字节)到0000:07C00处，MBR包含引导代码(446字节，比如grub第一阶段的引导代码)，分区表(64字节)信息，结束标志0xAA55(2字节) </p>
+</li>
+<li><p>2.MBR开始执行加载活跃分区，grub第一阶段代码加载1.5阶段的文件系统相关的代码(通过bios中断读活跃分区的扇区)</p>
+</li>
+<li><p>3.有了grub1.5阶段的文件系统相关的模块，接下来读取位于文件系统的grub第2阶段的代码，并执行</p>
+</li>
+<li><p>4.grub第2阶段的代码读取/boot/grub.cfg文件，生成引导菜单</p>
+</li>
+<li><p>5.加载对应的压缩内核vmlinuz和initrd（到哪个地址？）</p>
+</li>
+<li><p>6.实模式下执行vmlinuz头setup部分(bootsect和setup)[head.S[calll main],main.c[go_to_protected_mode]]  ==&gt; 准备进入32位保护模式</p>
+</li>
+<li><p>7.跳转到过渡的32位保护模式执行compressed/head_64.S[startup_32,startup_64]  ==&gt; 进入临时的32位保护模式</p>
+</li>
+<li><p>8.解压缩剩余的vmlinuz，设置页表等，设置64位环境，跳转到解压地址执行  ==&gt; 进入64位</p>
+</li>
+<li><p>9.arch/x86/kernel/head_64.S[startup_64] </p>
+</li>
+<li><p>10.arch/x86/kernel/head64.c[x86_64_start_up]</p>
+</li>
+<li><p>11.init/main.c[start_kernel]</p>
+</li>
+<li><p>12.然后后面的事情就比较好知道了:) </p>
+</li>
+</ul>
+<blockquote>
+<p>ref: Linux source code 3.19.3</p>
+</blockquote>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Home
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Archives
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'feilengcui008';
+    
+    var disqus_url = '/2015/09/20/Linux内核编译与启动流程/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//feilengcui008.disqus.com/count.js" async></script>
+
+
+
+    
+
+
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>

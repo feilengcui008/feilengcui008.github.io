@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+
+  <html class="light page-post">
+
+
+<head>
+  <meta charset="utf-8">
+  
+  <title>Python退出时hang住的问题 | feilengcui008</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  
+    <meta name="keywords" content="Python," />
+  
+
+  <meta name="description" content="最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
+
+subprocess模块使用不当的问题Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python退出时hang住的问题">
+<meta property="og:url" content="/2016/10/16/Python退出时hang住的问题/index.html">
+<meta property="og:site_name" content="feilengcui008">
+<meta property="og:description" content="最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
+
+subprocess模块使用不当的问题Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用">
+<meta property="og:image" content="http://img.blog.csdn.net/20161219163155945?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZmVpbGVuZ2N1aTAwOA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:image" content="http://img.blog.csdn.net/20161219163214323?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZmVpbGVuZ2N1aTAwOA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2017-05-19T06:28:04.030Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python退出时hang住的问题">
+<meta name="twitter:description" content="最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
+
+subprocess模块使用不当的问题Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用">
+
+  
+
+  
+    <link rel="icon" href="/favicon.ico">
+  
+
+  <link href="/css/styles.css?v=c114cbe6" rel="stylesheet">
+
+
+  
+    <link rel="stylesheet" href="/css/personal-style.css" type="text/css">
+  
+
+  
+
+  
+  <script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?680ac17b792b826fa89a5e326d73e316";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+	(function(){
+	    var bp = document.createElement('script');
+	    var curProtocol = window.location.protocol.split(':')[0];
+	    if (curProtocol === 'https') {
+	        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+	    }
+	    else {
+	        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+	    }
+	    var s = document.getElementsByTagName("script")[0];
+	    s.parentNode.insertBefore(bp, s);
+	})();
+  </script>
+
+
+
+  
+    <script async src="https://dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  
+
+  
+    <link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  
+</head>
+
+<body>
+
+  <div class="sidebar-toggle-parent">
+  <div class="sidebar-toggle">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+</div>
+
+
+  
+
+  <!--
+<div class="post-header">
+   
+
+</div>
+-->
+
+
+  <div id="toc" class="toc-article">
+    <strong class="toc-title">Posts List</strong>
+    <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#subprocess_u6A21_u5757_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898"><span class="toc-text">subprocess模块使用不当的问题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#threading-Timer_u7684_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898"><span class="toc-text">threading.Timer的使用不当的问题</span></a></li></ol>
+  </div>
+
+
+
+<div class="content content-post CENTER">
+   <article id="post-Python退出时hang住的问题" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Python退出时hang住的问题</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>2016.10.16</span>
+      </span>
+
+      
+        <span class="article-author">
+          <i class="icon-user"></i>
+          <span>feilengcui008</span>
+        </span>
+      
+
+      
+  <span class="article-category">
+    <i class="icon-list"></i>
+    <a class="article-category-link" href="/categories/编程语言/">编程语言</a>
+  </span>
+
+
+
+      
+        <span>
+          <i class="icon-comment"></i>
+          <a href="http://feilengcui008.github.io//2016/10/16/Python退出时hang住的问题/#disqus_thread"></a>
+        </span>
+      
+
+      
+      <i class="fa fa-eye"></i> 
+        <span id="busuanzi_container_page_pv">
+           &nbsp热度 <span id="busuanzi_value_page_pv">
+           <i class="fa fa-spinner fa-spin"></i></span>℃
+        </span>
+      
+
+      
+      
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+      <p>最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。</p>
+<hr>
+<h4 id="subprocess_u6A21_u5757_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898"><a href="#subprocess_u6A21_u5757_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898" class="headerlink" title="subprocess模块使用不当的问题"></a>subprocess模块使用不当的问题</h4><p>Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># main.py</span></span><br><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># encoding: utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> subprocess</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> tempfile</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">import</span> traceback</span><br><span class="line"><span class="keyword">import</span> commands</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># both parent and child process will hang </span></span><br><span class="line"><span class="comment"># if run.py stdout/stderr exceed 64K, since</span></span><br><span class="line"><span class="comment"># parent process is waiting child process exit</span></span><br><span class="line"><span class="comment"># but child process is blocked by writing pipe</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">testSubprocessCallPipe</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># call: just Popen().wait()</span></span><br><span class="line">    p = subprocess.Popen([<span class="string">"python"</span>, <span class="string">"run.py"</span>], </span><br><span class="line">        stdin=subprocess.PIPE, </span><br><span class="line">        stdout=subprocess.PIPE, </span><br><span class="line">        stderr=subprocess.PIPE)</span><br><span class="line">    ret = p.wait()</span><br><span class="line">    <span class="keyword">print</span> ret</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># will not hang since the parent process which</span></span><br><span class="line"><span class="comment"># call communicate will poll or thread to comsume</span></span><br><span class="line"><span class="comment"># the pipe buffer, so the child process can write</span></span><br><span class="line"><span class="comment"># all it's data to stdout or stderr pipe and it will</span></span><br><span class="line"><span class="comment"># not be blocked.</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">testSubprocessCommunicate</span><span class="params">()</span>:</span></span><br><span class="line">    p = subprocess.Popen([<span class="string">"python"</span>, <span class="string">"run.py"</span>], </span><br><span class="line">        stdin=subprocess.PIPE, </span><br><span class="line">        stdout=subprocess.PIPE, </span><br><span class="line">        stderr=subprocess.PIPE)</span><br><span class="line">    <span class="keyword">print</span> p.communicate()[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># will not hang since sys.stdout and sys.stderr </span></span><br><span class="line"><span class="comment"># don't have 64K default buffer limitation, child</span></span><br><span class="line"><span class="comment"># process can write all it's data to stdout or </span></span><br><span class="line"><span class="comment"># stderr fd and exit</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">testSubprocessCallStdout</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment"># call: just Popen().wait()</span></span><br><span class="line">    p = subprocess.Popen([<span class="string">"python"</span>, <span class="string">"run.py"</span>], </span><br><span class="line">        stdin=sys.stdin, </span><br><span class="line">        stdout=sys.stdout, </span><br><span class="line">        stderr=sys.stderr)</span><br><span class="line">    ret = p.wait()</span><br><span class="line">    <span class="keyword">print</span> ret</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># will not hang since file has no limitation of 64K</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">testSubprocessCallFile</span><span class="params">()</span>:</span></span><br><span class="line">    stdout = tempfile.mktemp()</span><br><span class="line">    stderr = tempfile.mktemp()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"stdout file %s"</span> % (stdout,), <span class="string">"stderr file %s"</span> % (stderr,)</span><br><span class="line">    stdout = open(stdout, <span class="string">"w"</span>)</span><br><span class="line">    stderr = open(stderr, <span class="string">"w"</span>)</span><br><span class="line">    p = subprocess.Popen([<span class="string">"python"</span>, <span class="string">"run.py"</span>], </span><br><span class="line">        stdin=<span class="keyword">None</span>, </span><br><span class="line">        stdout=stdout, </span><br><span class="line">        stderr=stderr)</span><br><span class="line">    ret = p.wait()</span><br><span class="line">    <span class="keyword">print</span> ret</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> os.getpid()</span><br><span class="line"><span class="comment"># not hang</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"use file"</span></span><br><span class="line">testSubprocessCallFile()</span><br><span class="line"><span class="comment"># not hang</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"use sys.stdout and sys.stderr"</span></span><br><span class="line">testSubprocessCallStdout()</span><br><span class="line"><span class="comment"># not hang</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"use pipe and communicate"</span></span><br><span class="line">testSubprocessCommunicate()</span><br><span class="line"><span class="comment"># hang</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"use pipe and call directly"</span></span><br><span class="line">testSubprocessCallPipe()</span><br></pre></td></tr></table></figure>
+<figure class="highlight vala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor"># run.py</span></span><br><span class="line">import os</span><br><span class="line"></span><br><span class="line">print os.getpid()</span><br><span class="line"></span><br><span class="line"><span class="keyword">string</span> = <span class="string">""</span></span><br><span class="line"><span class="preprocessor"># &gt; 64k will hang</span></span><br><span class="line"><span class="keyword">for</span> i in range(<span class="number">1024</span> * <span class="number">64</span> - <span class="number">4</span>):</span><br><span class="line">    <span class="keyword">string</span> = <span class="keyword">string</span> + <span class="string">"c"</span></span><br><span class="line"><span class="preprocessor"># flush to my stdout which might </span></span><br><span class="line"><span class="preprocessor"># be sys.stdout/pipe/fd...</span></span><br><span class="line">print <span class="keyword">string</span></span><br></pre></td></tr></table></figure>
+<p>另外，在subprocess模块源码中还注释说明了另外一种由于fork -&gt; 子进程gc -&gt; exec导致的进程hang住，详细信息可以阅读subprocess模块源码。</p>
+<hr>
+<h4 id="threading-Timer_u7684_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898"><a href="#threading-Timer_u7684_u4F7F_u7528_u4E0D_u5F53_u7684_u95EE_u9898" class="headerlink" title="threading.Timer的使用不当的问题"></a>threading.Timer的使用不当的问题</h4><p>定位步骤:</p>
+<ul>
+<li><p>pstack 主进程，查看python语言源码的c调用栈，追踪主线程(图中线程1)的各个函数调用栈的python源码，猜测是阻塞在threading._shutdown方法上，修改threading模块源码，并添加日志，定位确实阻塞在_exitFunc的循环join thread上。<br><img src="http://img.blog.csdn.net/20161219163155945?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZmVpbGVuZ2N1aTAwOA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"><br><img src="http://img.blog.csdn.net/20161219163214323?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvZmVpbGVuZ2N1aTAwOA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="这里写图片描述"></p>
+</li>
+<li><p>线程2的表现是不断创建不断退出，为threading.start入口添加打印traceback，最终定位在一个模块的心跳计时器。调大心跳周期，观察步骤1中的线程id，确定是心跳计时器线程。注: approach 2中可用ctrl-c构造异常，构造hang住的情况。</p>
+</li>
+<li><p>重现poc</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> threading</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># approach 1</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TestClassA</span><span class="params">(object)</span>:</span></span><br><span class="line">    timer = <span class="keyword">None</span></span><br><span class="line">    count = <span class="number">0</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">print</span> <span class="string">"called del"</span></span><br><span class="line">        <span class="keyword">if</span> self.timer <span class="keyword">is</span> <span class="keyword">not</span> <span class="keyword">None</span>:</span><br><span class="line">            self.timer.cancel()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">new_timer</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># current reference 3 + getrefcount 1 = 4</span></span><br><span class="line">        <span class="keyword">print</span> <span class="string">"in new_timer: %d"</span> % (sys.getrefcount(self))</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"ffff"</span></span><br><span class="line">        self.count += <span class="number">1</span></span><br><span class="line">        <span class="comment"># my father timer thread exit, ref count -1, but start</span></span><br><span class="line">        <span class="comment"># a new thread will make it still 3</span></span><br><span class="line">        self.timer = threading.Timer(<span class="number">1</span>, self.new_timer)</span><br><span class="line">        self.timer.start()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">start_timer</span><span class="params">(self)</span>:</span></span><br><span class="line">        self.timer = threading.Timer(<span class="number">1</span>, self.new_timer)</span><br><span class="line">        self.timer.start()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    t = TestClassA()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"enter test: %d"</span> % (sys.getrefcount(t),)  <span class="comment"># 2</span></span><br><span class="line">    t.start_timer() <span class="comment"># pass ref to a new timer thread through self.new_timer: 3</span></span><br><span class="line">    <span class="keyword">print</span> <span class="string">"before out test: %d"</span> % (sys.getrefcount(t),) <span class="comment"># 3</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># approach 2</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TestClassB</span><span class="params">(object)</span>:</span></span><br><span class="line">    timer = <span class="keyword">None</span></span><br><span class="line">    count = <span class="number">0</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__del__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">print</span> <span class="string">"called del"</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span><span class="params">(*ins)</span>:</span></span><br><span class="line">    <span class="keyword">print</span> <span class="string">"fffff"</span></span><br><span class="line">    ins[<span class="number">0</span>].count += <span class="number">1</span></span><br><span class="line">    ins[<span class="number">0</span>].timer = threading.Timer(<span class="number">1</span>, func, ins) <span class="comment"># will increase reference count of ins</span></span><br><span class="line">    ins[<span class="number">0</span>].timer.start()</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_in_scope</span><span class="params">()</span>:</span></span><br><span class="line">    t = TestClassB()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"enter test_in_scope: %d"</span> % (sys.getrefcount(t))</span><br><span class="line">    t.timer = threading.Timer(<span class="number">1</span>, func, (t,))</span><br><span class="line">    t.timer.start()</span><br><span class="line">    <span class="keyword">while</span> t.count &lt; <span class="number">4</span>:</span><br><span class="line">        time.sleep(<span class="number">1</span>)</span><br><span class="line">    <span class="comment">#try:</span></span><br><span class="line">    <span class="comment">#    while t.count &lt; 4:</span></span><br><span class="line">    <span class="comment">#        time.sleep(1)</span></span><br><span class="line">    <span class="comment">#except:</span></span><br><span class="line">    <span class="comment">#    pass</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># if we interrupt or raise some other exceptions and not catch that,</span></span><br><span class="line">    <span class="comment"># will hang</span></span><br><span class="line">    t.timer.cancel()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"before exit test_in_scope: %d"</span> % (sys.getrefcount(t))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># approachh 3</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test_closure</span><span class="params">()</span>:</span></span><br><span class="line">    t = TestClassA()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"enter test_closure: %d"</span> % (sys.getrefcount(t),)</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">func_inner</span><span class="params">()</span>:</span></span><br><span class="line">        <span class="keyword">print</span> <span class="string">"ffffffff"</span></span><br><span class="line">        t.timer = threading.Timer(<span class="number">1</span>, func_inner) <span class="comment"># will increase reference count</span></span><br><span class="line">        t.count += <span class="number">1</span></span><br><span class="line">        t.timer.start()</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"in func: %d"</span> % (sys.getrefcount(t))</span><br><span class="line">    t.timer = threading.Timer(<span class="number">1</span>, func_inner)</span><br><span class="line">    t.timer.start()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">"before out test_closure: %d"</span> % (sys.getrefcount(t),)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#print "================= test approach 1 ==============="</span></span><br><span class="line"><span class="comment">#print "before test"</span></span><br><span class="line"><span class="comment">#test()</span></span><br><span class="line"><span class="comment">#print "after test"</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"================= test approach 2 ==============="</span></span><br><span class="line"><span class="keyword">print</span> <span class="string">"before test_in_scope"</span></span><br><span class="line">test_in_scope()</span><br><span class="line"><span class="keyword">print</span> <span class="string">"after test_in_scope"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#print "================= test approach 3 ================"</span></span><br><span class="line"><span class="comment">#print "before test_closure"</span></span><br><span class="line"><span class="comment">#test_closure()</span></span><br><span class="line"><span class="comment">#print "after test_closure"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">print</span> <span class="string">"before exit main thread, it will wait and join all other threads"</span></span><br><span class="line">sys.exit()</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+
+    
+  </div>
+</article>
+
+
+   
+
+   
+
+
+
+</div>
+
+
+  <a id="backTop" class="back-top">
+    <i class="icon-angle-up"></i>
+  </a>
+
+
+
+
+  <div class="modal" id="modal">
+  <span id="cover" class="cover hide"></span>
+  <div id="modal-dialog" class="modal-dialog hide-dialog">
+    <div class="modal-header">
+      <span id="close" class="btn-close">Close</span>
+    </div>
+    <hr>
+    <div class="modal-body">
+      <ul class="list-toolbox">
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Home
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/archives/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              Archives
+            </a>
+          </li>
+        
+          <li class="item-toolbox">
+            <a
+              class="ROUND_RECT"
+              href="/about/"
+              rel="noopener noreferrer"
+              target="_self"
+              >
+              About
+            </a>
+          </li>
+        
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+
+
+  
+      <div class="fexo-comments comments-post">
+    
+  <section class="disqus-comments">
+    <div id="disqus_thread">
+      <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    </div>
+  </section>
+
+  <script>
+    var disqus_shortname = 'feilengcui008';
+    
+    var disqus_url = '/2016/10/16/Python退出时hang住的问题/';
+    
+    (function(){
+      var dsq = document.createElement('script');
+      dsq.type = 'text/javascript';
+      dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+
+  <script id="dsq-count-scr" src="//feilengcui008.disqus.com/count.js" async></script>
+
+
+
+    
+
+
+
+
+    
+
+  </div>
+
+  
+
+  <script type="text/javascript">
+  function loadScript(url, callback) {
+    var script = document.createElement('script')
+    script.type = 'text/javascript';
+
+    if (script.readyState) { //IE
+      script.onreadystatechange = function() {
+        if (script.readyState == 'loaded' ||
+          script.readyState == 'complete') {
+          script.onreadystatechange = null;
+          callback();
+        }
+      };
+    } else { //Others
+      script.onload = function() {
+        callback();
+      };
+    }
+
+    script.src = url;
+    document.getElementsByTagName('head')[0].appendChild(script);
+  }
+
+  window.onload = function() {
+    loadScript('/js/bundle.js?235683', function() {
+      // load success
+    });
+  }
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<!-- mathjax config similar to math.stackexchange -->
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      }
+    });
+</script>
+
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</body>
+</html>
