@@ -170,7 +170,16 @@ code, pre, samp {
   top: 22px;
   display: none;
 }
+
 .sidebar-toggle-2 {
   top: 44px;
   display: none;
+}
+
+.category-box {
+  margin-left: 0px;
+}
+
+.category-box .category-list .category-item {
+  background: #fff;
 }
