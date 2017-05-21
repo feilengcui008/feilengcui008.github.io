@@ -183,3 +183,11 @@ code, pre, samp {
 .category-box .category-list .category-item {
   background: #fff;
 }
+
+.item-category-name .category-count {
+  font-family: "Go-Regular";
+}
+
+.category-box .category-list .category-item .category-size {
+  font-family: "Go-Regular";
+}
