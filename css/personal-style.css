@@ -3,10 +3,9 @@ body {
 }
 
 .personal_content {
-  width: 500px;
   margin: 40px auto 80px;
   border-left: 0px solid #f9f9f9;
-  /* padding-left: 60px; */
+  width: 380px;
 }
 
 .icon-zhihu {
@@ -30,7 +29,6 @@ body {
   width: 500px;
   margin: 40px auto 80px;
   border-left: 0px solid #f9f9f9;
-  /* padding-left: 60px; */
 }
 
 .about_personal_content .page-header {
@@ -40,12 +38,6 @@ body {
 .about_personal_content .content {
   border-left: 0px;
 }
-
-/*
-.toolbox .list-toolbox {
-  display: block;
-}
-*/
 
 .toolbox .list-toolbox .item-toolbox a {
   background-color: #fff;
@@ -60,17 +52,6 @@ body {
   padding: 0 18px;
 }
 
-
-/*
-.toolbox {
-  display: none;
-}
-
-.content.content-about .dot {
-  display: none;
-}
-*/
-
 .content.content-about .about-list .about-item .text {
   padding-left: 125px;
 }
@@ -82,6 +63,7 @@ body {
 .item-post .post-title {
   font-weight: bold;
   font-size: 14px;
+  max-width: 280px;
 }
 
 .item-year a.text-year {
@@ -100,25 +82,8 @@ body {
   padding-left: 20px;
 }
 
-.item-post .post-title {
-  max-width: 280px;
-  /* margin-left: 15px; */
-}
-
-.personal_content {
-  width: 380px;
-}
 
 .sidebar-toggle-parent {
-  /*
-    z-index: -1;
-    margin-top: 30px;
-    height: 50%;
-    position: absolute;
-    top: 50%;
-    width: 100%;
-    height: 50%;
-    */
     text-align: center;
 }
 
@@ -195,5 +160,17 @@ body {
 }
 
 code, pre, samp {
-    font-family: Go-Regular;
-    }
+  font-family: Go-Regular;
+}
+
+.sidebar-toggle-0 {
+}
+
+.sidebar-toggle-1 {
+  top: 22px;
+  display: none;
+}
+.sidebar-toggle-2 {
+  top: 44px;
+  display: none;
+}
