@@ -15,18 +15,18 @@
     <meta name="keywords" content="Go," />
   
 
-  <meta name="description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多">
+  <meta name="description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go调度详解">
 <meta property="og:url" content="/2017/05/09/Go调度详解/index.html">
 <meta property="og:site_name" content="feilengcui008">
-<meta property="og:description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多">
+<meta property="og:description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很">
 <meta property="og:image" content="/images/schedule.png">
 <meta property="og:image" content="/images/findrunnable.png">
-<meta property="og:updated_time" content="2017-05-09T15:08:03.204Z">
+<meta property="og:updated_time" content="2017-05-24T09:50:34.776Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go调度详解">
-<meta name="twitter:description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多">
+<meta name="twitter:description" content="基本单元Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很">
 
   
 
@@ -173,11 +173,11 @@
 
   <div class="article-content">
     
-      <h3 id="u57FA_u672C_u5355_u5143"><a href="#u57FA_u672C_u5355_u5143" class="headerlink" title="基本单元"></a>基本单元</h3><p>Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。</p>
+      <h3 id="u57FA_u672C_u5355_u5143"><a href="#u57FA_u672C_u5355_u5143" class="headerlink" title="基本单元"></a>基本单元</h3><p>Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是”某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程”，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。</p>
 <hr>
 <h3 id="u8C03_u5EA6_u7684_u6574_u4F53_u6D41_u7A0B"><a href="#u8C03_u5EA6_u7684_u6574_u4F53_u6D41_u7A0B" class="headerlink" title="调度的整体流程"></a>调度的整体流程</h3><ul>
 <li>关于g0栈和g栈<br>由于m是实际执行体，m的整个代码逻辑基本上就是整个调度逻辑。类似于Linux的内核栈和用户栈，Go的m也有两类栈：一类是系统栈(或者叫调度栈)，主要用于运行runtime的程序逻辑；另一类是g栈，用于运行g的程序逻辑。每个m在创建时会分配一个默认的g叫g0，g0不执行任何代码逻辑，只是用来存放m的调度栈等信息。当要执行Go runtime的一些逻辑比如创建g、新建m等，都会首先切换到g0栈然后执行，而执行g任务时，会切换到g的栈上。在调度栈和g栈上不断切换使整个调度过程复杂了不少。</li>
-<li>关于m的spinning自旋<br>在Go的调度中，m一旦被创建则不会退出。在系统调用、cgocall、lockOSThread时，为了防止阻塞其他g的执行，Go会新建或者唤醒m(os线程)执行其他的g，所以可能导致m的增加。如何保证m数量不会太多，同时有足够的线程使p(cpu)不会空闲？主要的手段是通过多路复用和m的spinning。多路复用解决网络和文件io时的阻塞(与net poll类似，Go1.8.1的代码中为os.File加了poll接口)，避免每次读写的系统调用消耗线程。而m的spinning的作用是尽量保证始终有m处于spinning寻找g(并不是执行g，充分利用多cpu)的同时，不会有太多m同时处于spinning(浪费cpu)。不同于一般意义的自旋，m处于自旋是指m的本地队列、全局队列、poller都没有g可运行时，m进入自旋并尝试从其他p偷取(steal)g，每当一个spinning的m获取到g后，会退出spinning并尝试唤醒新的m去spinning。所以，一旦总的spinning的m数量大于0时，就不用唤醒新的m了去spinning浪费cpu了。</li>
+<li>关于m的spinning自旋<br>在Go的调度中，m一旦被创建则不会退出。在syscall、cgocall、lockOSThread时，为了防止阻塞其他g的执行，Go会新建或者唤醒m(os线程)执行其他的g，所以可能导致m的增加。如何保证m数量不会太多，同时有足够的线程使p(cpu)不会空闲？主要的手段是通过多路复用和m的spinning。多路复用解决网络和文件io时的阻塞(与net poll类似，Go1.8.1的代码中为os.File加了poll接口)，避免每次读写的系统调用消耗线程。而m的spinning的作用是尽量保证始终有m处于spinning寻找g(并不是执行g，充分利用多cpu)的同时，不会有太多m同时处于spinning(浪费cpu)。不同于一般意义的自旋，m处于自旋是指m的本地队列、全局队列、poller都没有g可运行时，m进入自旋并尝试从其他p偷取(steal)g，每当一个spinning的m获取到g后，会退出spinning并尝试唤醒新的m去spinning。所以，一旦总的spinning的m数量大于0时，就不用唤醒新的m了去spinning浪费cpu了。</li>
 </ul>
 <p>下面是整个调度的流程图</p>
 <ul>
