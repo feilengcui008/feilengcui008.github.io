@@ -164,8 +164,8 @@
     <link href="/2017/04/27/Go%E7%9A%84%E8%87%AA%E4%B8%BE/"/>
     <id>/2017/04/27/Go的自举/</id>
     <published>2017-04-27T07:37:35.000Z</published>
-    <updated>2017-04-27T08:58:18.138Z</updated>
-    <content type="html"><![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+    <updated>2017-05-24T10:26:19.859Z</updated>
+    <content type="html"><![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
 <h2 id="u57FA_u672C_u6D41_u7A0B"><a href="#u57FA_u672C_u6D41_u7A0B" class="headerlink" title="基本流程"></a>基本流程</h2><p>Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):</p>
 <ul>
 <li><ol>
@@ -221,8 +221,8 @@
 </ul>
 ]]></content>
     <summary type="html">
-    <![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
-<h2 id="u57FA_u672C_u6D41_]]>
+    <![CDATA[<p>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+<h2 id="u57FA_u672C_u6D41]]>
     </summary>
     
       <category term="Go" scheme="/tags/Go/"/>

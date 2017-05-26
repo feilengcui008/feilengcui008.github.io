@@ -15,7 +15,7 @@
     <meta name="keywords" content="Go," />
   
 
-  <meta name="description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+  <meta name="description" content="Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
 基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
 
 
@@ -23,12 +23,12 @@ go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
 
 
 
-go_old +">
+go_old">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Go的自举">
 <meta property="og:url" content="/2017/04/27/Go的自举/index.html">
 <meta property="og:site_name" content="feilengcui008">
-<meta property="og:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+<meta property="og:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
 基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
 
 
@@ -36,11 +36,11 @@ go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
 
 
 
-go_old +">
-<meta property="og:updated_time" content="2017-04-27T08:58:18.138Z">
+go_old">
+<meta property="og:updated_time" content="2017-05-24T10:26:19.859Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Go的自举">
-<meta name="twitter:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
+<meta name="twitter:description" content="Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
 基本流程Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
 
 
@@ -48,7 +48,7 @@ go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具
 
 
 
-go_old +">
+go_old">
 
   
 
@@ -195,7 +195,7 @@ go_old +">
 
   <div class="article-content">
     
-      <p>Go从1.5开始就基本全部由.go和.s文件写成了，c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+      <p>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
 <h2 id="u57FA_u672C_u6D41_u7A0B"><a href="#u57FA_u672C_u6D41_u7A0B" class="headerlink" title="基本流程"></a>基本流程</h2><p>Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):</p>
 <ul>
 <li><ol>
