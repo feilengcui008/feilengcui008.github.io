@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>编程语言 on 不一样的天空</title>
+    <link>https://feilengcui008.github.io/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/</link>
+    <description>Recent content in 编程语言 on 不一样的天空</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 24 Apr 2017 15:33:49 +0800</lastBuildDate>
+    
+	<atom:link href="https://feilengcui008.github.io/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Grpc-go客户端源码分析</title>
+      <link>https://feilengcui008.github.io/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+      <pubDate>Mon, 24 Apr 2017 15:33:49 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+      <description>基本设计 grpc-go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。
+另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实现(目前只实现了轮询方式)，另一种方式是外部的load balancer。
+ 内部自带的策略实现: 这种方式主要针对一些简单的负载均衡策略比如轮询。轮询的实现逻辑是建立连接时通过定义的服务地址解析接口Resolver得到服务的地址列表，并单独用goroutine负责更新保持可用的连接，Watcher定义了具体更新实现的接口(比如多长时间解析更新一次)，最终在请求调用时会从可用连接列表中轮询选择其中一个连接发送请求。所以，grpc的负载均衡策略是请求级别的而不是连接级别的。 外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。grpc-go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。  客户端主要流程 客户端的逻辑主要可分为下面两部分:
+ 建立连接 请求调用、发送与响应  1. 建立连接  典型的步骤  func main() { // 建立连接 conn, err := grpc.Dial(address, grpc.WithInsecure()) c := pb.NewGreeterClient(conn) // 请求调用 r, err := c.SayHello(context.Background(), &amp;amp;pb.HelloRequest{Name: name}) // 处理返回r // 对于单次请求，grpc直接负责返回响应数据 // 对于流式请求，grpc会返回一个流的封装，由开发者负责流中数据的读写 }   建立tcp(http2)连接  func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialContext(context.Background(), target, opts.</description>
+    </item>
+    
+    <item>
+      <title>Grpc-go服务端源码分析</title>
+      <link>https://feilengcui008.github.io/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+      <pubDate>Sun, 23 Apr 2017 15:47:59 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+      <description>基本设计  服务抽象
+ 一个Server可包含多个Service，每个Service包含多个业务逻辑方法，应用开发者需要:  不使用protobuf  规定Service需要实现的接口 实现此Service对应的ServiceDesc，ServiceDesc描述了服务名、处理此服务的接口类型、单次调用的方法数组、流式方法数组、其他元数据。 实现Service接口具体业务逻辑的结构体 实例化Server，并讲ServiceDesc和Service具体实现注册到Server 监听并启动Server服务  使用protobuf  实现protobuf grpc插件生成的Service接口 实例化Server，并注册Service接口的具体实现 监听并启动Server  可见，protobuf的grpc-go插件帮助我们生成了Service的接口和ServiceDesc。   底层传输协议
+ grpc-go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，grpc-go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考http2的规范  http2帧分为几大类，grpc-go使用中比较重要的是HEADERS和DATA帧类型。  HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，grpc-go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。 数据帧从属于某个stream，按照stream id查找，并写入对应的stream中。  Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。 客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。 客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。 grpc-go中的单次方法和流式方法  无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此&amp;rdquo;复用&amp;rdquo;这个流。 客户端如果是流式方法，需要显示调用CloseSend，表示数据发送的结束     服务端主要流程 由于比较多，所以分以下几个部分解读主要逻辑:
+ 实例化Server 注册Service 监听并接收连接请求 连接与请求处理 连接的处理细节(http2连接的建立) 新请求的处理细节(新流的打开和帧数据的处理)   实例化Server  // 工厂方法 func NewServer(opt ...ServerOption) *Server { var opts options // 默认最大消息长度: 4M opts.</description>
+    </item>
+    
+    <item>
+      <title>Python退出时hang住的问题</title>
+      <link>https://feilengcui008.github.io/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/</link>
+      <pubDate>Sun, 16 Oct 2016 17:46:43 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/</guid>
+      <description>最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
+subprocess模块使用不当的问题 Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。
+# main.py #!/usr/bin/env python # encoding: utf-8 import subprocess import os import tempfile import sys import traceback import commands # both parent and child process will hang # if run.py stdout/stderr exceed 64K, since # parent process is waiting child process exit # but child process is blocked by writing pipe def testSubprocessCallPipe(): # call: just Popen().wait() p = subprocess.Popen([&amp;quot;python&amp;quot;, &amp;quot;run.py&amp;quot;], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) ret = p.</description>
+    </item>
+    
+    <item>
+      <title>Lambda与闭包</title>
+      <link>https://feilengcui008.github.io/post/lambda%E4%B8%8E%E9%97%AD%E5%8C%85/</link>
+      <pubDate>Mon, 18 May 2015 14:35:17 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/lambda%E4%B8%8E%E9%97%AD%E5%8C%85/</guid>
+      <description>本文通过javascript/c++11/java8/python/scala等几种语言对lambda和闭包的支持的对比，探讨下lambda和闭包的区别与联系，以及作用域的trick。
+在阅读这篇文章前，首先熟悉以下几个概念（有些概念不会谈，只是和本文所谈的lambda和闭包对比理解），摘自维基百科：
+--Closure-- In programming languages, closures (also lexical closures or function closures) are a technique for implementing lexically scoped name binding in languages with first-class functions. Operationally, a closure is a data structure storing a function[a] together with an environment:[1] a mapping associating each free variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or storage location the name was bound to at the time the closure was created.</description>
+    </item>
+    
+    <item>
+      <title>Y Combinator</title>
+      <link>https://feilengcui008.github.io/post/y-combinator/</link>
+      <pubDate>Thu, 14 May 2015 19:26:59 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/y-combinator/</guid>
+      <description>由于匿名函数(通常成为lambda函数但是跟lambda calculus不同)在递归时无法获得函数名，从而导致一些问题，而Y Combinator能很好地解决这个问题。利用不动点的原理，可以利用一般的函数来辅助得到匿名函数的递归形式，从而间接调用无法表达的真正的匿名函数。下面以一个阶乘的递归来说明。
+#Python版本，后面会加上C++版本 #F(f) = f def F(f,n): return 1 if n==0 else n*f(n-1) #或者用lambda #F = lambda f,n: 1 if n==0 else n*f(n-1) #Y不能用lambda，因为Y会调用自己 #Y(F) = f = F(f) = F(Y(F)) def Y(F): return lambda n: F(Y(F),n) a = Y(F) # 6 print a(3)  一些解释：
+ F是伪递归函数，将真正的我们假设的匿名函数作为参数，有性质 F(f)=f. 好了以上是我们的已知条件，为了得到f的间接表达式，我们引入Y函数 使得Y(F) = f 所以有Y(F) = f = F(f) = F(Y(F)) （最终的目标是要用YF的组合表示f），所以很容易就得到了Y(F)的函数表达式为F(Y(F))，而Y不是匿名函数，所以能自身调用(其实感觉这东西没想象中那么玄乎～)，上面的代码也就比较好理解了。我们假设的函数只有一个额外参数n，这完全可以自己添加其他参数，只需稍微修改Y中F的调用。  最后附上一段C++的实现代码：
+//需要C++11支持 #include &amp;lt;iostream&amp;gt; #include &amp;lt;functional&amp;gt; //F(f) = f int F(std::function&amp;lt;int(int)&amp;gt; f, int n) { return n==0 ?</description>
+    </item>
+    
+    <item>
+      <title>C&#43;&#43; RVO/NRVO以及move语义的影响</title>
+      <link>https://feilengcui008.github.io/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/</link>
+      <pubDate>Sat, 09 May 2015 13:22:37 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/</guid>
+      <description>C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。
+RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。
+#include &amp;lt;iostream&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;string&amp;gt; struct Test { Test() { std::cout &amp;lt;&amp;lt; &amp;quot;construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } Test(const Test&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;copy construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } Test&amp;amp; operator=(const Test&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;copy assignment a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; return *this; } Test(Test&amp;amp;&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;move construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } /* Test&amp;amp; operator=(Test &amp;amp;&amp;amp;t) { std::cout &amp;lt;&amp;lt; &amp;quot;move assignment a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; return *this; } */ ~Test() { std::cout &amp;lt;&amp;lt; &amp;quot;destruct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } }; Test getTest() { return Test(); } Test getTestWithName() { Test temp; return temp; } int main() { std::cout &amp;lt;&amp;lt; &amp;quot;=============RVO==============&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for copy construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj1 = getTest(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for move construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj111 = std::move(getTest()); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for copy assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj11; obj11 = getTest(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test object rvo for move assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj1111; obj1111 = std::move(getTest()); std::cout &amp;lt;&amp;lt; &amp;quot;=============NRVO==============&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for copy construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj2 = getTestWithName(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for move construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj222 = std::move(getTestWithName()); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for copy assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj22; obj22 = getTestWithName(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for move assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj2222; obj2222 = std::move(getTestWithName()); std::cout &amp;lt;&amp;lt; &amp;quot;==============================&amp;quot; &amp;lt;&amp;lt; std::endl; // std::string s1 = &amp;quot;s1 string move semantics test&amp;quot;, s2; //std::cout &amp;lt;&amp;lt; &amp;quot;++before move s1\t&amp;quot; &amp;lt;&amp;lt; s1 &amp;lt;&amp;lt; std::endl; //s2 = std::move(s1); //std::cout &amp;lt;&amp;lt; &amp;quot;++after move s1\t&amp;quot; &amp;lt;&amp;lt; s1 &amp;lt;&amp;lt; std::endl; //std::cout &amp;lt;&amp;lt; &amp;quot;=============&amp;quot; &amp;lt;&amp;lt; std::endl; return 0; }  测试结果：</description>
+    </item>
+    
+    <item>
+      <title>C/C&#43;&#43;内存对齐</title>
+      <link>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</link>
+      <pubDate>Mon, 09 Mar 2015 15:40:53 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</guid>
+      <description>有时会在c/c++中看到这种形式
+#pragma pack(n) #pragma pack()  前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; int main() { //缺省，一般8字节对齐 //struct有成员字节大于pack值,对齐为pack的整数倍=&amp;gt;24 struct default_pack_struct_size_bigger { struct c { long long a; char d; } m; char b; }; printf(&amp;quot;default_pack_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_bigger)); //struct成员字节数都小于pack,按字节数最大的对齐=&amp;gt;4 struct default_pack_struct_size_smaller { char a; short int b; }; printf(&amp;quot;default_pack_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_smaller)); //设置pack为4 #pragma pack(4) //结构成员有大于4字节的 =&amp;gt; 12 struct pack_4_struct_size_bigger { unsigned short int a; long long b; }; printf(&amp;quot;pack_4_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_bigger)); //结构成员都小于4字节 =&amp;gt; 4 struct pack_4_struct_size_smaller { char a; unsigned short int b; }; printf(&amp;quot;pack_4_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_smaller)); #pragma pack() return 0; }  结果： 另外，在对位域操作时有位序的概念，对于小端的机器(通常x86都是)来说，位序与端序是一致的，即对于低位放在高内存地址(当然这个是假定的一个字节内的高位，内存寻址一般是以字节为单位的)</description>
+    </item>
+    
+    <item>
+      <title>Tornado源码分析</title>
+      <link>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
+      <pubDate>Mon, 09 Mar 2015 12:08:28 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
+      <description>Tornado是一个高性能的异步网络库和Web框架，其事件循环和异步io的封装实现得很漂亮，本文主要介绍这两部分的实现。
+ main
+def main(): # 解析命令行参数 tornado.options.parse_command_line() # 构造一个httpserver，其实大部分都是继承至tcpserver，注意参数Application() # 是个可调用的对象，它实现了__call__魔术方法。 http_server = tornado.httpserver.HTTPServer(Application()) http_server.listen(options.port) # 构造事件循环，并执行触发事件的相应handler/注册的timeout事件/注册的callback等。 tornado.ioloop.IOLoop.instance().start()  http_server.listen
+def listen(self, port, address=&amp;quot;&amp;quot;): # 调用netutil中的bind_socket，返回的是绑定的所有(IP,port)地址的socket sockets = bind_sockets(port, address=address) # 自身的add_sockets方法中调用了netutil中的add_accept_handler self.add_sockets(sockets)  add_sockets
+def add_sockets(self, sockets): if self.io_loop is None: self.io_loop = IOLoop.current() for sock in sockets: self._sockets[sock.fileno()] = sock # 这里回调的是_handle_connection，是处理tcp连接的核心 add_accept_handler(sock, self._handle_connection, io_loop=self.io_loop) def add_accept_handler(sock, callback, io_loop=None): if io_loop is None: io_loop = IOLoop.current() def accept_handler(fd, events): while True: try: connection, address = sock.</description>
+    </item>
+    
+  </channel>
+</rss>

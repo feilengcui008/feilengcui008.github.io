@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>KMP简单证明</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="KMP简单证明" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">KMP简单证明</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>03-03-2016</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<p>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。</p>
+
+<h4 id="朴素算法">朴素算法</h4>
+
+<p>朴素算法比较明了，不再赘述，下面是简单的代码：</p>
+
+<pre><code>  // time : O(n*m), space : O(1)
+  int naive(const std::string &amp;text, const std::string &amp;pattern)
+  {
+    // corner case 
+    int len1 = text.length();
+    int len2 = pattern.length();
+    if (len2 &gt; len1) return -1;
+    int end = len1 - len2;
+    for (int i = 0; i &lt;= end; ++i) {
+      int j;
+      for (j = 0; j &lt; len2; ++j) {
+        if (text[i + j] != pattern[j]) {
+          break;
+        }
+      }
+      if (j == len2) return i;
+    }
+    return -1;
+  }
+
+</code></pre>
+
+<p>分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前
+的已匹配的相同前缀的信息。</p>
+
+<h4 id="模式串不含有相同字符">模式串不含有相同字符</h4>
+
+<p>这种情况下，当模式串的一个位置不匹配的时候，我们可以优化朴素算法直接跳过前面模式串已经匹配的长度，实际上这种思路和
+KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
+
+<pre><code>  // if pattern has different chars 
+  // we can optimize it to O(n)
+  // proof:
+  // assume match break in index j of pattern length m
+  // current index i : T1 T2 T3 ..Tj.. Tm ... Tn
+  //                   P1 P2 P3 ..Pj.. Pm
+  //                   Tj != Pj 
+  // (Pk != Pt) for 1 &lt;= k,t &lt;= m and k != t
+  // (Pk == Tk) for 1 &lt;= k &lt; j
+  // =&gt; P1 != Pk for 1 &lt;= k &lt; j
+  // =&gt; so move i to j
+  int special_case(const std::string &amp;text, const std::string &amp;pattern)
+  {
+    int len1 = text.length();
+    int len2 = pattern.length();
+    if (len2 &gt; len1) return -1;
+    int end = len1 - len2;
+    for (int i = 0; i &lt;= end; ++i) {
+      int j;
+      for (j = 0; j &lt; len2; ++j) {
+        if (text[i + j] != pattern[j]) {
+          break;
+        }
+      }
+      if (j == len2) return i;
+      // notice ++i
+      if (j != 0) {
+        i += (j - 1);
+      }
+    }
+    return -1;
+  }
+  
+</code></pre>
+
+<h4 id="kmp">KMP</h4>
+
+<ul>
+<li><p>KMP第一遍不是特别容易理解，所以就琢磨着给出一个证明，来加深理解，所以就想出了下面这么个不是很正规和形式化的证明。关于KMP算法的流程可以搜索相关文章，比如<a href="http://kb.cnblogs.com/page/176818/">这篇</a>挺不错的。</p></li>
+
+<li><p>前提假设：目标文本串T的长度为n，模式串P的长度为m，Arr为所谓的next数组，i为在模式串的第i个位置匹配失败。</p></li>
+
+<li><p>需要证明的问题：对于形如A B X1 X2&hellip; A B Y1 Y2&hellip; A B的模式串，为什么可以将模式串直接移到最后一个A B处进行下一次匹配，而不是在中间某个A B处？也就是说为什么以中间某个 A B开头进行匹配不可能成功。(注意这里为了方便只有A B两个字符，实际上可能是多个，并且中间的A B和第一个以及最后一个 A B使可能部分重合的)。</p></li>
+
+<li><p>简单证明</p>
+
+<ul>
+<li><p>首先，一次匹配成功则必然有在T中的对应的位置以A B开头，所以从T中最后一个A B处开始进行下一次匹配，成功是可能的。(即是KMP算法中下一次匹配移动模式串的位置)</p></li>
+
+<li><p>下面证明为什么从中间某个位置的A B处匹配不可能成功</p>
+
+<ul>
+<li><p>若序列X1 X2&hellip;与序列Y1 Y2&hellip;不完全相同，显然在第二个A B串处后面不可能匹配成功</p></li>
+
+<li><p>若序列X1 X2&hellip;与序列Y1 Y2&hellip;完全相同，则显然A B X1 X2&hellip;A B与A B Y1 Y2&hellip; A B是相等的更长的前缀和后缀，这自然回到了next数组</p></li>
+</ul></li>
+</ul></li>
+
+<li><p>虽然不是很正规(应该很不正规&hellip;)，但是还是多少能帮助理解吧:-)</p></li>
+
+<li><p>最后附上kmp代码</p></li>
+</ul>
+
+<pre><code>  // longest common prefix and suffix of
+  // substr of pattern[0, i] 
+  // use dyamic programming 
+  // time : O(m), space : O(m)
+  std::vector&lt;int&gt; nextArray(const std::string &amp;pattern)
+  {
+    int len = pattern.length();
+    if (len == 0) return std::vector&lt;int&gt;();
+    std::vector&lt;int&gt; res(len, 0);
+    res[0] = 0;
+    for (int i = 1; i &lt; len; ++i) {
+      if (pattern[res[i - 1]] == pattern[i]) {
+        res[i] = res[i - 1] + 1;
+      }
+      res[i] = res[i - 1];
+    }
+    //for (auto &amp;&amp;ele : res) {
+    //  std::cout &lt;&lt; ele &lt;&lt; std::endl;
+    //}
+    return res;
+  }
+
+  // time : O(n) + O(m), space : O(m)
+  int kmp(const std::string &amp;text, const std::string &amp;pattern)
+  {
+    int len1 = text.length();
+    int len2 = pattern.length();
+    if (len2 &gt; len1) return -1;
+    // get next array
+    std::vector&lt;int&gt; next = nextArray(pattern);
+    int i = 0;
+    int end = len1 - len2;
+    for (; i &lt;= end; ++i) {
+      int j;
+      for (j = 0; j &lt; len2; ++j) {
+        if (text[i + j] != pattern[j]) {
+          break;
+        }
+      }
+      // got one 
+      if (j == len2) return i;
+      // move to next position
+      // notice the ++i 
+      // we can skip j == 0
+      if (j != 0) {
+        i += (j - next[j - 1]);
+      }
+      //std::cout &lt;&lt; &quot;j:&quot; &lt;&lt; j &lt;&lt; &quot; i:&quot; &lt;&lt; i &lt;&lt; std::endl;
+    }
+    return -1;
+  }
+
+</code></pre>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E\/';
+    var disqus_title = 'KMP简单证明';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>

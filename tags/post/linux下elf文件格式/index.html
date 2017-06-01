@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>Linux下ELF文件格式</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="Linux下ELF文件格式" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Linux下ELF文件格式</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>09-13-2015</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<p>In this article,I will talk about the ELF files for Linux,and their diffs as to comprehend the linking process in a diff view angle.There are many articles talking about that topic in the way of compiling-&gt;linking-&gt;loading-&gt;executing.I think once we understand the ELF files,then we can understand why and how and understand the whole process more precisely.</p>
+
+<p>ELF(Executable and Linkable Format) is the default file format of executable files,object files,shared object files and core file for Linux.Why should we know about the ELF?I think there are at least the following reasons:</p>
+
+<ul>
+<li>Guess what the back end of compilers(esp for c) wants to achieve(yeah,it&rsquo;s &ldquo;guess&rdquo;,if you want to learn more about compilers,you should learn related theories more precisely)</li>
+<li>Learn about the linking and loading process</li>
+<li>Better understanding of the organization of our code,that&rsquo;s helpful to debug and profiling(such the effects of static/local/global/extern,debug coredump file&hellip;)</li>
+<li>guess how the OS loader loads the exec file to memory and run it(yeah,guess again^_^,I will analyze the loading process in some article later)</li>
+<li>Better understanding of how the disk exec file mapped into memory space of process</li>
+<li>&hellip;</li>
+</ul>
+
+<hr />
+
+<p>I will choose the first three representative ELF files in Linux to analyze,that is the object files,executable files,and shared object files.Actually,the are very simmilar except some  differences(bacause they share elf struct which is defined in the elf.h^_^)</p>
+
+<p>Here is the code used for the analysis purpose of this article(main.c and print.c):</p>
+
+<pre><code>//main.c 
+//note that we define diff kinds of vars so we can test where they are lied in within diff sections or segments,thus we can better understand the layout of c file
+
+#include &lt;stdio.h&gt;
+
+int main_global_unitialized;
+int main_global_initialized = 1;
+static int main_local_uninitialized;
+static int main_local_uninitialized = 2;
+
+extern void print(int);
+void print1(int);
+static void print2(int);
+
+int main()
+{
+    int main_stack_uninitialized;
+    int main_stack_initialized = 3;
+    static main_func_local_uninitialized;
+    static main_func_local_initialized = 4;
+    print(2);
+    print1(2);
+    print2(2);
+    return 0;
+}
+
+void print1(int a)
+{
+    fprintf(stdout, &quot;%d\n&quot;, a);
+}
+
+static void print2(int a)
+{
+    fprintf(stdout, &quot;%d\n&quot;, a);
+}
+</code></pre>
+
+<pre><code>//print.c
+#include &lt;stdio.h&gt;
+
+//in module vars
+int print_global_uninitialized;
+int print_global_initialized = 1;
+static int print_local_static_uninitialized;
+static int print_local_static_initialized = 2;
+
+void print(int a)
+{
+    int print_stack_uninitialized;
+    int print_stack_initialized = 3;
+    static int print_func_local_static_uninitialized;
+    static int print_func_local_static_initialized = 4;
+    fprintf(stdout, &quot;%d\n&quot;, a);
+}
+
+static void print2(int a)
+{
+    fprintf(stdout, &quot;%d\n&quot;, a);
+}
+</code></pre>
+
+<hr />
+
+<p>We use the above two souce files to generate the following file:</p>
+
+<pre><code>gcc -o print.o -c print.c
+gcc -o main.o -c main.c
+gcc -shared -fPIC -o print.so print.c
+gcc -o exec main.o print.o
+//and the tools we may use:
+//readelf/objdump/nm/size...
+//the platform is Linux tan 3.13.0-51-generic #84-Ubuntu SMP x86_64 x86_64 x86_64 GNU/Linux
+
+</code></pre>
+
+<p><img src="http://img.blog.csdn.net/20150420101332687" alt="这里写图片描述" /></p>
+
+<hr />
+
+<p>We will look into some diffs of the aboved mentioned 3 kinds of ELF files,we mainly use readelf.
+Usually,ELF files (may) consists of the following parts:</p>
+
+<ul>
+<li>file headers: describe file info such as start point,section header start poit etc</li>
+<li>program header table: info of mapping sections to segments</li>
+<li>section header table: section entry info</li>
+<li>sections: each section contents such as .data .text etc</li>
+<li>&hellip;</li>
+</ul>
+
+<h3 id="1-file-headers">1.file headers</h3>
+
+<h4 id="executable-file-headers">executable file headers:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420103046089" alt="这里写图片描述" /></p>
+
+<h4 id="object-file-headers">object file headers:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420103102329" alt="这里写图片描述" /></p>
+
+<h4 id="shared-object-file-headers">shared object file headers:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420103231405" alt="这里写图片描述" /></p>
+
+<p>As we can see,the file header of exec/.o/.so are almost the same except some options like type,start point&hellip;:</p>
+
+<pre><code>       #define EI_NIDENT 16
+           typedef struct {
+               //magic number denotes the file,16 byte,for ELF:7f 45 4c 46 02 01 01 00 00 00 00 00 00 00 00 00 
+               unsigned char e_ident[EI_NIDENT]; 
+               //ELF file type:exec/.o/.so/core/unknown
+               uint16_t      e_type;
+               uint16_t      e_machine;
+               uint32_t      e_version;
+               //_start point of the program
+               Elf64_Addr     e_entry;
+               //program header table offset,no for .o file
+               Elf64_Off      e_phoff;
+               //section header table offset
+               Elf64_Off      e_shoff;
+               uint32_t      e_flags;
+               //header size
+               uint16_t      e_ehsize;
+               //entry size for program header table
+               uint16_t      e_phentsize;
+               //program entry numbers
+               uint16_t      e_phnum;
+               //entry size for section header table
+               uint16_t      e_shentsize;
+               //section entry number
+               uint16_t      e_shnum;
+               
+               uint16_t      e_shstrndx;
+           } Elf64_Ehdr;
+</code></pre>
+
+<blockquote>
+<p>Conclusions or diffs:
++ type is different
++ no start point for .o file
++ no program header for .o file</p>
+</blockquote>
+
+<hr />
+
+<h3 id="2-section-header-table">2.section header table</h3>
+
+<h4 id="exec-file-section-header-table">exec file section header table:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420123100072" alt="这里写图片描述" />
+<img src="http://img.blog.csdn.net/20150420123311384" alt="这里写图片描述" /></p>
+
+<h4 id="so-file-section-header-table">.so file section header table:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420123332990" alt="这里写图片描述" />
+<img src="http://img.blog.csdn.net/20150420123344768" alt="这里写图片描述" /></p>
+
+<h4 id="o-file-section-header-table">.o file section header table:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420123311721" alt="这里写图片描述" /></p>
+
+<pre><code>typedef struct {
+  uint32_t   sh_name;// section name
+  uint32_t   sh_type;//section type:RELA,STRTAB,SYMTAB...
+  uint64_t   sh_flags;//rwe...
+  Elf64_Addr sh_addr; //virtual address(no for .o file)
+  Elf64_Off  sh_offset;
+  uint64_t   sh_size;
+  uint32_t   sh_link;
+  uint32_t   sh_info;
+  uint64_t   sh_addralign;//address align 
+  uint64_t   sh_entsize;
+} Elf64_Shdr;
+</code></pre>
+
+<blockquote>
+<p>Conclusions or diffs:
++ the sections of exec file and .so file are almost the same
++ more sections in exec and .so file than .o file since some sections like .fini/.init_array/.fini_array/.got/.got.plt/.init &hellip; are added during linking process
++ the virtual address of every section in .o file is 0,but not in exec and .so file</p>
+</blockquote>
+
+<hr />
+
+<h3 id="3-program-header-table">3.program header table</h3>
+
+<h4 id="exec-file-program-header">exec file program header:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420125657897" alt="这里写图片描述" /></p>
+
+<h4 id="so-file-program-header">.so file program header:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420125723482" alt="这里写图片描述" /></p>
+
+<h4 id="o-file-program-header">.o file program header:</h4>
+
+<p><img src="http://img.blog.csdn.net/20150420125621933" alt="这里写图片描述" /></p>
+
+<pre><code>typedef struct {
+               uint32_t   p_type; //segment type
+               uint32_t   p_flags; //permission
+               Elf64_Off  p_offset; // offset
+               Elf64_Addr p_vaddr; //virtual address
+               Elf64_Addr p_paddr; //phisical address
+               uint64_t   p_filesz; //size
+               uint64_t   p_memsz;
+               uint64_t   p_align;
+           } Elf64_Phdr;
+</code></pre>
+
+<blockquote>
+<p>Conclusions or diffs:
++ there is no program header for .o file
++ some sections are divided into one segment according to the permisson flag</p>
+</blockquote>
+
+<hr />
+
+<h3 id="4-common-sections-explain">4.common sections explain</h3>
+
+<pre><code>.intern 
+#path for elf interpretor
+#here is an article about changing the ld
+#http://nixos.org/patchelf.html
+</code></pre>
+
+<pre><code>.dynsym
+#the dynamic linking symbol table
+</code></pre>
+
+<pre><code>.dynstr
+#strings needed for dynamic linking
+</code></pre>
+
+<pre><code>.init
+#executable instructions that contribute to the process initialization code(before main)
+</code></pre>
+
+<pre><code>.plt
+#procedure linkage table
+#for GOT dynamic linker
+</code></pre>
+
+<pre><code>.text
+#executable instructions of a program
+</code></pre>
+
+<pre><code>.fini
+#executable instructions that contribute to the process termination code
+</code></pre>
+
+<pre><code>.rodata
+# read-only data
+</code></pre>
+
+<pre><code>.dynamic
+#dynamic linking information
+</code></pre>
+
+<pre><code>.got
+#global offset table
+#for dynamic linker to resolve global elements
+</code></pre>
+
+<pre><code>.data
+# initialized data
+</code></pre>
+
+<pre><code>.bss
+#uninitialized data
+</code></pre>
+
+<pre><code>.comment
+#version control info
+</code></pre>
+
+<pre><code>.shstrtab
+#section names
+</code></pre>
+
+<pre><code>.strtab
+#string table
+</code></pre>
+
+<pre><code>.symtab
+#symble table
+</code></pre>
+
+<pre><code>.debug
+#debug info
+</code></pre>
+
+<p>for C++:</p>
+
+<pre><code>.ctors
+#initialized pointers to the C++ constructor functions
+</code></pre>
+
+<pre><code>.dtors
+#initialized pointers to the C++ destructor functions
+</code></pre>
+
+<hr />
+
+<h4 id="the-sections-contain-important-data-for-linking-and-relocation-while-segments-contain-information-that-is-necessary-for-runtime-execution-of-the-file">The sections contain important data for linking and relocation , while segments contain information that is necessary for runtime execution of the file.</h4>
+
+<p>About program header:<a href="http://www.sco.com/developers/gabi/latest/ch5.pheader.html">http://www.sco.com/developers/gabi/latest/ch5.pheader.html</a>
+here is picture portraits the diff views for sections and segments:
+<img src="http://img.blog.csdn.net/20150420130748465" alt="这里写图片描述" /></p>
+
+<h3 id="5-code-mapped-into-sections">5.code mapped into sections</h3>
+
+<p>In the last part we take a look at the symble table for our code in main.c and print.c and verify the scope of vars.</p>
+
+<pre><code>//get symble info use nm
+nm exec | egrep &quot;main|print&quot;
+----------------------------
+the 3 columns:
+--vaddress (dynamic linking is NULL)
+--symble type and local or global
+1.uppercase stands for global,lowercase is local
+2.
+B|b:uninitialized(BSS)
+D|d:initialized data section
+T|t:text (code) section
+R|r: read only data section
+...
+--symble
+</code></pre>
+
+<p><img src="http://img.blog.csdn.net/20150420135821837" alt="这里写图片描述" /></p>
+
+<blockquote>
+<p>So we can check the symbles in main.c and print.c,you can find how the code and data are mapper to each sections,and then organized into segments when linked into executable elf files,so it can be easily loaded into memory(actually mapped) by the OS loader(to some extent we can think it&rsquo;s execve syscall)</p>
+</blockquote>
+
+<h3 id="6-to-the-end">6 to the end</h3>
+
+<p>In all,I talk about the three parts of the elf files in Linux especially some diffs between exec,.so and .o files and the organization for sections and segments.
+If you want to know more precisely about these topics,you can refer to the following materials:</p>
+
+<blockquote>
+<p>Ref:
+some articles:
+<a href="http://man7.org/linux/man-pages/man5/elf.5.html（man">http://man7.org/linux/man-pages/man5/elf.5.html（man</a> manual is so powerful^_^）
+<a href="https://en.wikipedia.org/wiki/Executable_and_Linkable_Format">https://en.wikipedia.org/wiki/Executable_and_Linkable_Format</a>
+<a href="http://www.sco.com/developers/gabi/latest/ch5.pheader.html">http://www.sco.com/developers/gabi/latest/ch5.pheader.html</a>
+<a href="http://tech.meituan.com/linker.html">http://tech.meituan.com/linker.html</a>
+some books:
+1.CSAPP
+2.《程序员的自我修养》</p>
+</blockquote>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/linux%E4%B8%8Belf%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F\/';
+    var disqus_title = 'Linux下ELF文件格式';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/linux%E4%B8%8Belf%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>

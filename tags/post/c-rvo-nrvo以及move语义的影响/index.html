@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>C&#43;&#43; RVO/NRVO以及move语义的影响</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="C&#43;&#43; RVO/NRVO以及move语义的影响" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">C&#43;&#43; RVO/NRVO以及move语义的影响</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>05-09-2015</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    <p>C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。</p>
+
+<p>RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。</p>
+
+<pre><code>#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;string&gt;
+
+struct Test {
+    Test()
+    {
+        std::cout &lt;&lt; &quot;construct a Test object&quot; &lt;&lt; std::endl;
+    }
+
+    Test(const Test&amp;)
+    {
+        std::cout &lt;&lt; &quot;copy construct  a Test object&quot; &lt;&lt; std::endl;
+    }
+    
+    Test&amp; operator=(const Test&amp;)
+    {
+        std::cout &lt;&lt; &quot;copy assignment a Test object&quot; &lt;&lt; std::endl;
+        return *this;
+    }
+
+    
+    Test(Test&amp;&amp;)
+    {
+        std::cout &lt;&lt; &quot;move construct a Test object&quot; &lt;&lt; std::endl;
+    }
+    
+
+    /*
+    Test&amp; operator=(Test &amp;&amp;t)
+    {
+        std::cout &lt;&lt; &quot;move assignment a Test object&quot; &lt;&lt; std::endl;
+        return *this;
+    }
+    */
+
+    ~Test()
+    {
+        std::cout &lt;&lt; &quot;destruct a Test object&quot; &lt;&lt; std::endl;
+    }
+};
+
+Test getTest()
+{
+    return Test();
+}
+
+Test getTestWithName()
+{
+    Test temp;
+    return temp;
+}
+
+int main()
+{
+    std::cout &lt;&lt; &quot;=============RVO==============&quot; &lt;&lt; std::endl; 
+    std::cout &lt;&lt; &quot;++Test obj rvo for copy construct&quot; &lt;&lt; std::endl;
+    auto obj1 = getTest();
+
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;++Test obj rvo for move construct&quot; &lt;&lt; std::endl;
+    auto obj111 = std::move(getTest());
+
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;  
+    std::cout &lt;&lt; &quot;++Test obj rvo for copy assignment&quot; &lt;&lt; std::endl;
+    Test obj11; obj11 = getTest();
+  
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;++Test object rvo for move assignment&quot; &lt;&lt; std::endl;
+    Test obj1111; obj1111 = std::move(getTest());
+    
+
+    std::cout &lt;&lt; &quot;=============NRVO==============&quot; &lt;&lt; std::endl; 
+    std::cout &lt;&lt; &quot;++Test obj nrvo for copy construct&quot; &lt;&lt; std::endl;
+    auto obj2 = getTestWithName();
+    
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;++Test obj nrvo for move construct&quot; &lt;&lt; std::endl;
+    auto obj222 = std::move(getTestWithName());
+    
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;++Test obj nrvo for copy assignment&quot; &lt;&lt; std::endl;
+    Test obj22; obj22 = getTestWithName();
+
+    std::cout &lt;&lt; &quot;--------------&quot; &lt;&lt; std::endl;
+    std::cout &lt;&lt; &quot;++Test obj nrvo for move assignment&quot; &lt;&lt; std::endl;
+    Test obj2222; obj2222 = std::move(getTestWithName());
+
+    std::cout &lt;&lt; &quot;==============================&quot; &lt;&lt; std::endl;
+    // std::string s1 = &quot;s1 string move semantics test&quot;, s2;
+    //std::cout &lt;&lt; &quot;++before move s1\t&quot; &lt;&lt; s1 &lt;&lt; std::endl;
+    //s2 = std::move(s1);
+    //std::cout &lt;&lt; &quot;++after move s1\t&quot; &lt;&lt; s1 &lt;&lt; std::endl;
+    //std::cout &lt;&lt; &quot;=============&quot; &lt;&lt; std::endl;
+    return 0;
+}
+</code></pre>
+
+<p>测试结果：</p>
+
+<pre><code>=============RVO==============
+++Test obj rvo for copy construct
+construct a Test object
+--------------
+++Test obj rvo for move construct
+construct a Test object
+move construct a Test object
+destruct a Test object
+--------------
+++Test obj rvo for copy assignment
+construct a Test object
+construct a Test object
+move assignment a Test object
+destruct a Test object
+--------------
+++Test object rvo for move assignment
+construct a Test object
+construct a Test object
+move assignment a Test object
+destruct a Test object
+=============NRVO==============
+++Test obj nrvo for copy construct
+construct a Test object
+--------------
+++Test obj nrvo for move construct
+construct a Test object
+move construct a Test object
+destruct a Test object
+--------------
+++Test obj nrvo for copy assignment
+construct a Test object
+construct a Test object
+move assignment a Test object
+destruct a Test object
+--------------
+++Test obj nrvo for move assignment
+construct a Test object
+construct a Test object
+move assignment a Test object
+destruct a Test object
+==============================
+destruct a Test object
+destruct a Test object
+destruct a Test object
+destruct a Test object
+destruct a Test object
+destruct a Test object
+destruct a Test object
+destruct a Test object
+</code></pre>
+
+<p>由此可得出几个简单结论：</p>
+
+<ul>
+<li>copy construct本身在RVO和NRVO两种情况下被优化了，如果再加上move反而画蛇添足。</li>
+<li>加入了move assignment后，默认是调用move assignment而不是copy assignment，可以将move assignment注释后测试。</li>
+<li>对于RVO和NRVO来说，construction的情况编译器优化得比较好了，加入move语义主要是对于assignment有比较大影响</li>
+</ul>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D\/';
+    var disqus_title = 'C\x2b\x2b RVO\/NRVO以及move语义的影响';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>

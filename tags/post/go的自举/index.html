@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>Go的自举</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="Go的自举" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Go的自举</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>04-27-2017</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<p>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。</p>
+
+<h2 id="基本流程">基本流程</h2>
+
+<p>Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):</p>
+
+<ul>
+<li>go_old -&gt; dist: 用老版本的Go编译出新代码的dist工具</li>
+<li>go_old + dist -&gt; asm, compile, link: 用老版本的Go和dist工具编译出bootstrap工具，asm用于汇编源码中的.s文件，输出.o对象文件；compile用于编译源码中的.go文件，输出归档打包后的.a文件；link用于链接二进制文件。这里还要依赖外部的pack程序，负责归档打包编译的库。</li>
+</ul>
+
+<p>到这里，dist/asm/compile/link都是链接的老的runtime，所以其运行依赖于go_old。</p>
+
+<ul>
+<li><p>asm, compile, link -&gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。</p></li>
+
+<li><p>go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。</p></li>
+</ul>
+
+<p>一句话总结，借用老的runtime编译新的代码逻辑(编译器、链接器、新的runtime)生成新代码的编译、链接工具，并用这些工具重新编译新代码和工具本身。</p>
+
+<hr />
+
+<h2 id="具体实现">具体实现</h2>
+
+<ul>
+<li>生成dist</li>
+</ul>
+
+<pre><code>// make.bash
+# 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了
+# 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!!
+GOROOT=&quot;$GOROOT_BOOTSTRAP&quot; GOOS=&quot;&quot; GOARCH=&quot;&quot; &quot;$GOROOT_BOOTSTRAP/bin/go&quot; build -o cmd/dist/dist ./cmd/dist
+</code></pre>
+
+<ul>
+<li>生成bootstrap二进制文件和库</li>
+</ul>
+
+<pre><code>// make.bash
+# 设置环境变量
+eval $(./cmd/dist/dist env -p || echo FAIL=true)
+
+# 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量
+# 这里可提供GOARCH和GOOS环境变量交叉编译
+./cmd/dist/dist bootstrap $buildall $GO_DISTFLAGS -v # builds go_bootstrap
+</code></pre>
+
+<ul>
+<li>重新生成当前平台的go</li>
+</ul>
+
+<pre><code>// make.bash
+// std, cmd, all在go里有特殊的含义，这里重新编译了所有标准库和默认工具的二进制程序
+if [ &quot;$GOHOSTARCH&quot; != &quot;$GOARCH&quot; -o &quot;$GOHOSTOS&quot; != &quot;$GOOS&quot; ]; then
+  echo &quot;##### Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH.&quot;
+  # 重置GOOS和GOARCH环境变量，不会影响外层的环境变量
+  CC=$CC GOOS=$GOHOSTOS GOARCH=$GOHOSTARCH \
+    &quot;$GOTOOLDIR&quot;/go_bootstrap install -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
+  echo
+fi
+</code></pre>
+
+<ul>
+<li>生成目标平台的Go</li>
+</ul>
+
+<pre><code>CC=$CC_FOR_TARGET &quot;$GOTOOLDIR&quot;/go_bootstrap install $GO_FLAGS -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
+</code></pre>
+
+<ul>
+<li>dist bootstrap逻辑</li>
+</ul>
+
+<pre><code>// cmd/dist
+dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compile, link工具，然后用它们编译cmd/go及其依赖的runtime和标准库。中间主要是用compile编译.go文件、asm汇编.s文件和用link/pack链接归档打包目标文件的过程。
+</code></pre>
+
+<hr />
+
+<h2 id="小问题">小问题</h2>
+
+<p>分析代码中遇到几个值得注意的小问题:</p>
+
+<ul>
+<li>bash环境变量
+
+<ul>
+<li>bash脚本单行命令中修改环境变量只影响其后执行的程序，而不会覆盖当前环境变量。</li>
+</ul></li>
+<li>go tool的二进制程序安装路径
+
+<ul>
+<li><code>go install</code>命令会自动将tool类型的二进制文件安装到<code>$GOROOT/pkg/tool/</code>目录下。</li>
+</ul></li>
+</ul>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%87%AA%E4%B8%BE\/';
+    var disqus_title = 'Go的自举';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%87%AA%E4%B8%BE\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>

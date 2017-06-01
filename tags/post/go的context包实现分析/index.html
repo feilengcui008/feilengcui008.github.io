@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>Go的context包实现分析</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="Go的context包实现分析" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Go的context包实现分析</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>04-24-2017</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<p>Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以这种模型可以比较优雅地处理程序的多个逻辑部分，而context很好地实现了这个模型。对于请求响应的形式(比如http)尤其适合这种模型。下面分析下context包的具体实现。</p>
+
+<hr />
+
+<h2 id="基本设计">基本设计</h2>
+
+<ul>
+<li>context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。</li>
+<li>cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。</li>
+<li>emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数</li>
+<li>timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。</li>
+<li>cancelCtx的cancel有几种方式
+
+<ul>
+<li>主动调用cancel</li>
+<li>其父ctx被cancel，触发子ctx的cancel</li>
+<li>time.Timer事件触发timerCtx的cancel回调</li>
+</ul></li>
+<li>当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理</li>
+</ul>
+
+<hr />
+
+<h2 id="具体实现">具体实现</h2>
+
+<ul>
+<li>Context接口</li>
+</ul>
+
+<pre><code>type Context interface {
+  // 只用于timerCtx，即WithDeadline和WithTimeout
+  Deadline() (deadline time.Time, ok bool)
+  // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan
+  Done() &lt;-chan struct{}
+  // 错误信息
+  Err() error
+  // 只用于valueCtx
+  Value(key interface{}) interface{}
+}
+
+</code></pre>
+
+<ul>
+<li>几种主要Context的实现</li>
+</ul>
+
+<pre><code>// cancelCtx
+type cancelCtx struct {
+  Context
+  mu       sync.Mutex            
+  done     chan struct{}         
+  // 主要用于存储子cancelCtx和timerCtx
+  // 当此ctx被cancel时，会自动cancel其所有children中的ctx
+  children map[canceler]struct{} 
+  err      error                 
+}
+// timeCtx
+type timerCtx struct {
+  cancelCtx
+  // 借助计时器触发timeout事件
+  timer *time.Timer
+  deadline time.Time
+}
+// valueCtx 
+type valueCtx struct {
+  Context
+  key, val interface{}
+}
+
+// cancel逻辑
+func (c *cancelCtx) cancel(removeFromParent bool, err error) {
+  /* ... */
+  c.err = err
+  // 如果在第一次调用Done之前就调用cancel，则done为nil
+  if c.done == nil {
+    c.done = closedchan
+  } else {
+    close(c.done)
+  }
+  for child := range c.children {
+    // NOTE: acquiring the child's lock while holding parent's lock.
+    // 不能将子ctx从当前移除，由于移除需要拿当前ctx的锁
+    child.cancel(false, err)
+  }
+  // 直接置为nil让gc处理子ctx的回收?
+  c.children = nil
+  c.mu.Unlock()
+
+  // 把自己从parent里移除，注意这里需要拿parent的锁
+  if removeFromParent {
+    removeChild(c.Context, c)
+  }
+}
+</code></pre>
+
+<ul>
+<li>外部接口</li>
+</ul>
+
+<pre><code>// Background
+func Background() Context {
+  // 直接返回默认的顶层ctx
+  return background
+}
+
+// WithCancel
+func WithCancel(parent Context) (ctx Context, cancel CancelFunc) {
+  // 实例化cancelCtx
+  c := newCancelCtx(parent)
+  // 如果parent是cancelCtx类型，则注册到parent.children，否则启用
+  // 新的goroutine专门负责此ctx的cancel，当parent被cancel后，自动
+  // 回调child的cancel
+  propagateCancel(parent, &amp;c)
+  return &amp;c, func() { c.cancel(true, Canceled) }
+}
+
+// WithDeadline
+func WithDeadline(parent Context, deadline time.Time) (Context, CancelFunc) {
+  // 如果parent是deadline，且比当前早，则直接返回cancelCtx
+  if cur, ok := parent.Deadline(); ok &amp;&amp; cur.Before(deadline) {
+    return WithCancel(parent)
+  }
+  c := &amp;timerCtx{
+    cancelCtx: newCancelCtx(parent),
+    deadline:  deadline,
+  }
+  propagateCancel(parent, c)
+  d := time.Until(deadline)
+  // 已经过了
+  if d &lt;= 0 {
+    c.cancel(true, DeadlineExceeded) // deadline has already passed
+    return c, func() { c.cancel(true, Canceled) }
+  }
+  c.mu.Lock()
+  defer c.mu.Unlock()
+  if c.err == nil {
+    // time.Timer到时则自动回调cancel
+    c.timer = time.AfterFunc(d, func() {
+      c.cancel(true, DeadlineExceeded)
+    })
+  }
+  return c, func() { c.cancel(true, Canceled) }
+}
+
+// WithTimeout
+func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
+  // 直接使用WithDeadline的实现即可
+  return WithDeadline(parent, time.Now().Add(timeout))
+}
+
+</code></pre>
+
+<hr />
+
+<h2 id="简单例子">简单例子</h2>
+
+<pre><code>package main
+
+import (
+  &quot;context&quot;
+  &quot;fmt&quot;
+  &quot;time&quot;
+)
+
+func OuterLogicWithContext(ctx context.Context, fn func(ctx context.Context) error) error {
+  go fn(ctx)
+  for {
+    select {
+    case &lt;-ctx.Done():
+      fmt.Println(&quot;OuterLogicWithContext ended&quot;)
+      return ctx.Err()
+    }
+  }
+}
+
+func InnerLogicWithContext(ctx context.Context) error {
+Loop:
+  for {
+    select {
+    case &lt;-ctx.Done():
+      break Loop
+    }
+  }
+  fmt.Println(&quot;InnerLogicWithContext ended&quot;)
+  return ctx.Err()
+}
+
+func main() {
+  ctx := context.Background()
+  var cancel context.CancelFunc
+  ctx, cancel = context.WithCancel(ctx)
+  ctx, cancel = context.WithTimeout(ctx, time.Second)
+  go OuterLogicWithContext(ctx, InnerLogicWithContext)
+  time.Sleep(time.Second * 3)
+  // has been canceled by timer
+  cancel()
+  fmt.Println(&quot;main ended&quot;)
+}
+</code></pre>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90\/';
+    var disqus_title = 'Go的context包实现分析';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>

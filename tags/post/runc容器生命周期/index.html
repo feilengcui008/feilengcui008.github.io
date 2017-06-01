@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>Runc容器生命周期</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/styles/default.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.6.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">A</span></a>
+  </div>
+  
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="Runc容器生命周期" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Runc容器生命周期</h1>
+
+    <div class="article-meta">
+      <span>
+        <i class="icon-calendar"></i>
+        <span>11-30-2016</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<p>容器的生命周期涉及到内部的程序实现和面向用户的命令行界面，runc内部容器状态转换操作、runc命令的参数定义的操作、docker client定义的容器操作是不同的，比如对于docker client的create来说，
+语义和runc就完全不同，这一篇文章分析runc的容器生命周期的抽象、内部实现以及状态转换图。理解了runc的容器状态转换再对比理解docker client提供的容器操作命令的语义会更容易些。</p>
+
+<hr />
+
+<h4 id="容器生命周期相关接口">容器生命周期相关接口</h4>
+
+<ul>
+<li>最基本的required的接口
+
+<ul>
+<li>Start: 初始化容器环境并启动一个init进程，或者加入已有容器的namespace并启动一个setns进程；执行postStart hook; 阻塞在init管道的写端，用户发信号替换执行真正的命令</li>
+<li>Exec: 读init管道，通知init进程或者setns进程继续往下执行</li>
+<li>Run: Start + Exec的组合</li>
+<li>Signal: 向容器内init进程发信号</li>
+<li>Destroy: 杀掉cgroups中的进程，删除cgroups对应的path，运行postStop的hook</li>
+<li>其他
+
+<ul>
+<li>Set: 更新容器的配置信息，比如修改cgroups resize等</li>
+<li>Config: 获取容器的配置信息</li>
+<li>State: 获取容器的状态信息</li>
+<li>Status: 获取容器的当前运行状态: created、running、pausing、paused、stopped</li>
+<li>Processes: 返回容器内所有进程的列表</li>
+<li>Stats: 容器内的cgroups统计信息</li>
+</ul></li>
+<li>对于linux容器定义并实现了特有的功能接口
+
+<ul>
+<li>Pause: free容器中的所有进程</li>
+<li>Resume: thaw容器内的所有进程</li>
+<li>Checkpoint: criu checkpoint</li>
+<li>Restore: criu restore</li>
+</ul></li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h4 id="接口在内部的实现">接口在内部的实现</h4>
+
+<ul>
+<li>对于Start/Run/Exec的接口是作为不同os环境下的标准接口对开发者暴露，接口在内部的实现有很多重复的部分可以统一，因此内部的接口实际上更简洁，这里以linux容器为例说明
+
+<ul>
+<li>对于Start/Run/Exec在内部实现实际上只用到下面两个函数，通过传入flag(容器是否处于stopped状态)区分是创建容器的init进程还是创建进程的init进程
+
+<ul>
+<li>start: 创建init进程，如果status == stopped，则创建并执行newInitProcess，否则创建并执行newSetnsProcess，等待用户发送执行信号(等在管道写端上)，用用户的命令替换掉</li>
+<li>exec: 读管道，发送执行信号</li>
+</ul></li>
+<li>Start直接使用start</li>
+<li>Run实际先使用start(doInit = true)，然后exec</li>
+<li>Exec实际先使用start(doInit = false), 然后exec</li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h4 id="对用户暴露的命令行参数与容器接口的对应关系-以linux容器为例">对用户暴露的命令行参数与容器接口的对应关系，以linux容器为例</h4>
+
+<ul>
+<li>create -&gt; Start(doInit = true)</li>
+<li>start -&gt; Exec</li>
+<li>run -&gt; Run(doInit = true)</li>
+<li>exec -&gt; Run(doInit = false)</li>
+<li>kill -&gt; Signal</li>
+<li>delete -&gt; Signal and Destroy</li>
+<li>update -&gt; Set</li>
+<li>state -&gt; State</li>
+<li>events -&gt; Stats</li>
+<li>ps -&gt; Processes</li>
+<li>list</li>
+<li>linux specific
+
+<ul>
+<li>pause -&gt; Pause</li>
+<li>resume -&gt; Resume</li>
+<li>checkpoint -&gt; Checkpoint</li>
+<li>restore -&gt; Restore</li>
+</ul></li>
+</ul>
+
+<hr />
+
+<h4 id="runc命令行的动作序列对容器状态机的影响">runc命令行的动作序列对容器状态机的影响</h4>
+
+<ul>
+<li>对于一个容器的生命周期来说，稳定状态有4个: stopped、created、running、paused</li>
+<li>注意下面状态转换图中的动作是runc命令行参数动作，不是容器的接口动作，这里没考虑checkpoint相关的restore状态
+
+<ul>
+<li><img src="/images/runc.png" alt="Runc容器状态机" /></li>
+</ul></li>
+</ul>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F\/';
+    var disqus_title = 'Runc容器生命周期';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+
+
+
+  </body>
+</html>
