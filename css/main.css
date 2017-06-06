@@ -71,11 +71,11 @@ body {
 }
 
 .aboutdiv {
+  padding-left: 0px;
   margin: 0px auto;
   font-weight: bold;
-  width: 250px;
+  width: 500px;
   margin-top: 125px;
-  padding-left: 20px;
 }
 
 
@@ -173,8 +173,7 @@ body {
 
 .item-post:before {
   background: #1abc9c;
-  left: 0px;
-margin-left: 0px;
+  margin-left: 0px;
 }
 
 .rightspan a:hover {
@@ -182,7 +181,6 @@ margin-left: 0px;
 }
 
 .aboutdiv {
-  padding-left: 0px;
 }
 
 
