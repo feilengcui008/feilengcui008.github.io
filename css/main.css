@@ -129,6 +129,7 @@ body {
 
 .leftspan {
   text-align: left;
+  text-transform: capitalize;
 }
 
 .rightspan {
@@ -137,13 +138,18 @@ body {
 }
 
 .itemdiv {
-  width: 200px;
+  width: 255px;
   margin:0 auto;
 }
 
 .descdiv {
+  width: 255px;
   margin:0 auto;
-  text-align: center;
+  font-size: 15px;
+}
+
+.rightspan a:hover {
+  color: #1abc9c;
 }
 
 .aboutdiv {
@@ -154,7 +160,7 @@ body {
   left: 0px;
 }
 
-.item-post .post-date { 
+.item-post .post-date {
   float: right;
   margin-right: 10px;
 }
