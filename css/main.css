@@ -266,3 +266,7 @@ pre code {
 .fexo-comments.comments-post {
   max-width: 688px;
 }
+
+.article-content {
+  text-align: justify;
+}
