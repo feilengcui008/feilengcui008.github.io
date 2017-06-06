@@ -254,3 +254,15 @@ pre code {
 .icon-zhihu:before {
   content: '知';
 }
+
+.content {
+  width: 760px;
+}
+
+.content.content-post {
+  max-width: 688px;
+}
+
+.fexo-comments.comments-post {
+  max-width: 688px;
+}
