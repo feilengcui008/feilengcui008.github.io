@@ -148,6 +148,25 @@ body {
   font-size: 15px;
 }
 
+.desctitle {
+  font-weight: bold;
+  font-size: 14px;
+  max-width: 280px;
+  position: relative;
+  display: inline-block;
+  transition-duration: .5s;
+  color: #333;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-post:before {
+  background: #1abc9c;
+  left: 0px;
+margin-left: 0px;
+}
+
 .rightspan a:hover {
   color: #1abc9c;
 }
@@ -156,13 +175,11 @@ body {
   padding-left: 0px;
 }
 
-.item-post:before {
-  left: 0px;
-}
 
 .item-post .post-date {
   float: right;
   margin-right: 10px;
+  color: #000;
 }
 
 code, pre, samp {
