@@ -8,10 +8,6 @@ body {
   width: 380px;
 }
 
-.icon-zhihu {
-  background-color: blue;
-}
-
 .category-box .category-list {
   margin-left: 0px;
 }
@@ -140,10 +136,24 @@ body {
 .itemdiv {
   width: 255px;
   margin:0 auto;
+  text-align: center;
+  font-style: 18px;
+}
+
+.itemdiv a {
+  color: #000;
+}
+
+.itemdiv a:hover {
+  color: #1abc9c;
+}
+
+.icondiv {
+  margin-bottom: 10px;
 }
 
 .descdiv {
-  width: 255px;
+  width: 270px;
   margin:0 auto;
   font-size: 15px;
 }
@@ -241,4 +251,12 @@ pre code {
 
 .post-nav {
   text-align: center;
+}
+
+.icon-douban:before {
+  content: '豆';
+}
+
+.icon-zhihu:before {
+  content: '知';
 }
