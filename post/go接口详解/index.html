@@ -102,7 +102,7 @@ fun    [1]uintptr // variable sized
 <li>string、slice、interface传递的是其runtime的实现，所以长度是固定的，分别为16、24、16字节(amd64)</li>
 <li>map、func、chan、pointer传递的是指针，所以长度固定为8字节(amd64)</li>
 <li>struct传递的是所有字段的内存拷贝，所以长度是所有字段的长度和</li>
-<li>详细的测试可以参考<a href="https://github.com/feilengcui008/go-pieces/blob/master/src/pass_by_value_main.go">这段程序</a></li>
+<li>详细的测试可以参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/pass_by_value_main.go">这段程序</a></li>
 </ul></li>
 </ul>
 
@@ -375,7 +375,7 @@ i1 = {_type = 0x492e00, data = 0xc4200741a0}
 
 <h2 id="4-nil接口的问题">4. nil接口的问题</h2>
 
-<p>具体的代码可参考<a href="https://github.com/feilengcui008/go-pieces/blob/master/src/traps_main.go#L94">nil接口返回值测试</a>。理解了接口的底层实现，这个问题其实也比较好理解了。需要说明的是nil在Go中既指空值，也指空类型。这里的空值并非零值，空值是指未初始化，比如slice没有分配底层的内存。只有chan、interface、func、slice、map、pointer可直接与nil比较和用nil赋值。对于非接口类型来说，对其赋值nil的语义是将其数据变为未初始化的状态，而给接口类型来说，还会将接口的类型信息字段itab置nil。所以:</p>
+<p>具体的代码可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/traps_main.go#L94">nil接口返回值测试</a>。理解了接口的底层实现，这个问题其实也比较好理解了。需要说明的是nil在Go中既指空值，也指空类型。这里的空值并非零值，空值是指未初始化，比如slice没有分配底层的内存。只有chan、interface、func、slice、map、pointer可直接与nil比较和用nil赋值。对于非接口类型来说，对其赋值nil的语义是将其数据变为未初始化的状态，而给接口类型来说，还会将接口的类型信息字段itab置nil。所以:</p>
 
 <pre><code>type MyReader interface {
 }
