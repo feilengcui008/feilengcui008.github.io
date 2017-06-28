@@ -5,7 +5,9 @@ body {
 .personal_content {
   margin: 40px auto 80px;
   border-left: 0px solid #f9f9f9;
-  width: 380px;
+  width: 80%;
+  min-width: 380px;
+  max-width: 580px;
 }
 
 .category-box .category-list {
@@ -188,7 +190,6 @@ body {
 
 code, pre, samp {
   font-family: Go-Regular;
-  font-size: 14px;
 }
 
 .sidebar-toggle-0 {
@@ -242,12 +243,10 @@ pre code {
 
 .arrow {
   font-size: 20px;
-  line-height: 20px;
 }
 
 .post-nav {
   text-align: center;
-  line-height: 20px;
 }
 
 .icon-douban:before {
@@ -272,8 +271,4 @@ pre code {
 
 .article-content {
   text-align: justify;
-}
-
-.dsq-brlink {
-  display: none;
 }
