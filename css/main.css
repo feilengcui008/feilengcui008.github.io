@@ -272,3 +272,7 @@ pre code {
 .article-content {
   text-align: justify;
 }
+
+.dsq-brlink {
+    display: none;
+}
