@@ -5,7 +5,7 @@ body {
 .personal_content {
   margin: 40px auto 80px;
   border-left: 0px solid #f9f9f9;
-  width: 80%;
+  width: 35%;
   min-width: 380px;
   max-width: 580px;
 }
@@ -92,6 +92,7 @@ body {
     width: 22px;
     top: 0;
     height: 22px;
+    line-height: 22px;
     background: #222;
     /* line-height: 0;
     padding: 5px; */
@@ -243,13 +244,11 @@ pre code {
 }
 
 .arrow {
-  font-size: 20px;
-  line-height: 20px;
 }
 
 .post-nav {
   text-align: center;
-  line-height: 20px;
+  font-size: 16px;
 }
 
 .icon-douban:before {
