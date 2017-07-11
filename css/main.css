@@ -230,7 +230,7 @@ pre {
   overflow-y: hidden;
   white-space: pre-wrap;
   word-wrap: break-word;
-  border: 1px solid #dfdfdf;
+  /* border: 1px solid #dfdfdf; */
 }
 
 code {
