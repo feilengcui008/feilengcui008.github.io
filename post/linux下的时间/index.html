@@ -108,40 +108,43 @@ int ioctl(fd, RTC_request, param);
 <ul>
 <li>time_t 从Epoch开始的秒数</li>
 <li>calendar time 字符串</li>
-<li>拆分时间 struct tm
-<code>
-struct tm {
-int tm_sec;         /* seconds */
-int tm_min;         /* minutes */
-int tm_hour;        /* hours */
-int tm_mday;        /* day of the month */
-int tm_mon;         /* month */
-int tm_year;        /* year */
-int tm_wday;        /* day of the week */
-int tm_yday;        /* day in the year */
-int tm_isdst;       /* daylight saving time */
-};
-</code></li>
-<li>struct timeval/struct timespec
-```
-struct timeval {
-time_t seconds;
-suseconds_t useconds;
-}</li>
+<li>拆分时间 struct tm</li>
 </ul>
 
-<p>struct timespec {
-  time_t   tv_sec;        /* seconds <em>/
-  long     tv_nsec;       /</em> nanoseconds */
+<pre><code class="language-C++">  struct tm {
+    int tm_sec;         /* seconds */
+    int tm_min;         /* minutes */
+    int tm_hour;        /* hours */
+    int tm_mday;        /* day of the month */
+    int tm_mon;         /* month */
+    int tm_year;        /* year */
+    int tm_wday;        /* day of the week */
+    int tm_yday;        /* day in the year */
+    int tm_isdst;       /* daylight saving time */
+  };
+</code></pre>
+
+<ul>
+<li>struct timeval/struct timespec</li>
+</ul>
+
+<pre><code class="language-C++">struct timeval {
+  time_t seconds;
+  suseconds_t useconds;
+}
+
+struct timespec {
+  time_t   tv_sec;        /* seconds */
+  long     tv_nsec;       /* nanoseconds */
 };
-```</p></li>
+</code></pre></li>
 </ul>
 
 <hr />
 
 <h3 id="系统时间的操作">系统时间的操作</h3>
 
-<pre><code>#include &lt;time.h&gt;
+<pre><code class="language-C++">#include &lt;time.h&gt;
 #include &lt;sys/time.h&gt;
 
 // number of seconds since epoch
@@ -182,28 +185,28 @@ char *strptime(const char *s, const char *format, struct tm *tm);
 <li>sleep</li>
 </ul>
 
-<pre><code>unsigned int sleep(unsigned int seconds);
+<pre><code class="language-C++">unsigned int sleep(unsigned int seconds);
 </code></pre>
 
 <ul>
 <li>usleep</li>
 </ul>
 
-<pre><code>int usleep(useconds_t usec);
+<pre><code class="language-C++">int usleep(useconds_t usec);
 </code></pre>
 
 <ul>
 <li>nanosleep</li>
 </ul>
 
-<pre><code>int nanosleep(const struct timespec *req, struct timespec *rem);
+<pre><code class="language-C++">int nanosleep(const struct timespec *req, struct timespec *rem);
 </code></pre>
 
 <ul>
 <li>alarm</li>
 </ul>
 
-<pre><code>// SIGALARM after seconds
+<pre><code class="language-C++">// SIGALARM after seconds
 unsigned int alarm(unsigned int seconds);
 </code></pre>
 
@@ -211,23 +214,21 @@ unsigned int alarm(unsigned int seconds);
 <li>timer_create</li>
 </ul>
 
-<pre><code>int timer_create(clockid_t clockid, struct sigevent *sevp,
-                        timer_t *timerid);
+<pre><code class="language-C++">int timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid);
 </code></pre>
 
 <ul>
-<li>setitimer</li>
-<li>timerfd_create ＋ select/poll/epoll</li>
+<li>setitimer and timerfd_create ＋ select/poll/epoll</li>
 </ul>
 
-<pre><code>int timerfd_create(int clockid, int flags);
+<pre><code class="language-C++">int timerfd_create(int clockid, int flags);
 </code></pre>
 
 <ul>
 <li>select</li>
 </ul>
 
-<pre><code>// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
+<pre><code class="language-C++">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
 int select(int nfds, fd_set *readfds, fd_set *writefds,
                   fd_set *exceptfds, struct timeval *timeout);
 // struct timespec可以精确到纳秒，但是pselect下次无法修改timeout 
@@ -246,19 +247,18 @@ int pselect(int nfds, fd_set *readfds, fd_set *writefds,
 <li>poll</li>
 </ul>
 
-<pre><code>// timeout最小单位ms，并且rounded up to系统时钟的精度
+<pre><code class="language-C++">// timeout最小单位ms，并且rounded up to系统时钟的精度
 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 // 注意timespec会被转换成ms
 int ppoll(struct pollfd *fds, nfds_t nfds,
                const struct timespec *timeout_ts, const sigset_t *sigmask);
-
 </code></pre>
 
 <ul>
 <li>epoll</li>
 </ul>
 
-<pre><code>// timeout最小单位ms，并且rounded up to系统时钟的精度
+<pre><code class="language-C++">// timeout最小单位ms，并且rounded up to系统时钟的精度
 int epoll_wait(int epfd, struct epoll_event *events,
                       int maxevents, int timeout);
 int epoll_pwait(int epfd, struct epoll_event *events,

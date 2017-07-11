@@ -22,7 +22,7 @@
  HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。  外部时钟
  从网络ntp，原子钟等同步   时间  时间类别
  wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间  时间的表示
- time_t 从Epoch开始的秒数 calendar time 字符串 拆分时间 struct tm  struct tm { int tm_sec; /* seconds */ int tm_min; /* minutes */ int tm_hour; /* hours */ int tm_mday; /* day of the month */ int tm_mon; /* month */ int tm_year; /* year */ int tm_wday; /* day of the week */ int tm_yday; /* day in the year */ int tm_isdst; /* daylight saving time */ };  struct timeval/struct timespec ``` struct timeval { time_t seconds; suseconds_t useconds; }  struct timespec { time_t tv_sec; /* seconds / long tv_nsec; / nanoseconds */ }; ```</description>
+ time_t 从Epoch开始的秒数 calendar time 字符串 拆分时间 struct tm  struct tm { int tm_sec; /* seconds */ int tm_min; /* minutes */ int tm_hour; /* hours */ int tm_mday; /* day of the month */ int tm_mon; /* month */ int tm_year; /* year */ int tm_wday; /* day of the week */ int tm_yday; /* day in the year */ int tm_isdst; /* daylight saving time */ };   struct timeval/struct timespec  struct timeval { time_t seconds; suseconds_t useconds; } struct timespec { time_t tv_sec; /* seconds */ long tv_nsec; /* nanoseconds */ };   系统时间的操作 #include &amp;lt;time.</description>
     </item>
     
     <item>
