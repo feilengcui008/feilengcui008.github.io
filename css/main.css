@@ -163,7 +163,7 @@ body {
 
 .desctitle {
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
   max-width: 280px;
   position: relative;
   display: inline-block;
@@ -191,7 +191,7 @@ body {
 
 code, pre, samp {
   font-family: Go-Regular;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .sidebar-toggle-0 {
@@ -230,6 +230,7 @@ pre {
   overflow-y: hidden;
   white-space: pre-wrap;
   word-wrap: break-word;
+  border: 1px solid #dfdfdf;
 }
 
 code {
