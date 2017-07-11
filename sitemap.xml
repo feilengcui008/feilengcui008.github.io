@@ -192,7 +192,7 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/categories/</loc>
+    <loc>https://feilengcui008.github.io/category/</loc>
   </url>
   
   <url>
@@ -201,6 +201,12 @@
   
   <url>
     <loc>https://feilengcui008.github.io/categories/c&#43;&#43;/</loc>
+    <lastmod>2015-05-09T13:22:37+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://feilengcui008.github.io/categories/</loc>
     <lastmod>2015-05-09T13:22:37+08:00</lastmod>
     <priority>0</priority>
   </url>
