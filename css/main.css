@@ -299,6 +299,6 @@ pre code {
     color: #000;
 }
 
-.category-item a:hover {
+.category-item category-name:hover {
   color: #1abc9c;
 }
