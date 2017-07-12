@@ -207,6 +207,16 @@ code, pre, samp {
   display: none;
 }
 
+.sidebar-toggle-3 {
+  top: 66px;
+  display: none;
+}
+
+.sidebar-toggle-4 {
+  top: 88px;
+  display: none;
+}
+
 .category-box {
   margin-left: 0px;
 }
