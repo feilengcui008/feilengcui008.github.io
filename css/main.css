@@ -308,3 +308,11 @@ pre code {
 .category-list a:hover {
   color: #1abc9c;
 }
+
+.article-meta a {
+  color: #000;
+}
+
+.article-meta a:hover {
+  color: #1abc9c;
+}
