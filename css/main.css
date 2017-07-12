@@ -309,10 +309,10 @@ pre code {
   color: #1abc9c;
 }
 
-.article-meta-span a {
+.content.content-post .article-header .article-meta a {
   color: #000;
 }
 
-.article-meta-span a:hover {
+.content.content-post .article-header .article-meta a:hover {
   color: #1abc9c;
 }
