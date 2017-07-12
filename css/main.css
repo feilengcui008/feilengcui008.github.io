@@ -290,18 +290,15 @@ pre code {
   display: none;
 }
 
-.mycategory-box {
+.category-box {
     width: 80%;
 }
 
-.mycategory-item {
+.category-name {
     font-size: 14px;
-}
-
-.mycategory-box a {
     color: #000;
 }
 
-.mycategory-box a:hover {
+.category-item a:hover {
   color: #1abc9c;
 }
