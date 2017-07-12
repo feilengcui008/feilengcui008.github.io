@@ -11,7 +11,7 @@ body {
 }
 
 .category-box .category-list {
-  margin-left: 0px;
+ /*  margin-left: 0px; */
 }
 
 .page-header {
@@ -294,11 +294,6 @@ pre code {
   width: 80%;
   margin: auto;
 }
-
-.category-list {
-  text-align: center;
-}
-
 
 .category-name {
   font-size: 14px;
