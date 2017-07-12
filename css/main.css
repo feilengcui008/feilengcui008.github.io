@@ -292,11 +292,13 @@ pre code {
 
 .category-box {
     width: 80%;
+    margin: auto;
 }
 
 .category-name {
     font-size: 14px;
     color: #000;
+    text-transform: capitalize;
 }
 
 .category-item span:hover {
