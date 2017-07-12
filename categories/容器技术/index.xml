@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>容器技术 on 不一样的天空</title>
+    <link>https://feilengcui008.github.io/categories/%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF/</link>
+    <description>Recent content in 容器技术 on 不一样的天空</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 30 Nov 2016 17:48:20 +0800</lastBuildDate>
+    
+	<atom:link href="https://feilengcui008.github.io/categories/%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Runc容器生命周期</title>
+      <link>https://feilengcui008.github.io/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</link>
+      <pubDate>Wed, 30 Nov 2016 17:48:20 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</guid>
+      <description> 容器的生命周期涉及到内部的程序实现和面向用户的命令行界面，runc内部容器状态转换操作、runc命令的参数定义的操作、docker client定义的容器操作是不同的，比如对于docker client的create来说， 语义和runc就完全不同，这一篇文章分析runc的容器生命周期的抽象、内部实现以及状态转换图。理解了runc的容器状态转换再对比理解docker client提供的容器操作命令的语义会更容易些。
+容器生命周期相关接口  最基本的required的接口  Start: 初始化容器环境并启动一个init进程，或者加入已有容器的namespace并启动一个setns进程；执行postStart hook; 阻塞在init管道的写端，用户发信号替换执行真正的命令 Exec: 读init管道，通知init进程或者setns进程继续往下执行 Run: Start + Exec的组合 Signal: 向容器内init进程发信号 Destroy: 杀掉cgroups中的进程，删除cgroups对应的path，运行postStop的hook 其他  Set: 更新容器的配置信息，比如修改cgroups resize等 Config: 获取容器的配置信息 State: 获取容器的状态信息 Status: 获取容器的当前运行状态: created、running、pausing、paused、stopped Processes: 返回容器内所有进程的列表 Stats: 容器内的cgroups统计信息  对于linux容器定义并实现了特有的功能接口  Pause: free容器中的所有进程 Resume: thaw容器内的所有进程 Checkpoint: criu checkpoint Restore: criu restore    接口在内部的实现  对于Start/Run/Exec的接口是作为不同os环境下的标准接口对开发者暴露，接口在内部的实现有很多重复的部分可以统一，因此内部的接口实际上更简洁，这里以linux容器为例说明  对于Start/Run/Exec在内部实现实际上只用到下面两个函数，通过传入flag(容器是否处于stopped状态)区分是创建容器的init进程还是创建进程的init进程  start: 创建init进程，如果status == stopped，则创建并执行newInitProcess，否则创建并执行newSetnsProcess，等待用户发送执行信号(等在管道写端上)，用用户的命令替换掉 exec: 读管道，发送执行信号  Start直接使用start Run实际先使用start(doInit = true)，然后exec Exec实际先使用start(doInit = false), 然后exec   对用户暴露的命令行参数与容器接口的对应关系，以linux容器为例  create -&amp;gt; Start(doInit = true) start -&amp;gt; Exec run -&amp;gt; Run(doInit = true) exec -&amp;gt; Run(doInit = false) kill -&amp;gt; Signal delete -&amp;gt; Signal and Destroy update -&amp;gt; Set state -&amp;gt; State events -&amp;gt; Stats ps -&amp;gt; Processes list linux specific  pause -&amp;gt; Pause resume -&amp;gt; Resume checkpoint -&amp;gt; Checkpoint restore -&amp;gt; Restore   runc命令行的动作序列对容器状态机的影响  对于一个容器的生命周期来说，稳定状态有4个: stopped、created、running、paused 注意下面状态转换图中的动作是runc命令行参数动作，不是容器的接口动作，这里没考虑checkpoint相关的restore状态     </description>
+    </item>
+    
+    <item>
+      <title>Docker简介</title>
+      <link>https://feilengcui008.github.io/post/docker%E7%AE%80%E4%BB%8B/</link>
+      <pubDate>Sat, 08 Oct 2016 17:44:02 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/docker%E7%AE%80%E4%BB%8B/</guid>
+      <description>本文主要介绍Docker的一些基本概念、Docker的源码分析、Docker相关的一些issue、Docker周边生态等等。
+基本概念 Basics docker大体包括三大部分，runtime(container)、image(graphdriver)、registry，runtime提供环境的隔离与资源的隔离和限制，image提供layer、image、rootfs的管理、registry负责镜像存储与分发。当然，还有其他一些比如data volume, network等等，总体来说还是分为计算、存储与网络。
+computing  接口规范 命名空间隔离、资源隔离与限制的实现 造坑与入坑  network  接口规范与实现  bridge  veth pair for two namespace communication bridge and veth pair for multi-namespace communication do not support multi-host  overlay  docker overlay network: with swarm mode or with kv etcd/zookeeper/consul -&amp;gt; vxlan coreos flannel -&amp;gt; 多种backend，udp/vxlan&amp;hellip; ovs weave -&amp;gt; udp and vxlan，与flannel udp不同的是会将多container的packet一块打包 calico  pure layer 3  一篇对比  null  与世隔绝  host  共享主机net namespace    storage  graphdriver(layers,image and rootfs)  graph:独立于各个driver，记录image的各层依赖关系(DAG)，注意是image不包括运行中的container的layer，当container commit生成image后，会将新layer的依赖关系写入 device mapper  snapshot基于block，allocation-on-demand 默认基于空洞文件(data and metadata)挂载到回环设备  aufs  diff:实际存储各个layer的变更数据 layers:每个layer依赖的layers，包括正在运行中的container mnt:container的实际挂载根目录  overlayfs vfs btrfs &amp;hellip;  volume  driver接口  local driver flocker: container和volume管理与迁移 rancher的convoy:多重volume存储后端的支持device mapper, NFS, EBS&amp;hellip;,提供快照、备份、恢复等功能  数据卷容器  registry:与docker registry交互  支持basic/token等认证方式 token可以基于basic/oauth等方式从第三方auth server获取bearer token tls通信的支持  libkv  支持consul/etcd/zookeeper  分布式存储的支持  security  docker  libseccomp限制系统调用(内部使用bpf) linux capabilities限制root用户权限范围scope user namespace用户和组的映射 selinux apparmor &amp;hellip;  image and registry  Other Stuffs  迁移</description>
+    </item>
+    
+  </channel>
+</rss>

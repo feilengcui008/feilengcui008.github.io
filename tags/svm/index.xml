@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Svm on 不一样的天空</title>
+    <link>https://feilengcui008.github.io/tags/svm/</link>
+    <description>Recent content in Svm on 不一样的天空</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 24 May 2015 20:05:23 +0800</lastBuildDate>
+    
+	<atom:link href="https://feilengcui008.github.io/tags/svm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>支持向量机</title>
+      <link>https://feilengcui008.github.io/post/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/</link>
+      <pubDate>Sun, 24 May 2015 20:05:23 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/</guid>
+      <description>1.概述 SVM全称Support Vector Machine，即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，也可以通过核函数将低维映射到高维空间从而转变为线性可分。
+2.问题的提出  考虑一个线性可分的二分类问题
+ m个训练样本$x$是特征向量，$y$是目标变量 &amp;gt;${x^{(i)},y^{(i)}},x^{(i)}\in R^n,y^{(i)}\in {1,-1},i=1,2,\cdots,m$ 决策函数：$h_{w,b}(x) = g(w^Tx+b)，g(z)=\begin{cases} 1,if\;\;x&amp;gt;0 \ 0,if\;\;x&amp;lt;0 \end{cases}$ 直线代表 $w^Tx+b=0$  首先定义一些符号
+ functional margin（函数边界） &amp;gt; $\hat r=min{\hat r^{(i)}},\;i=1,2,\cdots,m;\;\;\hat r^{(i)}=y^{(i)}*(w^Tx^{(i)}+b)$
+ geometrical margin（几何边界） &amp;gt; $r=min{r^{(i)}},\;i=1,2,\cdots,m;\;\;r^{(i)}=\frac{y^{(i)*(w^Tx^{(i)}+b)}}{|w|}$
+ 符号解释： &amp;gt; - 函数边界：由于$y^{(i)}$只能取$1,-1$，所以当$w^T*x^{(i)}+b&amp;gt;&amp;gt;0$时，$y=1$和$y=-1$分别表示点分布在距离超平面$w^Tx+b=0$两边很远的地方,注意如果加倍$w$与$x$，函数边界是会加倍的
+ 目标：几何边界最大，即 &amp;gt; $max{r}$
+   3.问题的转化  依次转化：
+ $max{r}$ $max{min{r^{(i)}=\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}};i=1,2,\cdots,m}$ $\begin{cases}max{r}\s.t. \;\;\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}\ge r\end{cases}$ $\begin{cases}max{\frac{\hat r}{|w|}}\s.t. \;\;y^{(i)}*(w^Tx^{(i)}+b)\ge \hat r\end{cases}$ 注意函数边界的改变不影响优化问题的求解结果    $let \;\hat r=1$ 问题转化为: $\begin{cases}max{\frac{1}{|w|}}\s.</description>
+    </item>
+    
+  </channel>
+</rss>

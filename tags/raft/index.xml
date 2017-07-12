@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Raft on 不一样的天空</title>
+    <link>https://feilengcui008.github.io/tags/raft/</link>
+    <description>Recent content in Raft on 不一样的天空</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 20 Mar 2017 19:02:13 +0800</lastBuildDate>
+    
+	<atom:link href="https://feilengcui008.github.io/tags/raft/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Raft实现小结</title>
+      <link>https://feilengcui008.github.io/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/</link>
+      <pubDate>Mon, 20 Mar 2017 19:02:13 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/</guid>
+      <description>上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。
+Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。
+ 宏观
+ 合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化  Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)  Log Replication
+ 发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)    细节
+ Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data  Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致    测试和其他一些问题</description>
+    </item>
+    
+    <item>
+      <title>Paper Reading - In Search of an Understandable Consensus Algorithm</title>
+      <link>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</link>
+      <pubDate>Sun, 19 Mar 2017 17:15:32 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</guid>
+      <description>0 Abstract  In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered
+ Raft强化Leader的作用，明确划分了协议各个阶段(leader election, log replication)的边界，并且让leader election中的一部分重要内容-新leader的状态恢复变得很直观简单，并且和普通的日志复制请求与心跳请求整合到同一个RPC。这在后面的分析会看到。
+1 Introduction  Strong leader: Raft uses a stronger form of leader- ship than other consensus algorithms. For example, log entries only flow fromthe leader to other servers.</description>
+    </item>
+    
+  </channel>
+</rss>
