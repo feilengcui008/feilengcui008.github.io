@@ -302,3 +302,7 @@ pre code {
 .category-item span:hover {
   color: #1abc9c;
 }
+
+.category-list a:hover {
+  color: #1abc9c;
+}
