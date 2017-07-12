@@ -279,3 +279,19 @@ pre code {
 .dsq-brlink {
   display: none;
 }
+
+.category-box {
+    width: 80%;
+}
+
+.category-item {
+    font-size: 14px;
+}
+
+.category-box a {
+    color: #000;
+}
+
+.category-box a:hover {
+  color: #1abc9c;
+}
