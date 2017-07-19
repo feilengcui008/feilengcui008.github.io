@@ -102,23 +102,32 @@
 <li>传输层</li>
 </ul>
 
-<p>为了解决外部代码依赖以及长连接的问题，tcplayer基于TCP传输层，按照应用层请求格式解析出正确请求并重放。这种方式可以抓取到已经建立的长连接的请求，并且服务不需要耦合其他代码，但同时引入了解析和匹配应用层协议的复杂性。</p>
+<p>为了解决外部代码依赖以及长连接的问题，tcplayer基于TCP传输层，按照应用层请求格式解析出请求并重放。这种方式可以抓取到已经建立的长连接的请求，并且服务不需要耦合其他代码，但同时引入了解析和匹配应用层协议的复杂性。</p>
 
 <hr />
 
 <h3 id="tcplayer">Tcplayer</h3>
 
-<p>Tcplayer主要包含以下几个步骤:
-+ libpcap抓取实时流量
-+ tcp包重排序
-+ 对于每一个tcp会话(flow)，解析tcp包，尽量匹配应用层协议
-+ 放大应用层请求，并与测试服务建立连接回放</p>
+<p>Tcplayer主要包含以下几个步骤:</p>
 
-<p>目前支持的协议:
-+ HTTP 1.x 短连接
-+ Thrift strict mode binary protocol
-+ GRPC部分支持
-    + 这里由于GRPC基于HTTP2，而HTTP2的基本单元Frame没有固定的协议字段，所以无法匹配，导致无法解析到正确的HTTP2请求&hellip;</p>
+<ul>
+<li>libpcap抓取实时流量</li>
+<li>tcp包重排序</li>
+<li>对于每一个tcp会话(flow)，解析tcp包，尽量匹配应用层协议</li>
+<li>放大应用层请求，并与测试服务建立连接回放</li>
+</ul>
+
+<p>目前支持的协议:</p>
+
+<ul>
+<li>HTTP 1.x 短连接</li>
+<li>Thrift strict mode binary protocol</li>
+<li>GRPC部分支持
+
+<ul>
+<li>这里由于GRPC基于HTTP2，而HTTP2的基本单元Frame没有固定的协议字段，所以无法匹配，导致无法解析到正确的HTTP2请求&hellip;</li>
+</ul></li>
+</ul>
 
 <p>要给tcplayer添加其他自己定义的应用层协议很容易，可以参考代码<a href="https://github.com/feilengcui008/tcplayer/blob/master/factory/thrift.go">factory/thrift</a></p>
 
