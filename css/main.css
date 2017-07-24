@@ -316,3 +316,7 @@ pre code {
 .content.content-post .article-header .article-meta a:hover {
   color: #1abc9c;
 }
+
+.article-content ul+p {
+    margin-top: 0px;
+}
