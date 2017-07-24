@@ -317,6 +317,10 @@ pre code {
   color: #1abc9c;
 }
 
+.article-content p+ul {
+    margin-top: 0px;
+}
+
 .article-content ul+p {
     margin-top: 0px;
 }
