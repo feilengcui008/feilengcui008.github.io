@@ -6,10 +6,21 @@
     <description>Recent content in Posts on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Jul 2017 20:06:51 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Fuzz go struct using reflection</title>
+      <link>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</link>
+      <pubDate>Mon, 24 Jul 2017 09:48:05 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</guid>
+      <description>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个fuzz小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。
+ unexported字段  Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用Set或SetXXX的方法。这里的技巧在于reflect.NewAt，这个函数可以在当前reflect.Value指向的数据的同一内存地址重新构造相同类型的值，并返回指针的reflect.Value，而其Elem是settable的，所以可以通过这种方式绕过限制，具体可参考这行代码
+ unexported且nil的字段  除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其Elem是zero value，而zero value是unsettable和unaddressable的，因此需要新建一个Elem类型的值(reflect.New)并赋给nil value，此后其Elem就可以使用Set/SetXXX正常赋值了，具体可参考这几行代码</description>
+    </item>
     
     <item>
       <title>Tcplayer介绍</title>
@@ -517,18 +528,6 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
   常见网络库采用的模型(只看epoll)：  nginx：master进程+多个worker进程，one eventloop per process memcached：主线程+多个worker线程，one eventloop per thread tornado：单线程，one eventloop per thread muduo：网络库，one eventloop per thread libevent、libev、boost.asio：网络库，跨平台eventloop封装 &amp;hellip;  排除掉传统的单线程、多进程、多线程等模型，最常用的高性能网络编程模型是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。
 应用层之外 前面的模型多是针对应用层的C10K类问题的解决方案，在更高并发要求的环境下就需要在内核态下做手脚了，比如使用零拷贝等技术，直接越过内核协议栈，实现高速数据包的传递，相应的内核模块也早有实现。主要的技术点在于：
  数据平面与控制平面分离，减少不必要的系统调用 用户态驱动uio/vfio等减少内存拷贝 使用内存池减少内存分配 通过CPU亲和性提高缓存命中率 网卡多队列与poll模式充分利用多核 batch syscall 用户态协议栈 &amp;hellip;  相应的技术方案大多数是围绕这些点来做优化结合的。比如OSDI &amp;lsquo;14上的Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</guid>
-      <description>title: &amp;ldquo;Fuzz go struct using reflection&amp;rdquo; date: 2017-07-24T09:48:05+08:00 categories: [编程语言, Go]
-tags: [Go, 反射] 有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个fuzz小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。
- unexported字段  Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用Set或SetXXX的方法。这里的技巧在于reflect.NewAt，这个函数可以在当前reflect.Value指向的数据的同一内存地址重新构造相同类型的值，并返回指针的reflect.Value，而其Elem是settable的，所以可以通过这种方式绕过限制，具体可参考这行代码
- unexported且nil的字段  除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其Elem是zero value，而zero value是unsettable和unaddressable的，因此需要新建一个Elem类型的值(reflect.New)并赋给nil value，此后其Elem就可以使用Set/SetXXX正常赋值了，具体可参考这几行代码</description>
     </item>
     
   </channel>

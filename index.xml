@@ -6,10 +6,21 @@
     <description>Recent content on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 19 Jul 2017 20:06:51 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Fuzz go struct using reflection</title>
+      <link>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</link>
+      <pubDate>Mon, 24 Jul 2017 09:48:05 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</guid>
+      <description>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个fuzz小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。
+ unexported字段  Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用Set或SetXXX的方法。这里的技巧在于reflect.NewAt，这个函数可以在当前reflect.Value指向的数据的同一内存地址重新构造相同类型的值，并返回指针的reflect.Value，而其Elem是settable的，所以可以通过这种方式绕过限制，具体可参考这行代码
+ unexported且nil的字段  除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其Elem是zero value，而zero value是unsettable和unaddressable的，因此需要新建一个Elem类型的值(reflect.New)并赋给nil value，此后其Elem就可以使用Set/SetXXX正常赋值了，具体可参考这几行代码</description>
+    </item>
     
     <item>
       <title>Tcplayer介绍</title>
@@ -526,18 +537,6 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
       
       <guid>https://feilengcui008.github.io/about/</guid>
       <description></description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</guid>
-      <description>title: &amp;ldquo;Fuzz go struct using reflection&amp;rdquo; date: 2017-07-24T09:48:05+08:00 categories: [编程语言, Go]
-tags: [Go, 反射] 有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个fuzz小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。
- unexported字段  Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用Set或SetXXX的方法。这里的技巧在于reflect.NewAt，这个函数可以在当前reflect.Value指向的数据的同一内存地址重新构造相同类型的值，并返回指针的reflect.Value，而其Elem是settable的，所以可以通过这种方式绕过限制，具体可参考这行代码
- unexported且nil的字段  除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其Elem是zero value，而zero value是unsettable和unaddressable的，因此需要新建一个Elem类型的值(reflect.New)并赋给nil value，此后其Elem就可以使用Set/SetXXX正常赋值了，具体可参考这几行代码</description>
     </item>
     
   </channel>

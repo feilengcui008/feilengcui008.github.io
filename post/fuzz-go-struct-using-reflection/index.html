@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.24.1" />
-<title></title>
+<title>Fuzz go struct using reflection</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -46,39 +46,39 @@
         
         
 <div class="content content-post CENTER">
-  <article id="" class="article article-type-post" itemprop="blogPost">
+  <article id="Fuzz go struct using reflection" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title"></h1>
+    <h1 class="post-title">Fuzz go struct using reflection</h1>
 
     <div class="article-meta">
       <p>
       <span>
         <i class="icon-calendar"></i>
-        <span>01-01-0001</span>
+        <span>07-24-2017</span>
       </span>
       </p>
       <span>
         
+        <span class="article-meta-span"><a href="/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80">编程语言</a></span>
+        
+        <span class="article-meta-span"><a href="/categories/go">Go</a></span>
+        
       </span>
       
+        | 
+      
       <span>
+        
+        <span class="article-meta-span"><a href="/tags/go">Go</a></span>
+        
+        <span class="article-meta-span"><a href="/tags/%E5%8F%8D%E5%B0%84">反射</a></span>
         
       </span>
     </div>
   </header>
 
   <div class="article-content">
-    
-
-<hr />
-
-<p>title: &ldquo;Fuzz go struct using reflection&rdquo;
-date: 2017-07-24T09:48:05+08:00
-categories: [编程语言, Go]</p>
-
-<h2 id="tags-go-反射">tags: [Go, 反射]</h2>
-
-<p>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go">fuzz</a>小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。</p>
+    <p>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go">fuzz</a>小工具来自动填充请求结构体。基本上支持大部分Go的类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。</p>
 
 <ul>
 <li>unexported字段</li>
@@ -101,7 +101,7 @@ categories: [编程语言, Go]</p>
 <script type="text/javascript">
     var disqus_shortname = 'feilengcui008';
     var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/fuzz-go-struct-using-reflection\/';
-    var disqus_title = '';
+    var disqus_title = 'Fuzz go struct using reflection';
     var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/fuzz-go-struct-using-reflection\/';
 
     (function() {
