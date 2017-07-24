@@ -197,6 +197,10 @@
   </url>
   
   <url>
+    <loc>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</loc>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/about/</loc>
     <priority>0</priority>
   </url>
