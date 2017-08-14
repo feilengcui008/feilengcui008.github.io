@@ -219,6 +219,7 @@ func getitab(inter *interfacetype, typ *_type, canfail bool) *itab {
     }
   }
 
+
   // 缓存中没找到则分配itab的内存: itab结构本身内存 + 末尾存方法地址表的可变长度
   m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(inter.mhdr)-1)*sys.PtrSize, 0, &amp;memstats.other_sys))
   m.inter = inter           // 设置接口类型信息
