@@ -6,10 +6,25 @@
     <description>Recent content on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 26 Aug 2017 09:29:31 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>小结</title>
+      <link>https://feilengcui008.github.io/post/%E5%B0%8F%E7%BB%93/</link>
+      <pubDate>Sat, 26 Aug 2017 09:29:31 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/%E5%B0%8F%E7%BB%93/</guid>
+      <description>实习前后，一些职业观念上的有意思的强化或变化。
+ 技术理想
+ 理想还是要有的 做点什么，而不是证明什么  个性心态
+ 收起码农自带的撕逼属性 不卑不亢，守正出奇  技术实力
+ 积累你的不可替代性 多偷懒，创造工具 系统化，广而深  做事方式
+ 学会写故事和讲故事 关注问题和事情本身 少说多做，适时反馈  与人为善
+ 此处省略0xffffffff个字   </description>
+    </item>
     
     <item>
       <title>Fuzz go struct using reflection</title>
