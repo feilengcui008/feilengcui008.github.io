@@ -6,10 +6,22 @@
     <description>Recent content on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 21 Sep 2017 08:38:25 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>算法、基础技术与业务</title>
+      <link>https://feilengcui008.github.io/post/%E7%AE%97%E6%B3%95_%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF_%E4%B8%9A%E5%8A%A1/</link>
+      <pubDate>Thu, 21 Sep 2017 08:38:25 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/%E7%AE%97%E6%B3%95_%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF_%E4%B8%9A%E5%8A%A1/</guid>
+      <description>路漫漫其修远兮，吾将上下而求索
+ 对于&amp;rdquo;算法、基础技术与业务&amp;rdquo;这个话题，本来想更深入写写自己的思考，奈何太碎片化，目前的积累不足以过于谈论这个话题，或许后面有了更多积累再回过头来看看这些不成熟的想法吧。
+算法、基础技术、业务每一个方向都有很多可做的东西，都需要大量时间的积累。
+ 做算法的竞争力在于对各种算法模型本质的深刻理解(一定要深入本质)和适用场景，理解业务并应用和优化合适的算法模型。 做基础技术的竞争力在于对系统和基础算法的深刻理解(一定得深，因为不像做算法和业务容易体现成果)，能解决其他工程师不能解决的技术问题。系统相关的知识体系太过庞大，需要长时间的实践积累，而且理解越深越会觉得掌握的系统知识之渺少，这一点对于爱系统的人来说肯定深有体会 做业务的竞争力在于对业务和应用架构的深刻理解，能抽象并设计适于业务发展的应用架构，并利用现有组件快速落地，支撑业务中短期的快速发展  三个方向竞争力的不同也构成了不同的知识体系需求，除了不断强化计算机科学的基本理论与技术以外，应当注意积累在当前方向上的独特知识体系，并持续构建和完善。</description>
+    </item>
     
     <item>
       <title>Fuzz go struct using reflection</title>
