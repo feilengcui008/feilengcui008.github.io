@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://feilengcui008.github.io/post/abi/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/post/%E7%AE%97%E6%B3%95_%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF_%E4%B8%9A%E5%8A%A1/</loc>
     <lastmod>2017-09-21T08:38:25+08:00</lastmod>
   </url>
@@ -207,6 +212,12 @@
   </url>
   
   <url>
+    <loc>https://feilengcui008.github.io/tags/abi/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/about/</loc>
     <priority>0</priority>
   </url>
@@ -218,13 +229,26 @@
   </url>
   
   <url>
+    <loc>https://feilengcui008.github.io/categories/c/c&#43;&#43;/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/categories/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://feilengcui008.github.io/tags/docker/</loc>
     <lastmod>2016-11-30T17:48:20+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://feilengcui008.github.io/tags/ffi/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -254,7 +278,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/categories/linux/</loc>
-    <lastmod>2016-05-16T17:03:34+08:00</lastmod>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -272,7 +296,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/</loc>
-    <lastmod>2017-09-21T08:38:25+08:00</lastmod>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -314,13 +338,13 @@
   
   <url>
     <loc>https://feilengcui008.github.io/tags/</loc>
-    <lastmod>2015-05-09T13:22:37+08:00</lastmod>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://feilengcui008.github.io/</loc>
-    <lastmod>2017-09-21T08:38:25+08:00</lastmod>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   

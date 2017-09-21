@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.22-DEV" />
+<title>ABI</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/darcula.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="hfont">H</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/post"><span class="hfont">P</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-2">
+    <a href="/categories"><span class="hfont">C</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-3">
+    <a href="/tags"><span class="hfont">T</span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-4">
+    <a href="/about"><span class="hfont">A</span></a>
+  </div>
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="ABI" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">ABI</h1>
+
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>09-21-2017</span>
+      </span>
+      </p>
+      <span>
+        
+        <span class="article-meta-span"><a href="/categories/linux">Linux</a></span>
+        
+        <span class="article-meta-span"><a href="/categories/c/c&#43;&#43;">C/C&#43;&#43;</a></span>
+        
+      </span>
+      
+        | 
+      
+      <span>
+        
+        <span class="article-meta-span"><a href="/tags/abi">ABI</a></span>
+        
+        <span class="article-meta-span"><a href="/tags/ffi">FFI</a></span>
+        
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    <p><a href="https://en.wikipedia.org/wiki/Application_binary_interface">ABI</a>指应用二进制接口，规定了二进制程序两个模块之间或者二进制程序与操作系统之间的接口，这里主要关注<a href="https://en.wikipedia.org/wiki/Calling_convention">调用规范call convention</a>。不同的体系结构、操作系统、编程语言、每种编程语言的不同编译器实现基本都有自己规定或者遵循的ABI和调用规范。另外，也可通过<a href="https://en.wikipedia.org/wiki/Foreign_function_interface">FFI</a>规范实现跨编程语言的过程调用，比如Python/Java/Go等提供了C的FFI，这样通过C实现互相调用。</p>
+
+<p>Linux在x86_64和i386下的ABI:</p>
+
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/X86_calling_conventions">x86下的调用规范</a></li>
+<li><a href="https://stackoverflow.com/questions/2535989/what-are-the-calling-conventions-for-unix-linux-system-calls-on-x86-64">Linux i386 and x86_64 call convention</a></li>
+<li><a href="http://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf">x86_64下用户态程序和系统调用ABI</a></li>
+<li><a href="http://refspecs.linuxfoundation.org/elf/abi386-4.pdf">i386下用户态和系统调用ABI</a></li>
+</ul>
+
+<p>这里就不详细解释不同的ABI和调用规范了，可以通过简单的C/C++程序和内核代码分别验证用户态和系统调用的规范。另外，对于类似Go语言有自己的一套函数<a href="https://github.com/golang/go/issues/16922">调用规范</a>的，也可以通过生成的汇编去验证。</p>
+
+  </div>
+</article>
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/abi\/';
+    var disqus_title = 'ABI';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/abi\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+<script src="https://feilengcui008.github.io/js/app.js"></script>
+
+
+
+  </body>
+</html>
