@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.22-DEV" />
-<title>Grpc-go服务端源码分析</title>
+<title>gRPC-Go服务端源码分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -46,9 +46,9 @@
         
         
 <div class="content content-post CENTER">
-  <article id="Grpc-go服务端源码分析" class="article article-type-post" itemprop="blogPost">
+  <article id="gRPC-Go服务端源码分析" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Grpc-go服务端源码分析</h1>
+    <h1 class="post-title">gRPC-Go服务端源码分析</h1>
 
     <div class="article-meta">
       <p>
@@ -107,26 +107,26 @@
 <li>实例化Server，并注册Service接口的具体实现</li>
 <li>监听并启动Server</li>
 </ul></li>
-<li>可见，protobuf的grpc-go插件帮助我们生成了Service的接口和ServiceDesc。</li>
+<li>可见，protobuf的gRPC-Go插件帮助我们生成了Service的接口和ServiceDesc。</li>
 </ul></li>
 </ul></li>
 
 <li><p>底层传输协议</p>
 
 <ul>
-<li>grpc-go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，grpc-go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考<a href="http://http2.github.io/">http2的规范</a>
+<li>gRPC-Go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，gRPC-Go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考<a href="http://http2.github.io/">http2的规范</a>
 
 <ul>
-<li>http2帧分为几大类，grpc-go使用中比较重要的是HEADERS和DATA帧类型。
+<li>http2帧分为几大类，gRPC-Go使用中比较重要的是HEADERS和DATA帧类型。
 
 <ul>
-<li>HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，grpc-go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。</li>
+<li>HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，gRPC-Go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。</li>
 <li>数据帧从属于某个stream，按照stream id查找，并写入对应的stream中。</li>
 </ul></li>
 <li>Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。</li>
 <li>客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。</li>
 <li>客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。</li>
-<li>grpc-go中的单次方法和流式方法
+<li>gRPC-Go中的单次方法和流式方法
 
 <ul>
 <li>无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此&rdquo;复用&rdquo;这个流。</li>
@@ -247,7 +247,7 @@ type options struct {
 </ul>
 
 <pre><code>// 注册service: sd接口，ss实现
-// 如果使用protobuf的grpc-go插件，则会生成sd接口
+// 如果使用protobuf的gRPC-Go插件，则会生成sd接口
 func (s *Server) RegisterService(sd *ServiceDesc, ss interface{}) {
   // 检查ss是否实现sd定义的服务方法接口
   ht := reflect.TypeOf(sd.HandlerType).Elem()
@@ -305,7 +305,7 @@ var _Greeter_serviceDesc = grpc.ServiceDesc{
   Metadata: &quot;app.proto&quot;,
 }
 
-// 要注意的是protobuf的grpc-go插件为我们生成的MethodDesc中的Handler
+// 要注意的是protobuf的gRPC-Go插件为我们生成的MethodDesc中的Handler
 // 对于单次方法和流式方法区别较大，单次方法的参数传入和返回的是单一的请求
 // 和返回对象，而流式方法传入的是底层流的封装ClientStream、ServerStream
 // 因此流式方法可多次读写流。
@@ -693,7 +693,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
   /* ... */
   // 发送数据的压缩格式
   if s.opts.cp != nil {
-    // NOTE: this needs to be ahead of all handling, https://github.com/grpc/grpc-go/issues/686.
+    // NOTE: this needs to be ahead of all handling, https://github.com/grpc/gRPC-Go/issues/686.
     stream.SetSendCompress(s.opts.cp.Type())
   }
   // 解析消息
@@ -733,7 +733,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
       /* ... */
     }
 
-    // 处理原始消息数据，调用服务方法，这个Handler即上面protobuf的grpc-go插件为我们生成的处理函数
+    // 处理原始消息数据，调用服务方法，这个Handler即上面protobuf的gRPC-Go插件为我们生成的处理函数
     reply, appErr := md.Handler(srv.server, stream.Context(), df, s.opts.unaryInt)
     /* ... */
     // 发送响应，输出会在Transport和Stream两层做流控
@@ -778,7 +778,7 @@ func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transp
     server = srv.server
   }
   if s.opts.streamInt == nil {
-    // 调用protobuf grpc-go插件生成的ServiceDesc中的Handler
+    // 调用protobuf gRPC-Go插件生成的ServiceDesc中的Handler
     appErr = sd.Handler(server, ss)
   } else {
     info := &amp;StreamServerInfo{
@@ -933,7 +933,7 @@ func (t *http2Server) handleData(f *http2.DataFrame) {
 
 <h2 id="总结">总结</h2>
 
-<p>至此，服务端的主要流程就基本走完了，整个处理流程还有很多加密、授权、http2连接的控制信息(比如窗口大小的设置等)、KeepAlive逻辑以及穿插在各个地方的统计、追踪、日志处理等细节，这些细节对理解grpc-go的实现影响不大，所以不再细说。整个流程下来，多少可以看到Go的很多特性极大地方便了grpc的实现，用goroutine代替多路复用的回调，io的抽象与缓冲。同时，http2整个的模型其实和基于多路复用实现的grpc框架底层数据传输协议有些类似，http2的一个帧类似于某个格式化和序列化后的请求数据或响应数据，但是传统的rpc协议并没有流对应的概念，要实现&rdquo;流的复用&rdquo;也不是太容易，请求的下层直接是tcp连接，另外http2是通用的标准化协议，而且复用连接之后其性能也不差。</p>
+<p>至此，服务端的主要流程就基本走完了，整个处理流程还有很多加密、授权、http2连接的控制信息(比如窗口大小的设置等)、KeepAlive逻辑以及穿插在各个地方的统计、追踪、日志处理等细节，这些细节对理解gRPC-Go的实现影响不大，所以不再细说。整个流程下来，多少可以看到Go的很多特性极大地方便了grpc的实现，用goroutine代替多路复用的回调，io的抽象与缓冲。同时，http2整个的模型其实和基于多路复用实现的grpc框架底层数据传输协议有些类似，http2的一个帧类似于某个格式化和序列化后的请求数据或响应数据，但是传统的rpc协议并没有流对应的概念，要实现&rdquo;流的复用&rdquo;也不是太容易，请求的下层直接是tcp连接，另外http2是通用的标准化协议，而且复用连接之后其性能也不差。</p>
 
   </div>
 </article>
@@ -944,7 +944,7 @@ func (t *http2Server) handleData(f *http2.DataFrame) {
 <script type="text/javascript">
     var disqus_shortname = 'feilengcui008';
     var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
-    var disqus_title = 'Grpc-go服务端源码分析';
+    var disqus_title = 'gRPC-Go服务端源码分析';
     var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
 
     (function() {

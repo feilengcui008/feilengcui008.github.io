@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.22-DEV" />
-<title>Grpc-go客户端源码分析</title>
+<title>gRPC-Go客户端源码分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -46,9 +46,9 @@
         
         
 <div class="content content-post CENTER">
-  <article id="Grpc-go客户端源码分析" class="article article-type-post" itemprop="blogPost">
+  <article id="gRPC-Go客户端源码分析" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Grpc-go客户端源码分析</h1>
+    <h1 class="post-title">gRPC-Go客户端源码分析</h1>
 
     <div class="article-meta">
       <p>
@@ -84,13 +84,13 @@
 
 <h2 id="基本设计">基本设计</h2>
 
-<p>grpc-go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。</p>
+<p>gRPC-Go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。</p>
 
 <p>另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实现(目前只实现了轮询方式)，另一种方式是外部的load balancer。</p>
 
 <ul>
 <li>内部自带的策略实现: 这种方式主要针对一些简单的负载均衡策略比如轮询。轮询的实现逻辑是建立连接时通过定义的服务地址解析接口Resolver得到服务的地址列表，并单独用goroutine负责更新保持可用的连接，Watcher定义了具体更新实现的接口(比如多长时间解析更新一次)，最终在请求调用时会从可用连接列表中轮询选择其中一个连接发送请求。所以，grpc的负载均衡策略是请求级别的而不是连接级别的。</li>
-<li>外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。grpc-go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。</li>
+<li>外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。gRPC-Go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。</li>
 </ul>
 
 <hr />
@@ -463,10 +463,10 @@ func sendRequest(ctx context.Context, dopts dialOptions, compressor Compressor, 
 
 <h2 id="总结">总结</h2>
 
-<p>至此，grpc-go的客户端逻辑主体部分分析完了，其中比较重要的是:
+<p>至此，gRPC-Go的客户端逻辑主体部分分析完了，其中比较重要的是:
 + 连接的建立和负载均衡的实现
 + 单次请求和流式请求的客户端实现区别
-+ 针对每一个连接客户端都会新建一个ClientTransport(具体实现为htt2client)，对应于服务端的ServerTransport(具体实现为http2server)，请求的发送和响应，流和帧数据的交互，以及流量控制等都由Transport这个概念来统筹。这里的Transport与Go的net/http标准库有些不同，Go中net/http的RoundTripper接口(及其实现http.Transport)底层可以管理多个tcp连接，而grpc-go中的Transport抽象是一个连接对应一个Transport。</p>
++ 针对每一个连接客户端都会新建一个ClientTransport(具体实现为htt2client)，对应于服务端的ServerTransport(具体实现为http2server)，请求的发送和响应，流和帧数据的交互，以及流量控制等都由Transport这个概念来统筹。这里的Transport与Go的net/http标准库有些不同，Go中net/http的RoundTripper接口(及其实现http.Transport)底层可以管理多个tcp连接，而gRPC-Go中的Transport抽象是一个连接对应一个Transport。</p>
 
   </div>
 </article>
@@ -477,7 +477,7 @@ func sendRequest(ctx context.Context, dopts dialOptions, compressor Compressor, 
 <script type="text/javascript">
     var disqus_shortname = 'feilengcui008';
     var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
-    var disqus_title = 'Grpc-go客户端源码分析';
+    var disqus_title = 'gRPC-Go客户端源码分析';
     var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
 
     (function() {

@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.22-DEV" />
-<title>Protobuf和grpc交互流程</title>
+<title>Protobuf和gRPC交互流程</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/style.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -46,9 +46,9 @@
         
         
 <div class="content content-post CENTER">
-  <article id="Protobuf和grpc交互流程" class="article article-type-post" itemprop="blogPost">
+  <article id="Protobuf和gRPC交互流程" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Protobuf和grpc交互流程</h1>
+    <h1 class="post-title">Protobuf和gRPC交互流程</h1>
 
     <div class="article-meta">
       <p>
@@ -92,8 +92,8 @@ Protobuf主要由三大部分构成:</p>
 <li>Runtime: 支撑不同语言的基础数据结构，通常和Core的主要数据结构对应，Ruby和PHP等直接以扩展的形式封装使用Core中的数据结构，而Go和Java则重新实现了一套对应的数据结构</li>
 </ul></li>
 
-<li><p>GRPC
-GRPC也可以看做三大部分构成:</p>
+<li><p>gRPC
+gRPC也可以看做三大部分构成:</p>
 
 <ul>
 <li>Core: C语言实现的channel, http, transport等核心组件</li>
@@ -283,7 +283,7 @@ class CppGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
 <script type="text/javascript">
     var disqus_shortname = 'feilengcui008';
     var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B\/';
-    var disqus_title = 'Protobuf和grpc交互流程';
+    var disqus_title = 'Protobuf和gRPC交互流程';
     var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B\/';
 
     (function() {
