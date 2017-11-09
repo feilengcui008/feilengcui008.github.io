@@ -177,6 +177,7 @@ body {
 .item-post:before {
   background: #1abc9c;
   margin-left: 0px;
+  margin-top: -3px;
 }
 
 .rightspan a:hover {
