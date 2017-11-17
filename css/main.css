@@ -157,7 +157,7 @@ body {
 }
 
 .descdiv {
-  width: 270px;
+  width: 300px;
   margin:0 auto;
   font-size: 15px;
 }
@@ -165,7 +165,7 @@ body {
 .desctitle {
   font-weight: bold;
   font-size: 12px;
-  max-width: 280px;
+  max-width: 300px;
   position: relative;
   display: inline-block;
   transition-duration: .5s;
