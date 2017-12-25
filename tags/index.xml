@@ -21,11 +21,11 @@
     </item>
     
     <item>
-      <title>C&#43;&#43;</title>
-      <link>https://feilengcui008.github.io/tags/c&#43;&#43;/</link>
-      <pubDate>Sat, 09 May 2015 13:22:37 +0800</pubDate>
+      <title>C/C&#43;&#43;</title>
+      <link>https://feilengcui008.github.io/tags/c/c&#43;&#43;/</link>
+      <pubDate>Thu, 21 Sep 2017 16:32:02 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/tags/c&#43;&#43;/</guid>
+      <guid>https://feilengcui008.github.io/tags/c/c&#43;&#43;/</guid>
       <description></description>
     </item>
     
@@ -35,24 +35,6 @@
       <pubDate>Wed, 30 Nov 2016 17:48:20 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/tags/docker/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>FFI</title>
-      <link>https://feilengcui008.github.io/tags/ffi/</link>
-      <pubDate>Thu, 21 Sep 2017 16:32:02 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/ffi/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Go</title>
-      <link>https://feilengcui008.github.io/tags/go/</link>
-      <pubDate>Mon, 24 Jul 2017 09:48:05 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/go/</guid>
       <description></description>
     </item>
     
@@ -75,20 +57,20 @@
     </item>
     
     <item>
+      <title>Linux</title>
+      <link>https://feilengcui008.github.io/tags/linux/</link>
+      <pubDate>Thu, 21 Sep 2017 16:32:02 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/tags/linux/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Paxos</title>
       <link>https://feilengcui008.github.io/tags/paxos/</link>
       <pubDate>Tue, 08 Mar 2016 19:05:46 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/tags/paxos/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Python</title>
-      <link>https://feilengcui008.github.io/tags/python/</link>
-      <pubDate>Sun, 16 Oct 2016 17:46:43 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/python/</guid>
       <description></description>
     </item>
     
@@ -138,38 +120,11 @@
     </item>
     
     <item>
-      <title>Thread_info</title>
-      <link>https://feilengcui008.github.io/tags/thread_info/</link>
-      <pubDate>Mon, 09 Oct 2017 11:41:42 +0800</pubDate>
+      <title>Vim</title>
+      <link>https://feilengcui008.github.io/tags/vim/</link>
+      <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/tags/thread_info/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>内核栈</title>
-      <link>https://feilengcui008.github.io/tags/%E5%86%85%E6%A0%B8%E6%A0%88/</link>
-      <pubDate>Mon, 09 Oct 2017 11:41:42 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/%E5%86%85%E6%A0%B8%E6%A0%88/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>反射</title>
-      <link>https://feilengcui008.github.io/tags/%E5%8F%8D%E5%B0%84/</link>
-      <pubDate>Mon, 24 Jul 2017 09:48:05 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/%E5%8F%8D%E5%B0%84/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>流量回放</title>
-      <link>https://feilengcui008.github.io/tags/%E6%B5%81%E9%87%8F%E5%9B%9E%E6%94%BE/</link>
-      <pubDate>Wed, 19 Jul 2017 20:06:51 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/tags/%E6%B5%81%E9%87%8F%E5%9B%9E%E6%94%BE/</guid>
+      <guid>https://feilengcui008.github.io/tags/vim/</guid>
       <description></description>
     </item>
     

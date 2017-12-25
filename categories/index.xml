@@ -6,17 +6,17 @@
     <description>Recent content in Categories on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 21 Sep 2017 16:32:02 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 09 May 2015 13:22:37 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>C/C&#43;&#43;</title>
-      <link>https://feilengcui008.github.io/categories/c/c&#43;&#43;/</link>
-      <pubDate>Thu, 21 Sep 2017 16:32:02 +0800</pubDate>
+      <title>C&#43;&#43;</title>
+      <link>https://feilengcui008.github.io/categories/c&#43;&#43;/</link>
+      <pubDate>Sat, 09 May 2015 13:22:37 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/categories/c/c&#43;&#43;/</guid>
+      <guid>https://feilengcui008.github.io/categories/c&#43;&#43;/</guid>
       <description></description>
     </item>
     
@@ -39,74 +39,47 @@
     </item>
     
     <item>
-      <title>Linux内核</title>
-      <link>https://feilengcui008.github.io/categories/linux%E5%86%85%E6%A0%B8/</link>
-      <pubDate>Sat, 18 Jun 2016 11:02:55 +0800</pubDate>
+      <title>Python</title>
+      <link>https://feilengcui008.github.io/categories/python/</link>
+      <pubDate>Sun, 16 Oct 2016 17:46:43 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/categories/linux%E5%86%85%E6%A0%B8/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Tool</title>
-      <link>https://feilengcui008.github.io/categories/tool/</link>
-      <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/tool/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Vim</title>
-      <link>https://feilengcui008.github.io/categories/vim/</link>
-      <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/vim/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>分布式一致性</title>
-      <link>https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7/</link>
-      <pubDate>Mon, 20 Mar 2017 19:02:13 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7/</guid>
+      <guid>https://feilengcui008.github.io/categories/python/</guid>
       <description></description>
     </item>
     
     <item>
       <title>分布式系统</title>
       <link>https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/</link>
-      <pubDate>Mon, 24 Apr 2017 15:33:49 +0800</pubDate>
+      <pubDate>Mon, 03 Apr 2017 14:05:53 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/</guid>
       <description></description>
     </item>
     
     <item>
-      <title>容器技术</title>
-      <link>https://feilengcui008.github.io/categories/%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF/</link>
-      <pubDate>Wed, 30 Nov 2016 17:48:20 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/%E5%AE%B9%E5%99%A8%E6%8A%80%E6%9C%AF/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>工具</title>
-      <link>https://feilengcui008.github.io/categories/%E5%B7%A5%E5%85%B7/</link>
-      <pubDate>Tue, 06 Jun 2017 15:13:08 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/%E5%B7%A5%E5%85%B7/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>数据库系统</title>
-      <link>https://feilengcui008.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/</link>
+      <title>后端开发</title>
+      <link>https://feilengcui008.github.io/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/</link>
       <pubDate>Sun, 29 May 2016 21:05:05 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93%E7%B3%BB%E7%BB%9F/</guid>
+      <guid>https://feilengcui008.github.io/categories/%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>基础技术</title>
+      <link>https://feilengcui008.github.io/categories/%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF/</link>
+      <pubDate>Wed, 19 Jul 2017 20:06:51 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/categories/%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>效率工具</title>
+      <link>https://feilengcui008.github.io/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7/</link>
+      <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7/</guid>
       <description></description>
     </item>
     
@@ -131,18 +104,9 @@
     <item>
       <title>编程语言</title>
       <link>https://feilengcui008.github.io/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/</link>
-      <pubDate>Mon, 24 Jul 2017 09:48:05 +0800</pubDate>
+      <pubDate>Mon, 18 May 2015 14:35:17 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/categories/%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>网络编程</title>
-      <link>https://feilengcui008.github.io/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</link>
-      <pubDate>Wed, 19 Jul 2017 20:06:51 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/categories/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</guid>
       <description></description>
     </item>
     
