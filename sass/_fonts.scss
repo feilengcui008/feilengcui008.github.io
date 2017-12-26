@@ -50,21 +50,28 @@
 
 @font-face {
     font-family: "Go-Regular";
-    url("/fonts/Go-Regular.ttf") format("truetype"), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+    src: url("/fonts/Go-Regular.ttf") format("truetype"); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
     font-style: normal;
     font-weight: normal;
 }
 
 @font-face {
     font-family: "Go-Mono";
-    url("/fonts/Go-Mono.ttf") format("truetype"), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+    src: url("/fonts/Go-Mono.ttf") format("truetype"); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
     font-style: normal;
     font-weight: normal;
 }
 
 @font-face {
-    font-family: "Futura-Light";
-    url("/fonts/Futura-Light.ttf") format("truetype"), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+    font-family: "Futura-LT-Light";
+    src: url("/fonts/Futura LT Light.ttf") format("truetype"); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+    font-style: normal;
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: "Futura-LT-Medium";
+    src: url("/fonts/Futura LT Medium.ttf") format("truetype"); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
     font-style: normal;
     font-weight: normal;
 }
