@@ -218,11 +218,12 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/about/</loc>
+    <loc>https://feilengcui008.github.io/</loc>
+    <lastmod>2017-11-07T11:11:08+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/</loc>
+    <loc>https://feilengcui008.github.io/about/</loc>
   </url>
   
   <url>
@@ -346,12 +347,6 @@
   
   <url>
     <loc>https://feilengcui008.github.io/tags/vim/</loc>
-    <lastmod>2017-11-07T11:11:08+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://feilengcui008.github.io/</loc>
     <lastmod>2017-11-07T11:11:08+08:00</lastmod>
     <priority>0</priority>
   </url>
