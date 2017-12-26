@@ -103,11 +103,11 @@ body {
     -webkit-transform: translateZ(0);
 }
 
-.sidebar-toggle a {
+.sidebar-toggle-parent a {
     color: #000000;
 }
 
-.sidebar-toggle a:hover {
+.sidebar-toggle-parent a:hover {
     color: #1abc9c;
 }
 
