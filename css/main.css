@@ -83,7 +83,7 @@ body {
 
 .sidebar-toggle-parent {
     text-align: center;
-    display: none;
+    display: block;
 }
 
 .sidebar-toggle {
