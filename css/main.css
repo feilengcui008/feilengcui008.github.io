@@ -136,7 +136,7 @@ body {
 }
 
 .content-home-about .name {
-    font-size: 26px;
+    font-size: 20px;
     font-weight: bold;
     font-style: normal;
     line-height: 50px;
@@ -153,6 +153,7 @@ body {
 .content-home-about .slogan {
   font-style: italic;
   font-size: 13px;
+  display: none;
 }
 
 .item-title {
