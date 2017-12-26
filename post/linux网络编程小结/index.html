@@ -81,13 +81,13 @@
 
 <ul>
 <li><p>阻塞和非阻塞
-阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成<code>read/recv</code>或者<code>write/send</code>系统调用阻塞，而非阻塞socket在这种情况下会产生<code>EWOULDBLOCK</code>或者<code>EAGAIN</code>等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。</p></li>
+阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。</p></li>
 
 <li><p>同步/异步
-同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的<code>std::async/std::future</code>等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。</p></li>
+同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的std::async/std::future等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。</p></li>
 
 <li><p>IO复用
-IO复用通常是用<code>select/poll/epoll</code>等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。</p></li>
+IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。</p></li>
 </ul>
 
 <hr />

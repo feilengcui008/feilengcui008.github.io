@@ -81,18 +81,19 @@
 
 <ul>
 <li>vm_legacy_va_layout=1<br /></li>
-<li>kernel.randomize_va_space=0
-此种情况下采用传统内存布局方式，不开启随机化
-cat 程序的内存布局
-<img src="http://img.blog.csdn.net/20150308225850362" alt="" />
+<li>kernel.randomize_va_space=0</li>
+</ul>
+
+<p>此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局</p>
+
+<p><img src="http://img.blog.csdn.net/20150308225850362" alt="" />
 可以看出:
 代码段：0x400000&ndash;&gt;
 数据段
 堆：向上增长 2aaaaaaab000&ndash;&gt;
 栈：7ffffffde000&lt;&ndash;7ffffffff000
 系统调用：ffffffffff600000-ffffffffff601000
-你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的</li>
-</ul>
+你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的</p>
 
 <hr />
 
@@ -100,16 +101,18 @@ cat 程序的内存布局
 
 <ul>
 <li>vm_legacy_va_layout=0<br /></li>
-<li>kernel.randomize_va_space=0
-现在默认内存布局，不随机化
-<img src="http://img.blog.csdn.net/20150308231829505" alt="" />
+<li>kernel.randomize_va_space=0</li>
+</ul>
+
+<p>现在默认内存布局，不随机化</p>
+
+<p><img src="http://img.blog.csdn.net/20150308231829505" alt="" />
 可以看出:
 代码段：0x400000&ndash;&gt;
 数据段
 堆：向下增长 &lt;&ndash;7ffff7fff000
 栈：7ffffffde000&lt;&ndash;7ffffffff000
-系统调用：ffffffffff600000-ffffffffff601000</li>
-</ul>
+系统调用：ffffffffff600000-ffffffffff601000</p>
 
 <hr />
 
@@ -118,11 +121,12 @@ cat 程序的内存布局
 <ul>
 <li>vm_legacy_va_layout=0<br /></li>
 <li>kernel.randomize_va_space=2 //ubuntu 14.04默认值
-使用现在默认布局，随机化
-<img src="http://img.blog.csdn.net/20150308232612405" alt="" />
-<img src="http://img.blog.csdn.net/20150308232738454" alt="" />
-对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。</li>
+使用现在默认布局，随机化</li>
 </ul>
+
+<p><img src="http://img.blog.csdn.net/20150308232612405" alt="" />
+<img src="http://img.blog.csdn.net/20150308232738454" alt="" />
+对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。</p>
 
 <hr />
 
@@ -184,17 +188,31 @@ grep gettimeofday temp
 <h3 id="多线程的堆栈">多线程的堆栈</h3>
 
 <ul>
-<li>三个线程的进程：
-<img src="http://img.blog.csdn.net/20160604233911143" alt="这里写图片描述" /></li>
-<li>主线程：
-<img src="http://img.blog.csdn.net/20160604233938191" alt="这里写图片描述" /></li>
-<li>子线程1：
-<img src="http://img.blog.csdn.net/20160604234018320" alt="这里写图片描述" /></li>
+<li>三个线程的进程：</li>
+</ul>
 
-<li><p>子线程2：
-<img src="http://img.blog.csdn.net/20160604234042802" alt="这里写图片描述" /></p></li>
+<p><img src="http://img.blog.csdn.net/20160604233911143" alt="这里写图片描述" /></p>
 
-<li><p>测试代码１：</p></li>
+<ul>
+<li>主线程：</li>
+</ul>
+
+<p><img src="http://img.blog.csdn.net/20160604233938191" alt="这里写图片描述" /></p>
+
+<ul>
+<li>子线程1：</li>
+</ul>
+
+<p><img src="http://img.blog.csdn.net/20160604234018320" alt="这里写图片描述" /></p>
+
+<ul>
+<li>子线程2：</li>
+</ul>
+
+<p><img src="http://img.blog.csdn.net/20160604234042802" alt="这里写图片描述" /></p>
+
+<ul>
+<li>测试代码１：</li>
 </ul>
 
 <pre><code>#include &lt;pthread.h&gt;
@@ -285,16 +303,16 @@ MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
 </code></pre>
 
 <ul>
-<li><p>对应init进程的内核栈stack起始地址
-<img src="http://img.blog.csdn.net/20160604234414619" alt="这里写图片描述" /></p></li>
+<li>对应init进程的内核栈stack起始地址</li>
+</ul>
 
-<li><p>用户态线程栈在同一进程空间的堆起始部分分配，x86_64默认是8M，可以通过ulimit等方法设置</p></li>
+<p><img src="http://img.blog.csdn.net/20160604234414619" alt="这里写图片描述" /></p>
 
-<li><p>用户态线程栈的增长是从低的线性地址往高增长</p></li>
-
-<li><p>内核栈位于高地址</p></li>
-
-<li><p>主线程的栈(姑且称为进程栈吧)行为比较怪异，后面会详细分析glibc的ptmalloc下多线程程序malloc和线程栈的内存分配行为</p></li>
+<ul>
+<li>用户态线程栈在同一进程空间的堆起始部分分配，x86_64默认是8M，可以通过ulimit等方法设置</li>
+<li>用户态线程栈的增长是从低的线性地址往高增长</li>
+<li>内核栈位于高地址</li>
+<li>主线程的栈(姑且称为进程栈吧)行为比较怪异，后面会详细分析glibc的ptmalloc下多线程程序malloc和线程栈的内存分配行为</li>
 </ul>
 
   </div>

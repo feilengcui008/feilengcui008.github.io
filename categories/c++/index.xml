@@ -23,14 +23,14 @@ RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情�
     </item>
     
     <item>
-      <title>C/C&#43;&#43;内存对齐</title>
+      <title>C&#43;&#43;内存对齐</title>
       <link>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</link>
       <pubDate>Mon, 09 Mar 2015 15:40:53 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</guid>
-      <description>有时会在c/c++中看到这种形式
+      <description>有时会在C++中看到这种形式
 #pragma pack(n) #pragma pack()  前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
-#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; int main() { //缺省，一般8字节对齐 //struct有成员字节大于pack值,对齐为pack的整数倍=&amp;gt;24 struct default_pack_struct_size_bigger { struct c { long long a; char d; } m; char b; }; printf(&amp;quot;default_pack_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_bigger)); //struct成员字节数都小于pack,按字节数最大的对齐=&amp;gt;4 struct default_pack_struct_size_smaller { char a; short int b; }; printf(&amp;quot;default_pack_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_smaller)); //设置pack为4 #pragma pack(4) //结构成员有大于4字节的 =&amp;gt; 12 struct pack_4_struct_size_bigger { unsigned short int a; long long b; }; printf(&amp;quot;pack_4_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_bigger)); //结构成员都小于4字节 =&amp;gt; 4 struct pack_4_struct_size_smaller { char a; unsigned short int b; }; printf(&amp;quot;pack_4_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_smaller)); #pragma pack() return 0; }  结果： 另外，在对位域操作时有位序的概念，对于小端的机器(通常x86都是)来说，位序与端序是一致的，即对于低位放在高内存地址(当然这个是假定的一个字节内的高位，内存寻址一般是以字节为单位的)</description>
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; int main() { //缺省，一般8字节对齐 //struct有成员字节大于pack值,对齐为pack的整数倍=&amp;gt;24 struct default_pack_struct_size_bigger { struct c { long long a; char d; } m; char b; }; printf(&amp;quot;default_pack_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_bigger)); //struct成员字节数都小于pack,按字节数最大的对齐=&amp;gt;4 struct default_pack_struct_size_smaller { char a; short int b; }; printf(&amp;quot;default_pack_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_smaller)); //设置pack为4 #pragma pack(4) //结构成员有大于4字节的 =&amp;gt; 12 struct pack_4_struct_size_bigger { unsigned short int a; long long b; }; printf(&amp;quot;pack_4_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_bigger)); //结构成员都小于4字节 =&amp;gt; 4 struct pack_4_struct_size_smaller { char a; unsigned short int b; }; printf(&amp;quot;pack_4_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_smaller)); #pragma pack() return 0; }  结果：</description>
     </item>
     
   </channel>

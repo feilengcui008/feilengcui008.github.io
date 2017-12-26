@@ -148,16 +148,6 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
     </item>
     
     <item>
-      <title>Linux下ELF文件格式</title>
-      <link>https://feilengcui008.github.io/post/linux%E4%B8%8Belf%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/</link>
-      <pubDate>Sun, 13 Sep 2015 21:57:01 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/linux%E4%B8%8Belf%E6%96%87%E4%BB%B6%E6%A0%BC%E5%BC%8F/</guid>
-      <description>In this article,I will talk about the ELF files for Linux,and their diffs as to comprehend the linking process in a diff view angle.There are many articles talking about that topic in the way of compiling-&amp;gt;linking-&amp;gt;loading-&amp;gt;executing.I think once we understand the ELF files,then we can understand why and how and understand the whole process more precisely.
-ELF(Executable and Linkable Format) is the default file format of executable files,object files,shared object files and core file for Linux.</description>
-    </item>
-    
-    <item>
       <title>Linux下x86_64进程地址空间布局</title>
       <link>https://feilengcui008.github.io/post/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80/</link>
       <pubDate>Sun, 08 Mar 2015 23:33:03 +0800</pubDate>
@@ -165,13 +155,18 @@ ELF(Executable and Linkable Format) is the default file format of executable fil
       <guid>https://feilengcui008.github.io/post/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80/</guid>
       <description>关于Linux 32位内存下的内存空间布局，可以参考这篇博文Linux下C程序进程地址空间局关于源代码中各种数据类型/代码在elf格式文件以及进程空间中所处的段，在x86_64下和i386下是类似的，本文主要关注vm.legacy_va_layout以及kernel.randomize_va_space参数影响下的进程空间内存宏观布局，以及vDSO和多线程下的堆和栈分布。
 情形一：  vm_legacy_va_layout=1
- kernel.randomize_va_space=0 此种情况下采用传统内存布局方式，不开启随机化 cat 程序的内存布局 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向上增长 2aaaaaaab000&amp;ndash;&amp;gt; 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000 你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的  情形二：  vm_legacy_va_layout=0
- kernel.randomize_va_space=0 现在默认内存布局，不随机化 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向下增长 &amp;lt;&amp;ndash;7ffff7fff000 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000  情形三：  vm_legacy_va_layout=0
- kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化 对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。  情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述  vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。 &amp;gt; 如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题： &amp;gt; getpid，gettimeofday是不是系统调用？
+ kernel.randomize_va_space=0  此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局
+可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向上增长 2aaaaaaab000&amp;ndash;&amp;gt; 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000 你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的
+情形二：  vm_legacy_va_layout=0
+ kernel.randomize_va_space=0  现在默认内存布局，不随机化
+可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向下增长 &amp;lt;&amp;ndash;7ffff7fff000 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000
+情形三：  vm_legacy_va_layout=0
+ kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化  对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。
+情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述  vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。 &amp;gt; 如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题： &amp;gt; getpid，gettimeofday是不是系统调用？
 其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。
 vDSO全称是virtual dynamic shared object，是一种内核将一些本身应该是系统调用的直接映射到用户空间，这样对于一些使用比较频繁的系统调用，直接在用户空间调用可以节省开销。如果想详细了解，可以参考这篇文档
 下面我们用一段程序验证下：
-#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.</description>
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.h&amp;gt; #include &amp;lt;unistd.</description>
     </item>
     
     <item>
