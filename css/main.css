@@ -105,6 +105,7 @@ body {
 
 .sidebar-toggle-parent a {
     color: #000000;
+    font-size: 18px;
 }
 
 .sidebar-toggle-parent icon {
@@ -248,21 +249,25 @@ code, pre, samp {
 .sidebar-toggle-1 {
   left: 22px;
   display: none;
+  margin-left: 4px;
 }
 
 .sidebar-toggle-2 {
   left: 44px;
   display: none;
+  margin-left: 4px;
 }
 
 .sidebar-toggle-3 {
   left: 66px;
   display: none;
+  margin-left: 4px;
 }
 
 .sidebar-toggle-4 {
   left: 88px;
   display: none;
+  margin-left: 4px;
 }
 
 .category-box {
