@@ -107,6 +107,10 @@ body {
     color: #000000;
 }
 
+.sidebar-toggle-parent icon {
+    font-size: 18px;
+}
+
 .sidebar-toggle-parent a:hover {
     color: #1abc9c;
 }
