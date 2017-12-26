@@ -246,22 +246,22 @@ code, pre, samp {
 }
 
 .sidebar-toggle-1 {
-  top: 22px;
+  left: 22px;
   display: none;
 }
 
 .sidebar-toggle-2 {
-  top: 44px;
+  left: 44px;
   display: none;
 }
 
 .sidebar-toggle-3 {
-  top: 66px;
+  left: 66px;
   display: none;
 }
 
 .sidebar-toggle-4 {
-  top: 88px;
+  left: 88px;
   display: none;
 }
 
