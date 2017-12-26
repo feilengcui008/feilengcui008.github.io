@@ -103,6 +103,14 @@ body {
     -webkit-transform: translateZ(0);
 }
 
+.sidebar-toggle a {
+    color: #000000;
+}
+
+.sidebar-toggle a:hover {
+    color: #1abc9c;
+}
+
 .sidebar-toggle .hfont {
   font-size: 20px;
   color: white;
