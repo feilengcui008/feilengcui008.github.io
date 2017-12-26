@@ -71,19 +71,19 @@
   </header>
 
   <div class="article-content">
-    <p>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go">fuzz</a>小工具来自动填充请求结构体，基本上支持大部分的Go类型：<code>integer、float、bool、string、slice、map、struct、pointer</code>，而且支持非导出类型(包括非导出的<code>nil value</code>)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。</p>
+    <p>有时为了测试接口，需要伪造一些随机的请求数据，所以基于Go反射写了一个<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go">fuzz</a>小工具来自动填充请求结构体，基本上支持大部分的Go类型：integer、float、bool、string、slice、map、struct、pointer，而且支持非导出类型(包括非导出的nil value)。实现的思路比较简单，只是有两个地方使用的小trick值得提一提，对深入理解Go的反射有些帮助。</p>
 
 <ul>
 <li>1.unexported字段</li>
 </ul>
 
-<p>Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用<code>Set</code>或<code>SetXXX</code>的方法。这里的技巧在于<code>reflect.NewAt</code>，这个函数可以在当前<code>reflect.Value</code>指向的数据的同一内存地址重新构造相同类型的值，并返回指针的<code>reflect.Value</code>，而其<code>Elem</code>是settable的，所以可以通过这种方式绕过限制，具体可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go#L77">这行代码</a></p>
+<p>Go的反射不允许对struct中未导出的字段设置值，即是unsettable的，所以无法直接使用Set或SetXXX的方法。这里的技巧在于reflect.NewAt，这个函数可以在当前reflect.Value指向的数据的同一内存地址重新构造相同类型的值，并返回指针的reflect.Value，而其Elem是settable的，所以可以通过这种方式绕过限制，具体可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go#L77">这行代码</a></p>
 
 <ul>
 <li>2.unexported且nil的字段</li>
 </ul>
 
-<p>除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其<code>Elem</code>是<code>zero value</code>，而<code>zero value</code>是unsettable和unaddressable的，因此需要新建一个<code>Elem</code>类型的值(<code>reflect.New</code>)并赋给<code>nil value</code>，此后其<code>Elem</code>就可以使用<code>Set/SetXXX</code>正常赋值了，具体可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go#L67">这几行代码</a></p>
+<p>除了需要unexported字段相同的处理方式，由于nil字段反射后是nil value，其Elem是zero value，而zero value是unsettable和unaddressable的，因此需要新建一个Elem类型的值(reflect.New)并赋给nil value，此后其Elem就可以使用Set/SetXXX正常赋值了，具体可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/src/fuzz/fuzz.go#L67">这几行代码</a></p>
 
   </div>
 </article>

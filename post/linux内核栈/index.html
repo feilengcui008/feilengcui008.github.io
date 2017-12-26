@@ -75,18 +75,18 @@
 
 <h2 id="内核栈与thread-info">内核栈与thread_info</h2>
 
-<p>Linux内核在x86平台下，<code>PAGE_SIZE</code>为4KB(32位和64位相同)，<code>THREAD_SIZE</code>为8KB(32位)或者16KB(64位)。<code>THREAD_SIZE</code>表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:</p>
+<p>Linux内核在x86平台下，PAGE_SIZE为4KB(32位和64位相同)，THREAD_SIZE为8KB(32位)或者16KB(64位)。THREAD_SIZE表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:</p>
 
 <ul>
-<li><code>thread_info</code>结构体</li>
+<li>thread_info结构体</li>
 <li>溢出标志</li>
-<li>从溢出标志开始到<code>kernel_stack</code>之间的实际可用栈内存空间，<code>kernel_stack</code>为percpu变量，通过它可间接找到内核栈的起始地址</li>
-<li>从<code>kernel_stack</code>到栈底的长度为<code>KERNEL_STACK_OFFSET</code>的保留空间</li>
+<li>从溢出标志开始到kernel_stack之间的实际可用栈内存空间，kernel_stack为percpu变量，通过它可间接找到内核栈的起始地址</li>
+<li>从kernel_stack到栈底的长度为KERNEL_STACK_OFFSET的保留空间</li>
 </ul>
 
 <p><img src="/images/kernel_stack.jpg" alt="kernel_stack" /></p>
 
-<p>内核引入<code>thread_info</code>的一大原因是方便通过它直接找到进(线)程的<code>task_struct</code>指针，x86平台的<code>thread_info</code>结构体定义在<code>arch/x86/include/asm/thread_info.h</code>。</p>
+<p>内核引入thread_info的一大原因是方便通过它直接找到进(线)程的task_struct指针，x86平台的thread_info结构体定义在arch/x86/include/asm/thread_info.h。</p>
 
 <pre><code>// Linux 3.19.3 x86平台的thread_info
 struct thread_info {
@@ -103,18 +103,18 @@ struct thread_info {
 };
 </code></pre>
 
-<p>由于<code>thread_info</code>结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到<code>thread_info</code>，进而得到<code>task_struct</code>，后面会分析这个过程的实现。</p>
+<p>由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</p>
 
 <hr />
 
 <h2 id="current宏">current宏</h2>
 
-<p><code>current</code>宏在Linux内核中负责获取当前cpu上的<code>task_struct</code>，通常是借助<code>thread_info</code>和内核栈实现，这种方式的主要逻辑是:</p>
+<p>current宏在Linux内核中负责获取当前cpu上的task_struct，通常是借助thread_info和内核栈实现，这种方式的主要逻辑是:</p>
 
 <ul>
-<li>定义<code>kernel_stack</code> percpu变量，通过<code>kernel_stack + KERNEL_STACK_OFFSET - THREAD_SIZE</code>即可获得内核栈的起始地址</li>
-<li>内核栈的起始地址即是<code>thread_info</code>的起始地址，所以通过<code>thread_info-&gt;task</code>即可获得<code>task_struct</code>指针</li>
-<li>在每次上下文切换时，更新<code>kernel_stack</code> percpu变量</li>
+<li>定义kernel_stack percpu变量，通过kernel_stack + KERNEL_STACK_OFFSET - THREAD_SIZE即可获得内核栈的起始地址</li>
+<li>内核栈的起始地址即是thread_info的起始地址，所以通过thread_info-&gt;task即可获得task_struct指针</li>
+<li>在每次上下文切换时，更新kernel_stack percpu变量</li>
 </ul>
 
 <pre><code>// 以Linux 3.19.3 x86的源码为例
@@ -153,7 +153,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 
 </code></pre>
 
-<p>但是Linux内核引入percpu变量之后，逐渐通过percpu变量来实现<code>current</code>宏，并且从Linux 4.1开始，x86移除了<code>kernel_stack</code>，并逐渐开始简化<code>thread_info</code>结构体，直到Linux 4.9彻底不再通过<code>thread_info</code>获取<code>task_struct</code>指针，而是直接通过<code>current_struct</code> percpu变量存放<code>task_struct</code>的指针，具体可参见<a href="https://github.com/torvalds/linux/commit/15f4eae70d365bba26854c90b6002aaabb18c8aa">此commit</a></p>
+<p>但是Linux内核引入percpu变量之后，逐渐通过percpu变量来实现current宏，并且从Linux 4.1开始，x86移除了kernel_stack，并逐渐开始简化thread_info结构体，直到Linux 4.9彻底不再通过thread_info获取task_struct指针，而是直接通过current_struct percpu变量存放task_struct的指针，具体可参见<a href="https://github.com/torvalds/linux/commit/15f4eae70d365bba26854c90b6002aaabb18c8aa">此commit</a></p>
 
 <pre><code>// 以Linux 3.19.3 x86的源码为例
 
