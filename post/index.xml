@@ -569,5 +569,14 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
  数据平面与控制平面分离，减少不必要的系统调用 用户态驱动uio/vfio等减少内存拷贝 使用内存池减少内存分配 通过CPU亲和性提高缓存命中率 网卡多队列与poll模式充分利用多核 batch syscall 用户态协议栈 &amp;hellip;  相应的技术方案大多数是围绕这些点来做优化结合的。比如OSDI &amp;lsquo;14上的Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</description>
     </item>
     
+    <item>
+      <title></title>
+      <link>https://feilengcui008.github.io/post/25/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/25/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>
