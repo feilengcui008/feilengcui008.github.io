@@ -53,26 +53,41 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/fuzz-go-struct-using-reflection/'>Fuzz go struct using reflection</a>
+            <span id='/post/fuzz-go-struct-using-reflection/' class="leancloud_visitors" data-flag-title="Fuzz go struct using reflection">
+                <span class="leancloud-visitors-count"></span>
+            </span>
             <span class="post-date">07-24-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/go%E8%B0%83%E5%BA%A6%E8%AF%A6%E8%A7%A3/'>Go调度详解</a>
+            <span id='/post/go%E8%B0%83%E5%BA%A6%E8%AF%A6%E8%A7%A3/' class="leancloud_visitors" data-flag-title="Go调度详解">
+                <span class="leancloud-visitors-count"></span>
+            </span>
             <span class="post-date">05-09-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/'>Go接口详解</a>
+            <span id='/post/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/' class="leancloud_visitors" data-flag-title="Go接口详解">
+                <span class="leancloud-visitors-count"></span>
+            </span>
             <span class="post-date">04-30-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/go%E7%9A%84%E8%87%AA%E4%B8%BE/'>Go的自举</a>
+            <span id='/post/go%E7%9A%84%E8%87%AA%E4%B8%BE/' class="leancloud_visitors" data-flag-title="Go的自举">
+                <span class="leancloud-visitors-count"></span>
+            </span>
             <span class="post-date">04-27-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/'>Go的context包实现分析</a>
+            <span id='/post/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/' class="leancloud_visitors" data-flag-title="Go的context包实现分析">
+                <span class="leancloud-visitors-count"></span>
+            </span>
             <span class="post-date">04-24-2017</span>
         </li>
     
@@ -99,6 +114,104 @@
 <script src="https://feilengcui008.github.io/js/app.js"></script>
 
 
+
+<script src="https://cdn1.lncld.net/static/js/av-core-mini-0.6.1.js"></script>
+<script>
+    AV.initialize("sKCGt9cqaRvCq8ij2XsSRQET-gzGzoHsz", "Uusqiv2yEoQBC0vy7KnlzCqI");
+</script>
+<script>
+    function showTime(Counter) {
+        var query = new AV.Query(Counter);
+        var entries = [];
+        var $visitors = $(".leancloud_visitors");
+
+        $visitors.each(function () {
+            entries.push( $(this).attr("id").trim() );
+        });
+
+        query.containedIn('url', entries);
+        query.find()
+        .done(function (results) {
+            var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+            if (results.length === 0) {
+                $visitors.find(COUNT_CONTAINER_REF).text(0);
+                return;
+            }
+
+            for (var i = 0; i < results.length; i++) {
+                var item = results[i];
+                var url = item.get('url');
+                var time = item.get('time');
+                var element = document.getElementById(url);
+
+                $(element).find(COUNT_CONTAINER_REF).text(time);
+            }
+        })
+        .fail(function (object, error) {
+            console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+        var $visitors = $(".leancloud_visitors");
+        var url = $visitors.attr('id').trim();
+        var title = $visitors.attr('data-flag-title').trim();
+        var query = new AV.Query(Counter);
+
+        query.equalTo("url", url);
+        query.find({
+                success: function(results) {
+                    if (results.length > 0) {
+                        var counter = results[0];
+                        counter.fetchWhenSave(true);
+                        counter.increment("time");
+                        counter.save(null, {
+                                success: function(counter) {
+                                    var $element = $(document.getElementById(url));
+                                    $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                                },
+                                error: function(counter, error) {
+                                    console.log('Failed to save Visitor num, with error message: ' + error.message);
+                                }
+                        });
+                    } else {
+                        var newcounter = new Counter();
+                         
+                        var acl = new AV.ACL();
+                        acl.setPublicReadAccess(true);
+                        acl.setPublicWriteAccess(true);
+                        newcounter.setACL(acl);
+                         
+                        newcounter.set("title", title);
+                        newcounter.set("url", url);
+                        newcounter.set("time", 1);
+                        newcounter.save(null, {
+                            success: function(newcounter) {
+                                var $element = $(document.getElementById(url));
+                                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                            },
+                            error: function(newcounter, error) {
+                                console.log('Failed to create');
+                            }
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.log('Error:' + error.code + " " + error.message);
+                }
+        });
+    }
+
+    $(function() {
+        var Counter = AV.Object.extend("Counter");
+        if ($('.leancloud_visitors').length == 1) {
+            addCount(Counter);
+        } else if ($('.post-title-link').length > 1) {
+            showTime(Counter);
+        }
+    });
+</script>
 
   </body>
 </html>
