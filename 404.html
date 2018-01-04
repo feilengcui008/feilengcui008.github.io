@@ -78,14 +78,17 @@
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
+        console.log($visitors.length);
 
         $visitors.each(function () {
+            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
+            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {

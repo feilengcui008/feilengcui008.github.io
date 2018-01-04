@@ -71,7 +71,7 @@
         <span class="article-meta-span"><a href="/tags/rpc">RPC</a></span>
         
       </span>
-      <span id="/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/" class="leancloud_visitors">
+      <span id="/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/" class="leancloud_visitors" data-flag-title="Protobuf和gRPC交互流程">
         <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
@@ -328,14 +328,17 @@ class CppGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
+        console.log($visitors.length);
 
         $visitors.each(function () {
+            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
+            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {

@@ -67,7 +67,7 @@
       <span>
         
       </span>
-      <span id="/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/" class="leancloud_visitors">
+      <span id="/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/" class="leancloud_visitors" data-flag-title="C&#43;&#43;内存对齐">
         <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
@@ -265,14 +265,17 @@ endian:0
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
+        console.log($visitors.length);
 
         $visitors.each(function () {
+            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
+            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {
