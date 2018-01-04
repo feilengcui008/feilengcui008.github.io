@@ -307,7 +307,7 @@ destruct a Test object
                 var time = item.get('time');
                 var element = document.getElementById(url);
 
-                $(element).find(COUNT_CONTAINER_REF).text("--"+time);
+                $(element).find(COUNT_CONTAINER_REF).text(" - " + time);
             }
         })
         .fail(function (object, error) {

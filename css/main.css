@@ -396,8 +396,8 @@ pre code {
     border-radius:15px;
 }
 
-.leancloud_visitor_count {
-    font-size:14px;
+.leancloud_visitors_count {
+    font-size:10px;
     color:grey;
     font-weight:bold;
 }
