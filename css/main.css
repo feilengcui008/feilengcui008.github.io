@@ -386,3 +386,18 @@ pre code {
 .article-content ol, .article-content ul {
   color: #000;
 }
+
+.leancloud_visitors {
+    font-size: 14px;
+    line-height:20px;
+    display:inline-block;
+    height:30px;
+    color:#999;
+    border-radius:15px;
+}
+
+.leancloud_visitor_count {
+    font-size:14px;
+    color:grey;
+    font-weight:bold;
+}

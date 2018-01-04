@@ -68,7 +68,6 @@
         
       </span>
       <span id="/post/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E5%B0%8F%E7%BB%93/" class="leancloud_visitors" data-flag-title="Linux网络编程小结">
-        <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
     </div>
@@ -175,17 +174,14 @@ IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的�
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
-        console.log($visitors.length);
 
         $visitors.each(function () {
-            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
-            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {
@@ -199,7 +195,7 @@ IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的�
                 var time = item.get('time');
                 var element = document.getElementById(url);
 
-                $(element).find(COUNT_CONTAINER_REF).text(time);
+                $(element).find(COUNT_CONTAINER_REF).text("--"+time);
             }
         })
         .fail(function (object, error) {

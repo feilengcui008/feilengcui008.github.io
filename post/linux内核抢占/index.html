@@ -68,7 +68,6 @@
         
       </span>
       <span id="/post/linux%E5%86%85%E6%A0%B8%E6%8A%A2%E5%8D%A0/" class="leancloud_visitors" data-flag-title="Linux内核抢占">
-        <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
     </div>
@@ -689,17 +688,14 @@ END(common_interrupt)
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
-        console.log($visitors.length);
 
         $visitors.each(function () {
-            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
-            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {
@@ -713,7 +709,7 @@ END(common_interrupt)
                 var time = item.get('time');
                 var element = document.getElementById(url);
 
-                $(element).find(COUNT_CONTAINER_REF).text(time);
+                $(element).find(COUNT_CONTAINER_REF).text("--"+time);
             }
         })
         .fail(function (object, error) {

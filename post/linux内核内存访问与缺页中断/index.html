@@ -68,7 +68,6 @@
         
       </span>
       <span id="/post/linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E4%B8%8E%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD/" class="leancloud_visitors" data-flag-title="Linux内核内存访问与缺页中断">
-        <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
     </div>
@@ -435,17 +434,14 @@ NOKPROBE_SYMBOL(__do_page_fault);
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
-        console.log($visitors.length);
 
         $visitors.each(function () {
-            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
-            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {
@@ -459,7 +455,7 @@ NOKPROBE_SYMBOL(__do_page_fault);
                 var time = item.get('time');
                 var element = document.getElementById(url);
 
-                $(element).find(COUNT_CONTAINER_REF).text(time);
+                $(element).find(COUNT_CONTAINER_REF).text("--"+time);
             }
         })
         .fail(function (object, error) {

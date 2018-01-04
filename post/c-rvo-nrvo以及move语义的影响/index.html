@@ -68,7 +68,6 @@
         
       </span>
       <span id="/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/" class="leancloud_visitors" data-flag-title="C&#43;&#43; RVO/NRVO以及move语义的影响">
-        <span class="leancloud-visitors-count"></span>
         <span class="post-flag"><span>
       </span>
     </div>
@@ -287,17 +286,14 @@ destruct a Test object
         var query = new AV.Query(Counter);
         var entries = [];
         var $visitors = $(".leancloud_visitors");
-        console.log($visitors.length);
 
         $visitors.each(function () {
-            console.log($(this).attr("id"));
             entries.push( $(this).attr("id").trim() );
         });
 
         query.containedIn('url', entries);
         query.find()
         .done(function (results) {
-            console.log(results);
             var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
 
             if (results.length === 0) {
@@ -311,7 +307,7 @@ destruct a Test object
                 var time = item.get('time');
                 var element = document.getElementById(url);
 
-                $(element).find(COUNT_CONTAINER_REF).text(time);
+                $(element).find(COUNT_CONTAINER_REF).text("--"+time);
             }
         })
         .fail(function (object, error) {
