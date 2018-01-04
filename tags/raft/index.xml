@@ -26,7 +26,7 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
     </item>
     
     <item>
-      <title>Paper Reading - In Search of an Understandable Consensus Algorithm</title>
+      <title>Paper Reading - Raft</title>
       <link>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</link>
       <pubDate>Sun, 19 Mar 2017 17:15:32 +0800</pubDate>
       

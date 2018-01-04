@@ -216,11 +216,11 @@ Tcplayer Tcplayer主要包含以下几个步骤:
     </item>
     
     <item>
-      <title>Paper Reading - Lessons learned from three container-management systems over a decade</title>
-      <link>https://feilengcui008.github.io/post/paper-reading-lessons-learned-from-three-container-management-systems-over-a-decade/</link>
+      <title>Paper Reading - Borg, Omega and Kubernetes</title>
+      <link>https://feilengcui008.github.io/post/paper-reading-kubernetes/</link>
       <pubDate>Mon, 03 Apr 2017 14:05:53 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/paper-reading-lessons-learned-from-three-container-management-systems-over-a-decade/</guid>
+      <guid>https://feilengcui008.github.io/post/paper-reading-kubernetes/</guid>
       <description>INTRODUCTION 这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。
  Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby reducing costs
  最基本的功能，隔离混部提高资源利用率。
@@ -230,11 +230,11 @@ Tcplayer Tcplayer主要包含以下几个步骤:
     </item>
     
     <item>
-      <title>Paper Reading - Large-scale cluster management at Google with Borg</title>
-      <link>https://feilengcui008.github.io/post/paper-reading-large-scale-cluster-management-at-google-with-borg/</link>
+      <title>Paper Reading - Borg</title>
+      <link>https://feilengcui008.github.io/post/paper-reading-borg/</link>
       <pubDate>Fri, 31 Mar 2017 23:05:00 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/paper-reading-large-scale-cluster-management-at-google-with-borg/</guid>
+      <guid>https://feilengcui008.github.io/post/paper-reading-borg/</guid>
       <description>0. Abstract  It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation
  最重要的三点：装箱与调度算法，资源的抢占/reclaim/over-commit，资源的隔离。
 2.1 The workload  we classify higher-priority Borg jobs as “production” (prod) ones, and the rest as “non-production” (non-prod). Most long-running server jobs are prod; most batch jobs are non-prod&amp;hellip;&amp;hellip;The discrepancies between allocation and usage will prove important in&amp;hellip;
@@ -257,7 +257,7 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
     </item>
     
     <item>
-      <title>Paper Reading - In Search of an Understandable Consensus Algorithm</title>
+      <title>Paper Reading - Raft</title>
       <link>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</link>
       <pubDate>Sun, 19 Mar 2017 17:15:32 +0800</pubDate>
       

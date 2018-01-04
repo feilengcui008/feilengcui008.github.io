@@ -388,16 +388,10 @@ pre code {
 }
 
 .leancloud_visitors {
-    font-size: 14px;
+    font-size: 10px;
     line-height:20px;
     display:inline-block;
     height:30px;
     color:#999;
     border-radius:15px;
-}
-
-.leancloud_visitors_count {
-    font-size:10px;
-    color:grey;
-    font-weight:bold;
 }

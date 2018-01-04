@@ -78,12 +78,12 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/post/paper-reading-lessons-learned-from-three-container-management-systems-over-a-decade/</loc>
+    <loc>https://feilengcui008.github.io/post/paper-reading-kubernetes/</loc>
     <lastmod>2017-04-03T14:05:53+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/post/paper-reading-large-scale-cluster-management-at-google-with-borg/</loc>
+    <loc>https://feilengcui008.github.io/post/paper-reading-borg/</loc>
     <lastmod>2017-03-31T23:05:00+08:00</lastmod>
   </url>
   
@@ -282,14 +282,14 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/categories/linux/</loc>
-    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/tags/linux/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/tags/linux/</loc>
-    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/categories/linux/</loc>
+    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
