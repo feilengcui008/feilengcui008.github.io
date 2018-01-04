@@ -65,6 +65,10 @@
       <span>
         
       </span>
+      <span id="/post/%E8%AF%BB%E5%9C%A82017/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -367,6 +371,7 @@ A Random Walk Down Wall Street / 麦基尔 / 机械工业出版社</p>
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -493,10 +498,11 @@ A Random Walk Down Wall Street / 麦基尔 / 机械工业出版社</p>
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/linux%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E4%B8%8E%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -137,6 +141,7 @@
 
   </div>
 </article>
+
 
 </div>
 <div class="fexo-comments comments-post">
@@ -264,10 +269,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

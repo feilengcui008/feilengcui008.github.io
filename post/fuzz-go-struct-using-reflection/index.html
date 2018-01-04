@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/fuzz-go-struct-using-reflection/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -87,6 +91,7 @@
 
   </div>
 </article>
+
 
 </div>
 <div class="fexo-comments comments-post">
@@ -214,10 +219,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

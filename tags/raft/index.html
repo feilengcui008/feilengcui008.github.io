@@ -53,16 +53,18 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/'>Raft实现小结</a>
-            <span id='/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/' class="leancloud_visitors" data-flag-title="Raft实现小结">
+            <span id='/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">03-20-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/raft%E8%AE%BA%E6%96%87/'>Paper Reading - In Search of an Understandable Consensus Algorithm</a>
-            <span id='/post/raft%E8%AE%BA%E6%96%87/' class="leancloud_visitors" data-flag-title="Paper Reading - In Search of an Understandable Consensus Algorithm">
+            <span id='/post/raft%E8%AE%BA%E6%96%87/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">03-19-2017</span>
         </li>
@@ -182,10 +184,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

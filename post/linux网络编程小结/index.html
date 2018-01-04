@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E5%B0%8F%E7%BB%93/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -124,6 +128,7 @@ IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的�
 
   </div>
 </article>
+
 
 </div>
 <div class="fexo-comments comments-post">
@@ -251,10 +256,11 @@ IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的�
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

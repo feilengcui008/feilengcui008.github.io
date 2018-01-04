@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/go%E7%9A%84%E8%87%AA%E4%B8%BE/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -174,6 +178,7 @@ dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compi
 
   </div>
 </article>
+
 
 </div>
 <div class="fexo-comments comments-post">
@@ -301,10 +306,11 @@ dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compi
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

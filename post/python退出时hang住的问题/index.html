@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -307,6 +311,7 @@ sys.exit()
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -433,10 +438,11 @@ sys.exit()
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

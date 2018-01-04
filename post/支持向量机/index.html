@@ -71,6 +71,10 @@
         <span class="article-meta-span"><a href="/tags/svm">SVM</a></span>
         
       </span>
+      <span id="/post/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -430,6 +434,7 @@ if __name__==&quot;__main__&quot;:
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -556,10 +561,11 @@ if __name__==&quot;__main__&quot;:
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

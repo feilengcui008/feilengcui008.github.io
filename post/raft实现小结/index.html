@@ -71,6 +71,10 @@
         <span class="article-meta-span"><a href="/tags/raft">Raft</a></span>
         
       </span>
+      <span id="/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -198,6 +202,7 @@
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -324,10 +329,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

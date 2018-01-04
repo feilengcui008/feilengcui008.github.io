@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E4%B8%8E%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -385,6 +389,7 @@ NOKPROBE_SYMBOL(__do_page_fault);
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -511,10 +516,11 @@ NOKPROBE_SYMBOL(__do_page_fault);
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

@@ -53,8 +53,9 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/redis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/'>Redis源码分析</a>
-            <span id='/post/redis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors" data-flag-title="Redis源码分析">
+            <span id='/post/redis%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">05-29-2016</span>
         </li>
@@ -174,10 +175,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

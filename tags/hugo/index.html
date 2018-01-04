@@ -53,8 +53,9 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/'>迁移到Hugo</a>
-            <span id='/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/' class="leancloud_visitors" data-flag-title="迁移到Hugo">
+            <span id='/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">06-06-2017</span>
         </li>
@@ -174,10 +175,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

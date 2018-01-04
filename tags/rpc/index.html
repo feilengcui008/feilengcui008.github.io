@@ -53,24 +53,27 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/'>gRPC-Go客户端源码分析</a>
-            <span id='/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors" data-flag-title="gRPC-Go客户端源码分析">
+            <span id='/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">04-24-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/'>gRPC-Go服务端源码分析</a>
-            <span id='/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors" data-flag-title="gRPC-Go服务端源码分析">
+            <span id='/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">04-23-2017</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/'>Protobuf和gRPC交互流程</a>
-            <span id='/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/' class="leancloud_visitors" data-flag-title="Protobuf和gRPC交互流程">
+            <span id='/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">03-05-2017</span>
         </li>
@@ -190,10 +193,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

@@ -53,16 +53,18 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/'>Runc容器生命周期</a>
-            <span id='/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/' class="leancloud_visitors" data-flag-title="Runc容器生命周期">
+            <span id='/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">11-30-2016</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/docker%E7%AE%80%E4%BB%8B/'>Docker简介</a>
-            <span id='/post/docker%E7%AE%80%E4%BB%8B/' class="leancloud_visitors" data-flag-title="Docker简介">
+            <span id='/post/docker%E7%AE%80%E4%BB%8B/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">10-08-2016</span>
         </li>
@@ -182,10 +184,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

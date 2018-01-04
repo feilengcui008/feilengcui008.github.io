@@ -71,6 +71,10 @@
         <span class="article-meta-span"><a href="/tags/vim">Vim</a></span>
         
       </span>
+      <span id="/post/pratical-vim-notes/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -190,6 +194,7 @@ q 结束录制宏
 
   </div>
 </article>
+
 
 </div>
 <div class="fexo-comments comments-post">
@@ -317,10 +322,11 @@ q 结束录制宏
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

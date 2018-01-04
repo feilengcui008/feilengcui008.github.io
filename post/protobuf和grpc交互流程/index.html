@@ -71,6 +71,10 @@
         <span class="article-meta-span"><a href="/tags/rpc">RPC</a></span>
         
       </span>
+      <span id="/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -278,6 +282,7 @@ class CppGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -404,10 +409,11 @@ class CppGrpcGenerator : public grpc::protobuf::compiler::CodeGenerator {
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

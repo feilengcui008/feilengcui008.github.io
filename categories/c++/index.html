@@ -53,16 +53,18 @@
     
         <li class="item-post item">
             <a class="post-title" href='/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/'>C&#43;&#43; RVO/NRVO以及move语义的影响</a>
-            <span id='/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/' class="leancloud_visitors" data-flag-title="C&#43;&#43; RVO/NRVO以及move语义的影响">
+            <span id='/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">05-09-2015</span>
         </li>
     
         <li class="item-post item">
             <a class="post-title" href='/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/'>C&#43;&#43;内存对齐</a>
-            <span id='/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/' class="leancloud_visitors" data-flag-title="C&#43;&#43;内存对齐">
+            <span id='/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/' class="leancloud_visitors">
                 <span class="leancloud-visitors-count"></span>
+                <span class="post-list-flag"></span>
             </span>
             <span class="post-date">03-09-2015</span>
         </li>
@@ -182,10 +184,11 @@
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>

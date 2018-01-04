@@ -67,6 +67,10 @@
       <span>
         
       </span>
+      <span id="/post/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80/" class="leancloud_visitors">
+        <span class="leancloud-visitors-count"></span>
+        <span class="post-flag"><span>
+      </span>
     </div>
   </header>
 
@@ -318,6 +322,7 @@ MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
   </div>
 </article>
 
+
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
@@ -444,10 +449,11 @@ MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
 
     $(function() {
         var Counter = AV.Object.extend("Counter");
-        if ($('.leancloud_visitors').length == 1) {
-            addCount(Counter);
-        } else if ($('.post-title-link').length > 1) {
+        if ($('.post-list-flag').length > 0) {
             showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
         }
     });
 </script>
