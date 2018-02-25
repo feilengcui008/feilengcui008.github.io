@@ -52,19 +52,6 @@ Tcplayer Tcplayer主要包含以下几个步骤:
     </item>
     
     <item>
-      <title>Protobuf和gRPC交互流程</title>
-      <link>https://feilengcui008.github.io/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/</link>
-      <pubDate>Sun, 05 Mar 2017 18:31:34 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/protobuf%E5%92%8Cgrpc%E4%BA%A4%E4%BA%92%E6%B5%81%E7%A8%8B/</guid>
-      <description>数据交互协议和RPC框架对于分布式系统来说是必不可少的组件，这个系列主要用来分析Protobuf和GRPC的实现原理，本文主要介绍Protobuf生成代码的流程以及Protobuf与GRPC之间的交互方式。
-简要描述  Protobuf Protobuf主要由三大部分构成:
- Core: 包括核心的数据结构比如Message和Service等等 Compiler: proto文件的Tokenizer和Parser; 代码生成器接口以及不同语言的具体实现, 并提供插件机制; protoc的主程序 Runtime: 支撑不同语言的基础数据结构，通常和Core的主要数据结构对应，Ruby和PHP等直接以扩展的形式封装使用Core中的数据结构，而Go和Java则重新实现了一套对应的数据结构  gRPC gRPC也可以看做三大部分构成:
- Core: C语言实现的channel, http, transport等核心组件 Compiler: 各个语言的Protobuf插件，主要作用是解析proto文件中的service并生成对应的server和client代码接口 Runtime: 支撑不同语言的通信框架，通常是封装Core中的C实现，但是Go和Java是完全重新实现的整个框架(grpc-go和grpc-java)  基本流程
- proto files -&amp;gt; tokenizer and parser -&amp;gt; FileDescriptor -&amp;gt; CodeGenerator(内部注册的生成器实现或者外部插件比如grpc插件) -&amp;gt; code   代码生成主要流程的源码分析  入口  // protobuf/src/google/protobuf/compiler/main.cc int main(int argc, char* argv[]) { google::protobuf::compiler::CommandLineInterface cli; // 注册插件的前缀，当使用protoc --name_out=xx生成代码时，如果name对应的插件 // 没有在内部注册那么默认当做插件，会查找protoc-gen-name的程序是否存在，如 // 果指定了--plugin=protoc-gen-name=/path/to/bin参数，则优先使用此参数设置 // 的路径这是grpc的protobuf插件以及go的protobuf实现与protoc命令交互的机制。 cli.AllowPlugins(&amp;quot;protoc-&amp;quot;); // 注册内部代码生成器插件 google::protobuf::compiler::cpp::CppGenerator cpp_generator; cli.</description>
-    </item>
-    
-    <item>
       <title>Runc容器生命周期</title>
       <link>https://feilengcui008.github.io/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</link>
       <pubDate>Wed, 30 Nov 2016 17:48:20 +0800</pubDate>
