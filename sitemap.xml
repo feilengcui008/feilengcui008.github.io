@@ -33,11 +33,6 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/post/%E7%AE%97%E6%B3%95_%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF_%E4%B8%9A%E5%8A%A1/</loc>
-    <lastmod>2017-09-21T08:38:25+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</loc>
     <lastmod>2017-07-24T09:48:05+08:00</lastmod>
   </url>
@@ -397,12 +392,6 @@
   <url>
     <loc>https://feilengcui008.github.io/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
     <lastmod>2016-03-03T17:21:15+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://feilengcui008.github.io/categories/%E8%83%A1%E6%80%9D%E4%B9%B1%E6%83%B3/</loc>
-    <lastmod>2017-09-21T08:38:25+08:00</lastmod>
     <priority>0</priority>
   </url>
   
