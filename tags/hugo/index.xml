@@ -17,8 +17,7 @@
       <pubDate>Tue, 06 Jun 2017 15:13:08 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</guid>
-      <description>之前一直使用hexo作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器hugo，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多，而且是用Go语言写的:-)。因此，决定切换到hugo，顺便将之前基于fexo改的hexo主题移植到hugo上了，代码仓库在simpost-theme。fexo本身是个极简主题，但是simpost-theme页面和功能更加简洁，只包含几个常用的功能点:
- home/archives/post/about页面 极简分页 disqus评论 mathjax支持latex gofont字体(go官方的这个字体真心不错)  </description>
+      <description>之前一直使用hexo作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器hugo，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多。因此，决定切换到hugo，顺便将之前基于fexo改的hexo主题移植到hugo上了，代码仓库在simpost-theme。</description>
     </item>
     
   </channel>
