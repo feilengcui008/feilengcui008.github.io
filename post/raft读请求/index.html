@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.24.1" />
-<title>分布式系统</title>
+<title>Raft读请求</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -45,90 +45,92 @@
     <section id="wrapper">
         
         
-		<div class="personal_content content-archive">
-  <div class="post-list-box archive-body">
-    <ul class="list-post">
+<div class="content content-post CENTER">
+  <article id="Raft读请求" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Raft读请求</h1>
 
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>03-08-2018</span>
+      </span>
+      </p>
+      <span>
+        
+        <span class="article-meta-span"><a href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F">分布式系统</a></span>
+        
+      </span>
+      
+        | 
+      
+      <span>
+        
+        <span class="article-meta-span"><a href="/tags/raft">Raft</a></span>
+        
+      </span>
+      <span id="/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/" class="leancloud_visitors" data-flag-title="Raft读请求">
+        <span class="post-flag"><span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
     
-        <li class="item-post item">
-            <a class="post-title" href='/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/'>Raft读请求</a>
-            <span id='/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-08-2018</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/paper-reading-kubernetes/'>Paper Reading - Borg, Omega and Kubernetes</a>
-            <span id='/post/paper-reading-kubernetes/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">04-03-2017</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/paper-reading-borg/'>Paper Reading - Borg</a>
-            <span id='/post/paper-reading-borg/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-31-2017</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/'>Raft实现小结</a>
-            <span id='/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-20-2017</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/raft%E8%AE%BA%E6%96%87/'>Paper Reading - Raft</a>
-            <span id='/post/raft%E8%AE%BA%E6%96%87/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-19-2017</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%89/'>分布式一致性协议(三)</a>
-            <span id='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%89/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-10-2016</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%BA%8C/'>分布式一致性协议(二)</a>
-            <span id='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%BA%8C/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-09-2016</span>
-        </li>
-    
-        <li class="item-post item">
-            <a class="post-title" href='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/'>分布式一致性协议(一)</a>
-            <span id='/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-08-2016</span>
-        </li>
-    
-    </ul>
+
+<h3 id="raft保证读请求linearizability的方法">Raft保证读请求Linearizability的方法</h3>
+
+<ul>
+<li><p>1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）</p></li>
+
+<li><p>2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）</p></li>
+
+<li><p>3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）</p></li>
+
+<li><p>4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）</p></li>
+</ul>
+
+<h3 id="raft保证读请求sequential-consistency的方法">Raft保证读请求Sequential Consistency的方法</h3>
+
+<ul>
+<li>Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）</li>
+</ul>
+
+<h3 id="linearizability和sequential-consistency的区别">Linearizability和Sequential Consistency的区别</h3>
+
+<blockquote>
+<p>Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp</p>
+
+<p>Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.</p>
+</blockquote>
+
+<ul>
+<li>举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。</li>
+</ul>
+
   </div>
-  <nav class="post-nav">
-    
-</nav>
+</article>
+
 
 </div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/raft%E8%AF%BB%E8%AF%B7%E6%B1%82\/';
+    var disqus_title = 'Raft读请求';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/raft%E8%AF%BB%E8%AF%B7%E6%B1%82\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
 
 
 
