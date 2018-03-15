@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.24.1" />
-<title>Tags</title>
+<title>Go的语法树结构</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -43,72 +43,170 @@
 </nav>
 
     <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="Go的语法树结构" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Go的语法树结构</h1>
 
-    <div class="personal_content">
-    <section class="category-box">
-        <div class="category-list">
-            
-                <a class="category-item" href="/tags/abi">
-                    <span class="category-name">ABI</span>
-                </a>
-            
-                <a class="category-item" href="/tags/c/c&#43;&#43;">
-                    <span class="category-name">C/C&#43;&#43;</span>
-                </a>
-            
-                <a class="category-item" href="/tags/docker">
-                    <span class="category-name">Docker</span>
-                </a>
-            
-                <a class="category-item" href="/tags/go">
-                    <span class="category-name">Go</span>
-                </a>
-            
-                <a class="category-item" href="/tags/hugo">
-                    <span class="category-name">Hugo</span>
-                </a>
-            
-                <a class="category-item" href="/tags/kmp">
-                    <span class="category-name">KMP</span>
-                </a>
-            
-                <a class="category-item" href="/tags/linux">
-                    <span class="category-name">Linux</span>
-                </a>
-            
-                <a class="category-item" href="/tags/paxos">
-                    <span class="category-name">Paxos</span>
-                </a>
-            
-                <a class="category-item" href="/tags/rpc">
-                    <span class="category-name">RPC</span>
-                </a>
-            
-                <a class="category-item" href="/tags/raft">
-                    <span class="category-name">Raft</span>
-                </a>
-            
-                <a class="category-item" href="/tags/redis">
-                    <span class="category-name">Redis</span>
-                </a>
-            
-                <a class="category-item" href="/tags/runc">
-                    <span class="category-name">Runc</span>
-                </a>
-            
-                <a class="category-item" href="/tags/svm">
-                    <span class="category-name">SVM</span>
-                </a>
-            
-                <a class="category-item" href="/tags/vim">
-                    <span class="category-name">Vim</span>
-                </a>
-            
-        </div>
-    </section>
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>03-15-2018</span>
+      </span>
+      </p>
+      <span>
+        
+        <span class="article-meta-span"><a href="/categories/go">Go</a></span>
+        
+      </span>
+      
+        | 
+      
+      <span>
+        
+        <span class="article-meta-span"><a href="/tags/go">Go</a></span>
+        
+      </span>
+      <span id="/post/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84/" class="leancloud_visitors" data-flag-title="Go的语法树结构">
+        <span class="post-flag"><span>
+      </span>
     </div>
+  </header>
 
-    <footer id="footer">
+  <div class="article-content">
+    
+
+<h3 id="顶层元素和基本树节点">顶层元素和基本树节点</h3>
+
+<ul>
+<li><p>File</p>
+
+<ul>
+<li>包名</li>
+<li>顶层（包级）声明列表</li>
+</ul></li>
+
+<li><p>node，语法树节点的基本结构体，所有声明、表达式、语句节点都会内嵌</p></li>
+</ul>
+
+<hr />
+
+<h3 id="声明">声明</h3>
+
+<ul>
+<li>ImportDecl，import声明语句</li>
+<li>ConstDec，const声明语句</li>
+<li>TypeDecl，type类型或别名定义</li>
+<li>VarDecl，var声明变量</li>
+<li>FuncDecl，func函数声明</li>
+</ul>
+
+<hr />
+
+<h3 id="表达式">表达式</h3>
+
+<p>表达式都可以求值，通常是作为声明和语句的基本操作单元。通常变量（标识符）根据是否被赋值分为左值和右值，表达式求值的结果也有此区别。</p>
+
+<h4 id="表达式的结果可作为左值或右值">表达式的结果可作为左值或右值</h4>
+
+<ul>
+<li>Name，变量（标识符的值）</li>
+<li>ParenExpr，括号表达式（Expr）</li>
+<li>SelectorExpr，选择表达式（X.Sel）</li>
+<li>ListExpr，列表表达式（ElemList[0]，ElemList[1]&hellip;）</li>
+</ul>
+
+<h4 id="表达式的结果只可作为右值">表达式的结果只可作为右值</h4>
+
+<ul>
+<li>BasicLit，字面量</li>
+<li>CompositeLit，字面量值的列表</li>
+<li>KeyValueExpr，键值对</li>
+<li>FuncLit，匿名函数</li>
+<li>IndexExpr，索引取值表达式（X[Index]）</li>
+<li>SliceExpr，切片表达式</li>
+<li>AssertExpr，类型断言（X.（Type））</li>
+<li>Operation，操作符表达式（X op Y 或 op X）</li>
+<li>CallExpr，函数调用</li>
+</ul>
+
+<h4 id="类型表达式-通常使用者不会直接涉及到">类型表达式，通常使用者不会直接涉及到</h4>
+
+<ul>
+<li>ArrayType，array类型</li>
+<li>SliceType，slice类型</li>
+<li>StructType，struct类型</li>
+<li>InterfaceType，interface类型</li>
+<li>FuncType，func类型</li>
+<li>MapType，map类型</li>
+<li>ChanType，chan类型</li>
+<li>Field，结构体或者接口的字段（数据或方法）</li>
+<li>DotsType，元素展开（&hellip;Elem）</li>
+</ul>
+
+<hr />
+
+<h3 id="语句">语句</h3>
+
+<p>如果将结果可被赋值的表达式作为程序的状态，那么语句就负责根据这些状态（读取状态值）执行某些逻辑操作真正改变这些状态（写入状态值），而声明则可看作事先准备好表达式和语句的集合（试想如果不事先准备点什么，程序怎么开始执行呢？）</p>
+
+<ul>
+<li>EmptyStmt，空语句</li>
+<li>LabeledStmt，标签语句</li>
+<li>BlockStmt，语句块</li>
+<li>ExprStmt，表达式语句</li>
+<li>SendStmt，管道发送数据</li>
+<li>DeclStmt，声明列表</li>
+<li>AssignStmt，赋值语句</li>
+<li>BranchStmt，带条件分支的语句</li>
+<li>CallStmt，函数调用语句</li>
+<li>ReturnStmt，返回语句</li>
+<li>IfStmt，if语句</li>
+<li>ForStmt，for语句</li>
+<li>SwitchStmt，switch语句</li>
+<li>SelectStmt，select语句</li>
+<li>RangeClause，range（赋值）语句</li>
+<li>TypeSwitchGuard，type switch（赋值）语句</li>
+<li>CaseClause，case语句</li>
+</ul>
+
+<hr />
+
+<h3 id="注释">注释</h3>
+
+<ul>
+<li>Comment，注释块</li>
+</ul>
+
+  </div>
+</article>
+
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'feilengcui008';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84\/';
+    var disqus_title = 'Go的语法树结构';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84\/';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
 </footer>
 
     </section>
@@ -224,4 +322,3 @@
 
   </body>
 </html>
-
