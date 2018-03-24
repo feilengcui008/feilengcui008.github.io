@@ -6,23 +6,10 @@
     <description>Recent content in Posts on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 15 Mar 2018 16:19:32 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 08 Mar 2018 19:52:51 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Go的语法树结构</title>
-      <link>https://feilengcui008.github.io/post/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84/</link>
-      <pubDate>Thu, 15 Mar 2018 16:19:32 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84/</guid>
-      <description> 顶层元素和基本树节点  File
- 包名 顶层（包级）声明列表  node，语法树节点的基本结构体，所有声明、表达式、语句节点都会内嵌
-  声明  ImportDecl，import声明语句 ConstDec，const声明语句 TypeDecl，type类型或别名定义 VarDecl，var声明变量 FuncDecl，func函数声明  表达式 表达式都可以求值，通常是作为声明和语句的基本操作单元。通常变量（标识符）根据是否被赋值分为左值和右值，表达式求值的结果也有此区别。
-表达式的结果可作为左值或右值  Name，变量（标识符的值） ParenExpr，括号表达式（Expr） SelectorExpr，选择表达式（X.Sel） ListExpr，列表表达式（ElemList[0]，ElemList[1]&amp;hellip;）  表达式的结果只可作为右值  BasicLit，字面量 CompositeLit，字面量值的列表 KeyValueExpr，键值对 FuncLit，匿名函数 IndexExpr，索引取值表达式（X[Index]） SliceExpr，切片表达式 AssertExpr，类型断言（X.（Type）） Operation，操作符表达式（X op Y 或 op X） CallExpr，函数调用  类型表达式，通常使用者不会直接涉及到  ArrayType，array类型 SliceType，slice类型 StructType，struct类型 InterfaceType，interface类型 FuncType，func类型 MapType，map类型 ChanType，chan类型 Field，结构体或者接口的字段（数据或方法） DotsType，元素展开（&amp;hellip;Elem）  语句 如果将结果可被赋值的表达式作为程序的状态，那么语句就负责根据这些状态（读取状态值）执行某些逻辑操作真正改变这些状态（写入状态值），而声明则可看作事先准备好表达式和语句的集合（试想如果不事先准备点什么，程序怎么开始执行呢？）
- EmptyStmt，空语句 LabeledStmt，标签语句 BlockStmt，语句块 ExprStmt，表达式语句 SendStmt，管道发送数据 DeclStmt，声明列表 AssignStmt，赋值语句 BranchStmt，带条件分支的语句 CallStmt，函数调用语句 ReturnStmt，返回语句 IfStmt，if语句 ForStmt，for语句 SwitchStmt，switch语句 SelectStmt，select语句 RangeClause，range（赋值）语句 TypeSwitchGuard，type switch（赋值）语句 CaseClause，case语句  注释  Comment，注释块  </description>
-    </item>
     
     <item>
       <title>Raft读请求</title>
@@ -37,19 +24,6 @@
   Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）  Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
 Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.
   举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。  </description>
-    </item>
-    
-    <item>
-      <title>两本书</title>
-      <link>https://feilengcui008.github.io/post/%E4%B8%A4%E6%9C%AC%E4%B9%A6/</link>
-      <pubDate>Thu, 11 Jan 2018 16:04:53 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/%E4%B8%A4%E6%9C%AC%E4%B9%A6/</guid>
-      <description>(豆瓣地址)
-不久前刚读了《我是个年轻人，我心情不太好》这部小说，被称为挪威版的《麦田里的守望者》。赛格林的《麦田里的守望者》这部小说有其“垮掉一代”的时代背景和现实意义，而 阿澜·卢的《我》似乎并没有比较明确的写作背景，但是两部小说的主人公都透漏着相似的情绪：迷茫，对已有价值观、人生、生活意义的怀疑和思考。两部小说对主人公的这种情绪和状态都有大量心理独白的描写，并且通过主人公与关键人物的对话以及结尾主人公逐渐走出这种状态的思考，隐约透露出作者本身对这些问题的解答。
-对于经历过这种状态的人，读这两部小说的时候必定深有体会。不久前自己也经历过这种状态，确实非常可怕，期间思考了很多东西，对自己的整个人生和周边的生活环境审视了个遍，我也不知道现在是否找到了一些答案，或许吧。不过，很庆幸在极度迷茫和焦虑的时候，能读到这两本书。
-我认为在状态和解答的以外，原因也是非常值得探讨的话题。在《麦》中，主人公霍尔顿出身于当时美国的中产阶级，其在小说中的状态可以从当时美国的社会背景得到解释，这个在很多文学史和作品鉴赏的书中都有提到。在《我》中，则是没办法看出主人公究竟是出于什么原因导致这种状态的出现。现实中经历类似状态的人必定也是有各自的原因，比如成长经历、自我、社会环境、恋爱等。就我自己的经历而言，我觉得有一个原因很重要：对所处环境价值观的厌恶与反抗。当然，这其中的具体构成是很复杂的。对所处环境价值观的厌恶，但是又无法摆脱环境的束缚，必然导致孤独；对所处环境价值观的反抗，但是又注定会失败，从而导致信心瓦解。这种孤独与自信心的瓦解带来的是极度焦虑与迷茫。
-对于一个足够理性和坚持的人来说，必然会去寻找一些东西，来缓解或者解决这种状态。其实《麦》和《我》中的主人公算是十分幸运的了，他们有较好的家境，有能理解他们的亲人，有愿意听他们扯淡的朋友，有女朋友，甚至有药、性和酒。如果你都没有，该怎么办？我曾一度通过阅读大量心理学的作品来寻找答案，但是发现心理学其实并没办法解决这种问题带来的迷茫和焦虑，或者说心理学中能解决这种问题的药方事实上不是来自于心理学本身。比如《活出生命中的意义》和《少有人走的路》，这些书籍中的思想可能对你长期的人生和生活有一个高屋建瓴的指导，但是却无法解决这种“突然之间的迷茫和无意义”。最后，我转向了文学，并从中找到了些许答案，情绪也得到了缓解。我发现这种“突如其来的迷茫和无意义”需要的并不是一个解决方法（因为可能由于你当前所处的环境根本就没有解法，无论你自身怎么挣扎），需要的是别人的理解和自身的接受。</description>
     </item>
     
     <item>
@@ -96,10 +70,10 @@ Sequential - All processes see all shared accesses in the same order. Accesses a
     
     <item>
       <title>Vim</title>
-      <link>https://feilengcui008.github.io/post/pratical-vim-notes/</link>
+      <link>https://feilengcui008.github.io/post/vim/</link>
       <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/pratical-vim-notes/</guid>
+      <guid>https://feilengcui008.github.io/post/vim/</guid>
       <description> Vim的一些使用技巧，以备忘。
 普通模式 基本模式：操作符+动作命令 . 重复上次修改 * 查找光标下的单词 c 删除并进入插入模式 R 进入插入模式从当前光标处开始替换 &amp;lt;CTRL-G&amp;gt; 文件状态，当前光标位置等 &amp;gt;&amp;gt; 增加当前行缩进 &amp;gt;G 增加当前行到文件末尾的缩进 g~ 翻转大小写 gU 转换成大写 gu 转换成小写 zz 当前行居中 ga 查看当前光标下字符编码  插入模式 &amp;lt;CTRL-h&amp;gt; 删除前一个字符 &amp;lt;CTRL-w&amp;gt; 删除前一个单词 &amp;lt;CTRL-u&amp;gt; 删除至行首 &amp;lt;CTRL-o&amp;gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中 &amp;lt;CTRL-r-寄存器编号&amp;gt; 插入指定寄存器中的内容  可视模式 gv 重选上次的可视区域 o 切换选区活动端  命令行模式 基本模式 :[range]cmd :{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等 . 当前行 % 所有行  文件操作 :args 参数列表 :argdo cmd 对参数列表中的所有文件执行命令 &amp;lt;CTRL-w-=&amp;gt; 所有窗口等宽等高  动作命令 gj 按screenline跳转到下一行 gj 按screenline跳转到上一行 w 单词 b 单词开头 e 单词结尾 ge 上个单词结尾 W 子串 B 子串开头 E 子串结尾 gE 上个子串结尾 f{char} 查找字符 ; 重复f{char}向前查找 , 反向f{char}查找 t{char} 直到char字符的前一个字符 iw 单词的开头字母和结束字母之间的内容 aw 可能包含单词周边的空白 is 句内 as 整句 ip 段内 ap 整段  寄存器 &amp;quot;&amp;quot; 无名寄存器，x、p等默认使用的寄存器 &amp;quot;0 复制(yy)专用寄存器 &amp;quot;_ 黑洞寄存器，内容直接丢掉 &amp;quot;+ 加号寄存器(系统剪切板) &amp;quot;= 表达式寄存器 &amp;quot;% 当前文件名(只读寄存器的一个) &amp;quot;a ~ &amp;quot;z 26个有名寄存器 &amp;lt;q-寄存器名&amp;gt; 开始录制宏，并把宏的内容保存到指定寄存器中 q 结束录制宏 @@ 回放上一个录制的宏 &amp;lt;@-寄存器名&amp;gt; 回放指定寄存器中的宏 :argdo normal @a 针对多个文件回放寄存器a中保存的宏  其他 :g/pattern/cmd global命令，针对所有符合pattern的行执行cmd :v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd  </description>
     </item>

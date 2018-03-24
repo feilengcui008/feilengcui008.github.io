@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.24.1" />
-<title>两本书</title>
+<title>Vim</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -46,40 +46,149 @@
         
         
 <div class="content content-post CENTER">
-  <article id="两本书" class="article article-type-post" itemprop="blogPost">
+  <article id="Vim" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">两本书</h1>
+    <h1 class="post-title">Vim</h1>
 
     <div class="article-meta">
       <p>
       <span>
         <i class="icon-calendar"></i>
-        <span>01-11-2018</span>
+        <span>11-07-2017</span>
       </span>
       </p>
       <span>
         
+        <span class="article-meta-span"><a href="/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7">效率工具</a></span>
+        
       </span>
+      
+        | 
       
       <span>
         
+        <span class="article-meta-span"><a href="/tags/vim">Vim</a></span>
+        
       </span>
-      <span id="/post/%E4%B8%A4%E6%9C%AC%E4%B9%A6/" class="leancloud_visitors" data-flag-title="两本书">
+      <span id="/post/vim/" class="leancloud_visitors" data-flag-title="Vim">
         <span class="post-flag"><span>
       </span>
     </div>
   </header>
 
   <div class="article-content">
-    <p>(<a href="https://book.douban.com/review/9062306">豆瓣地址</a>)</p>
+    
 
-<p>不久前刚读了<a href="https://book.douban.com/subject/10565151/">《我是个年轻人，我心情不太好》</a>这部小说，被称为挪威版的<a href="https://book.douban.com/subject/1082518/">《麦田里的守望者》</a>。赛格林的《麦田里的守望者》这部小说有其“垮掉一代”的时代背景和现实意义，而 阿澜·卢的《我》似乎并没有比较明确的写作背景，但是两部小说的主人公都透漏着相似的情绪：迷茫，对已有价值观、人生、生活意义的怀疑和思考。两部小说对主人公的这种情绪和状态都有大量心理独白的描写，并且通过主人公与关键人物的对话以及结尾主人公逐渐走出这种状态的思考，隐约透露出作者本身对这些问题的解答。</p>
+<p>Vim的一些使用技巧，以备忘。</p>
 
-<p>对于经历过这种状态的人，读这两部小说的时候必定深有体会。不久前自己也经历过这种状态，确实非常可怕，期间思考了很多东西，对自己的整个人生和周边的生活环境审视了个遍，我也不知道现在是否找到了一些答案，或许吧。不过，很庆幸在极度迷茫和焦虑的时候，能读到这两本书。</p>
+<hr />
 
-<p>我认为在状态和解答的以外，原因也是非常值得探讨的话题。在《麦》中，主人公霍尔顿出身于当时美国的中产阶级，其在小说中的状态可以从当时美国的社会背景得到解释，这个在很多文学史和作品鉴赏的书中都有提到。在《我》中，则是没办法看出主人公究竟是出于什么原因导致这种状态的出现。现实中经历类似状态的人必定也是有各自的原因，比如成长经历、自我、社会环境、恋爱等。就我自己的经历而言，我觉得有一个原因很重要：对所处环境价值观的厌恶与反抗。当然，这其中的具体构成是很复杂的。对所处环境价值观的厌恶，但是又无法摆脱环境的束缚，必然导致孤独；对所处环境价值观的反抗，但是又注定会失败，从而导致信心瓦解。这种孤独与自信心的瓦解带来的是极度焦虑与迷茫。</p>
+<h3 id="普通模式">普通模式</h3>
 
-<p>对于一个足够理性和坚持的人来说，必然会去寻找一些东西，来缓解或者解决这种状态。其实《麦》和《我》中的主人公算是十分幸运的了，他们有较好的家境，有能理解他们的亲人，有愿意听他们扯淡的朋友，有女朋友，甚至有药、性和酒。如果你都没有，该怎么办？我曾一度通过阅读大量心理学的作品来寻找答案，但是发现心理学其实并没办法解决这种问题带来的迷茫和焦虑，或者说心理学中能解决这种问题的药方事实上不是来自于心理学本身。比如《活出生命中的意义》和《少有人走的路》，这些书籍中的思想可能对你长期的人生和生活有一个高屋建瓴的指导，但是却无法解决这种“突然之间的迷茫和无意义”。最后，我转向了文学，并从中找到了些许答案，情绪也得到了缓解。我发现这种“突如其来的迷茫和无意义”需要的并不是一个解决方法（因为可能由于你当前所处的环境根本就没有解法，无论你自身怎么挣扎），需要的是别人的理解和自身的接受。</p>
+<pre><code>基本模式：操作符+动作命令
+. 重复上次修改
+* 查找光标下的单词
+c 删除并进入插入模式
+R 进入插入模式从当前光标处开始替换
+&lt;CTRL-G&gt; 文件状态，当前光标位置等
+&gt;&gt; 增加当前行缩进
+&gt;G 增加当前行到文件末尾的缩进
+g~ 翻转大小写
+gU 转换成大写
+gu 转换成小写
+zz 当前行居中
+ga 查看当前光标下字符编码
+</code></pre>
+
+<hr />
+
+<h3 id="插入模式">插入模式</h3>
+
+<pre><code>&lt;CTRL-h&gt; 删除前一个字符
+&lt;CTRL-w&gt; 删除前一个单词
+&lt;CTRL-u&gt; 删除至行首
+&lt;CTRL-o&gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中
+&lt;CTRL-r-寄存器编号&gt; 插入指定寄存器中的内容
+</code></pre>
+
+<hr />
+
+<h3 id="可视模式">可视模式</h3>
+
+<pre><code>gv 重选上次的可视区域
+o 切换选区活动端
+</code></pre>
+
+<hr />
+
+<h3 id="命令行模式">命令行模式</h3>
+
+<pre><code>基本模式 :[range]cmd
+:{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等
+. 当前行
+% 所有行
+</code></pre>
+
+<hr />
+
+<h3 id="文件操作">文件操作</h3>
+
+<pre><code>:args 参数列表
+:argdo cmd 对参数列表中的所有文件执行命令
+&lt;CTRL-w-=&gt; 所有窗口等宽等高
+</code></pre>
+
+<hr />
+
+<h3 id="动作命令">动作命令</h3>
+
+<pre><code>gj 按screenline跳转到下一行
+gj 按screenline跳转到上一行
+w 单词
+b 单词开头
+e 单词结尾
+ge 上个单词结尾
+W 子串
+B 子串开头
+E 子串结尾
+gE 上个子串结尾
+f{char} 查找字符
+; 重复f{char}向前查找
+, 反向f{char}查找
+t{char} 直到char字符的前一个字符
+iw 单词的开头字母和结束字母之间的内容
+aw 可能包含单词周边的空白
+is 句内
+as 整句
+ip 段内
+ap 整段
+</code></pre>
+
+<hr />
+
+<h3 id="寄存器">寄存器</h3>
+
+<pre><code>&quot;&quot; 无名寄存器，x、p等默认使用的寄存器
+&quot;0 复制(yy)专用寄存器
+&quot;_ 黑洞寄存器，内容直接丢掉
+&quot;+ 加号寄存器(系统剪切板)
+&quot;= 表达式寄存器
+&quot;% 当前文件名(只读寄存器的一个)
+&quot;a ~ &quot;z 26个有名寄存器
+&lt;q-寄存器名&gt; 开始录制宏，并把宏的内容保存到指定寄存器中
+q 结束录制宏
+@@ 回放上一个录制的宏
+&lt;@-寄存器名&gt; 回放指定寄存器中的宏
+:argdo normal @a 针对多个文件回放寄存器a中保存的宏
+</code></pre>
+
+<hr />
+
+<h3 id="其他">其他</h3>
+
+<pre><code>:g/pattern/cmd global命令，针对所有符合pattern的行执行cmd
+:v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd
+</code></pre>
 
   </div>
 </article>
@@ -90,9 +199,9 @@
   <div id="disqus_thread"></div>
 <script type="text/javascript">
     var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/%E4%B8%A4%E6%9C%AC%E4%B9%A6\/';
-    var disqus_title = '两本书';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/%E4%B8%A4%E6%9C%AC%E4%B9%A6\/';
+    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/vim\/';
+    var disqus_title = 'Vim';
+    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/vim\/';
 
     (function() {
         var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;

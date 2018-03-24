@@ -6,23 +6,10 @@
     <description>Recent content in Go on 不一样的天空</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 15 Mar 2018 16:19:32 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/categories/go/index.xml" rel="self" type="application/rss+xml" />
     
-    
-    <item>
-      <title>Go的语法树结构</title>
-      <link>https://feilengcui008.github.io/post/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84/</link>
-      <pubDate>Thu, 15 Mar 2018 16:19:32 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/go%E7%9A%84%E8%AF%AD%E6%B3%95%E6%A0%91%E7%BB%93%E6%9E%84/</guid>
-      <description> 顶层元素和基本树节点  File
- 包名 顶层（包级）声明列表  node，语法树节点的基本结构体，所有声明、表达式、语句节点都会内嵌
-  声明  ImportDecl，import声明语句 ConstDec，const声明语句 TypeDecl，type类型或别名定义 VarDecl，var声明变量 FuncDecl，func函数声明  表达式 表达式都可以求值，通常是作为声明和语句的基本操作单元。通常变量（标识符）根据是否被赋值分为左值和右值，表达式求值的结果也有此区别。
-表达式的结果可作为左值或右值  Name，变量（标识符的值） ParenExpr，括号表达式（Expr） SelectorExpr，选择表达式（X.Sel） ListExpr，列表表达式（ElemList[0]，ElemList[1]&amp;hellip;）  表达式的结果只可作为右值  BasicLit，字面量 CompositeLit，字面量值的列表 KeyValueExpr，键值对 FuncLit，匿名函数 IndexExpr，索引取值表达式（X[Index]） SliceExpr，切片表达式 AssertExpr，类型断言（X.（Type）） Operation，操作符表达式（X op Y 或 op X） CallExpr，函数调用  类型表达式，通常使用者不会直接涉及到  ArrayType，array类型 SliceType，slice类型 StructType，struct类型 InterfaceType，interface类型 FuncType，func类型 MapType，map类型 ChanType，chan类型 Field，结构体或者接口的字段（数据或方法） DotsType，元素展开（&amp;hellip;Elem）  语句 如果将结果可被赋值的表达式作为程序的状态，那么语句就负责根据这些状态（读取状态值）执行某些逻辑操作真正改变这些状态（写入状态值），而声明则可看作事先准备好表达式和语句的集合（试想如果不事先准备点什么，程序怎么开始执行呢？）
- EmptyStmt，空语句 LabeledStmt，标签语句 BlockStmt，语句块 ExprStmt，表达式语句 SendStmt，管道发送数据 DeclStmt，声明列表 AssignStmt，赋值语句 BranchStmt，带条件分支的语句 CallStmt，函数调用语句 ReturnStmt，返回语句 IfStmt，if语句 ForStmt，for语句 SwitchStmt，switch语句 SelectStmt，select语句 RangeClause，range（赋值）语句 TypeSwitchGuard，type switch（赋值）语句 CaseClause，case语句  注释  Comment，注释块  </description>
-    </item>
     
     <item>
       <title>Fuzz go struct using reflection</title>
