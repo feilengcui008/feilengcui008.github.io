@@ -17,7 +17,7 @@
       <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/pratical-vim-notes/</guid>
-      <description> 用Vim几年了，基本所有的文本型文档都会使用Vim编辑，但是总感觉没有从一个更高的层次去理解Vim，导致没办法继续提高，而《Vim实用技巧》这本书恰好为进阶提供了一些思考和技巧，这里记录一些个人不太熟悉的，以备忘。
+      <description> Vim的一些高级技巧，以备忘。
 普通模式 基本模式：操作符+动作命令 . 重复上次修改 * 查找光标下的单词 c 删除并进入插入模式 R 进入插入模式从当前光标处开始替换 &amp;lt;CTRL-G&amp;gt; 文件状态，当前光标位置等 &amp;gt;&amp;gt; 增加当前行缩进 &amp;gt;G 增加当前行到文件末尾的缩进 g~ 翻转大小写 gU 转换成大写 gu 转换成小写 zz 当前行居中 ga 查看当前光标下字符编码  插入模式 &amp;lt;CTRL-h&amp;gt; 删除前一个字符 &amp;lt;CTRL-w&amp;gt; 删除前一个单词 &amp;lt;CTRL-u&amp;gt; 删除至行首 &amp;lt;CTRL-o&amp;gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中 &amp;lt;CTRL-r-寄存器编号&amp;gt; 插入指定寄存器中的内容  可视模式 gv 重选上次的可视区域 o 切换选区活动端  命令行模式 基本模式 :[range]cmd :{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等 . 当前行 % 所有行  文件操作 :args 参数列表 :argdo cmd 对参数列表中的所有文件执行命令 &amp;lt;CTRL-w-=&amp;gt; 所有窗口等宽等高  动作命令 gj 按screenline跳转到下一行 gj 按screenline跳转到上一行 w 单词 b 单词开头 e 单词结尾 ge 上个单词结尾 W 子串 B 子串开头 E 子串结尾 gE 上个子串结尾 f{char} 查找字符 ; 重复f{char}向前查找 , 反向f{char}查找 t{char} 直到char字符的前一个字符 iw 单词的开头字母和结束字母之间的内容 aw 可能包含单词周边的空白 is 句内 as 整句 ip 段内 ap 整段  寄存器 &amp;quot;&amp;quot; 无名寄存器，x、p等默认使用的寄存器 &amp;quot;0 复制(yy)专用寄存器 &amp;quot;_ 黑洞寄存器，内容直接丢掉 &amp;quot;+ 加号寄存器(系统剪切板) &amp;quot;= 表达式寄存器 &amp;quot;% 当前文件名(只读寄存器的一个) &amp;quot;a ~ &amp;quot;z 26个有名寄存器 &amp;lt;q-寄存器名&amp;gt; 开始录制宏，并把宏的内容保存到指定寄存器中 q 结束录制宏 @@ 回放上一个录制的宏 &amp;lt;@-寄存器名&amp;gt; 回放指定寄存器中的宏 :argdo normal @a 针对多个文件回放寄存器a中保存的宏  其他 :g/pattern/cmd global命令，针对所有符合pattern的行执行cmd :v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd  </description>
     </item>
     

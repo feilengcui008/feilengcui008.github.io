@@ -22,18 +22,5 @@ subprocess模块使用不当的问题 Python的subprocess比较强大，基本�
 # main.py #!/usr/bin/env python # encoding: utf-8 import subprocess import os import tempfile import sys import traceback import commands # both parent and child process will hang # if run.py stdout/stderr exceed 64K, since # parent process is waiting child process exit # but child process is blocked by writing pipe def testSubprocessCallPipe(): # call: just Popen().wait() p = subprocess.Popen([&amp;quot;python&amp;quot;, &amp;quot;run.py&amp;quot;], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) ret = p.</description>
     </item>
     
-    <item>
-      <title>Tornado源码分析</title>
-      <link>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
-      <pubDate>Mon, 09 Mar 2015 12:08:28 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
-      <description>Tornado是一个高性能的异步网络库和Web框架，其事件循环和异步io的封装实现得很漂亮，本文主要介绍这两部分的实现。
- main
-def main(): # 解析命令行参数 tornado.options.parse_command_line() # 构造一个httpserver，其实大部分都是继承至tcpserver，注意参数Application() # 是个可调用的对象，它实现了__call__魔术方法。 http_server = tornado.httpserver.HTTPServer(Application()) http_server.listen(options.port) # 构造事件循环，并执行触发事件的相应handler/注册的timeout事件/注册的callback等。 tornado.ioloop.IOLoop.instance().start()  http_server.listen
-def listen(self, port, address=&amp;quot;&amp;quot;): # 调用netutil中的bind_socket，返回的是绑定的所有(IP,port)地址的socket sockets = bind_sockets(port, address=address) # 自身的add_sockets方法中调用了netutil中的add_accept_handler self.add_sockets(sockets)  add_sockets
-def add_sockets(self, sockets): if self.io_loop is None: self.io_loop = IOLoop.current() for sock in sockets: self._sockets[sock.fileno()] = sock # 这里回调的是_handle_connection，是处理tcp连接的核心 add_accept_handler(sock, self._handle_connection, io_loop=self.io_loop) def add_accept_handler(sock, callback, io_loop=None): if io_loop is None: io_loop = IOLoop.current() def accept_handler(fd, events): while True: try: connection, address = sock.</description>
-    </item>
-    
   </channel>
 </rss>

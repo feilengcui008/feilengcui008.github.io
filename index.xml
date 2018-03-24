@@ -100,7 +100,7 @@ Sequential - All processes see all shared accesses in the same order. Accesses a
       <pubDate>Tue, 07 Nov 2017 11:11:08 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/pratical-vim-notes/</guid>
-      <description> 用Vim几年了，基本所有的文本型文档都会使用Vim编辑，但是总感觉没有从一个更高的层次去理解Vim，导致没办法继续提高，而《Vim实用技巧》这本书恰好为进阶提供了一些思考和技巧，这里记录一些个人不太熟悉的，以备忘。
+      <description> Vim的一些高级技巧，以备忘。
 普通模式 基本模式：操作符+动作命令 . 重复上次修改 * 查找光标下的单词 c 删除并进入插入模式 R 进入插入模式从当前光标处开始替换 &amp;lt;CTRL-G&amp;gt; 文件状态，当前光标位置等 &amp;gt;&amp;gt; 增加当前行缩进 &amp;gt;G 增加当前行到文件末尾的缩进 g~ 翻转大小写 gU 转换成大写 gu 转换成小写 zz 当前行居中 ga 查看当前光标下字符编码  插入模式 &amp;lt;CTRL-h&amp;gt; 删除前一个字符 &amp;lt;CTRL-w&amp;gt; 删除前一个单词 &amp;lt;CTRL-u&amp;gt; 删除至行首 &amp;lt;CTRL-o&amp;gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中 &amp;lt;CTRL-r-寄存器编号&amp;gt; 插入指定寄存器中的内容  可视模式 gv 重选上次的可视区域 o 切换选区活动端  命令行模式 基本模式 :[range]cmd :{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等 . 当前行 % 所有行  文件操作 :args 参数列表 :argdo cmd 对参数列表中的所有文件执行命令 &amp;lt;CTRL-w-=&amp;gt; 所有窗口等宽等高  动作命令 gj 按screenline跳转到下一行 gj 按screenline跳转到上一行 w 单词 b 单词开头 e 单词结尾 ge 上个单词结尾 W 子串 B 子串开头 E 子串结尾 gE 上个子串结尾 f{char} 查找字符 ; 重复f{char}向前查找 , 反向f{char}查找 t{char} 直到char字符的前一个字符 iw 单词的开头字母和结束字母之间的内容 aw 可能包含单词周边的空白 is 句内 as 整句 ip 段内 ap 整段  寄存器 &amp;quot;&amp;quot; 无名寄存器，x、p等默认使用的寄存器 &amp;quot;0 复制(yy)专用寄存器 &amp;quot;_ 黑洞寄存器，内容直接丢掉 &amp;quot;+ 加号寄存器(系统剪切板) &amp;quot;= 表达式寄存器 &amp;quot;% 当前文件名(只读寄存器的一个) &amp;quot;a ~ &amp;quot;z 26个有名寄存器 &amp;lt;q-寄存器名&amp;gt; 开始录制宏，并把宏的内容保存到指定寄存器中 q 结束录制宏 @@ 回放上一个录制的宏 &amp;lt;@-寄存器名&amp;gt; 回放指定寄存器中的宏 :argdo normal @a 针对多个文件回放寄存器a中保存的宏  其他 :g/pattern/cmd global命令，针对所有符合pattern的行执行cmd :v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd  </description>
     </item>
     
@@ -244,33 +244,6 @@ Tcplayer Tcplayer主要包含以下几个步骤:
     </item>
     
     <item>
-      <title>Paper Reading - Borg, Omega and Kubernetes</title>
-      <link>https://feilengcui008.github.io/post/paper-reading-kubernetes/</link>
-      <pubDate>Mon, 03 Apr 2017 14:05:53 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/paper-reading-kubernetes/</guid>
-      <description>INTRODUCTION 这一部分精要地描述了Google的三大资源管理与调度系统的发展史，从一定程度上可以看出一个完整的集群管理与调度生态系统的形成过程。
- Borg shares machines between these two types of applications as a way of increasing resource utilization and thereby reducing costs
- 最基本的功能，隔离混部提高资源利用率。
- These systems provided mechanisms for configuring and updating jobs; predicting resource requirements; dynamically pushing configuration files to running jobs; service discovery and load balancing; auto-scaling; machine- lifecycle management; quota management; and much more
- 基本功能完善后，建立和完善周边生态。服务发现，负载均衡，配置管理，自动扩缩容，机器生命周期管理，用户资源配额管理，监控，日志等等，整个生态实际上是非常庞大的。
- Omega stored the state of the cluster in a centralized Paxos-based transaction- oriented store that was accessed by the different parts of the cluster control plane (such as schedulers), using optimistic concurrency control to handle the occasional conflicts.</description>
-    </item>
-    
-    <item>
-      <title>Paper Reading - Borg</title>
-      <link>https://feilengcui008.github.io/post/paper-reading-borg/</link>
-      <pubDate>Fri, 31 Mar 2017 23:05:00 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/paper-reading-borg/</guid>
-      <description>0. Abstract  It achieves high utilization by combining admission control, efficient task-packing, over-commitment, and machine sharing with process-level performance isolation
- 最重要的三点：装箱与调度算法，资源的抢占/reclaim/over-commit，资源的隔离。
-2.1 The workload  we classify higher-priority Borg jobs as “production” (prod) ones, and the rest as “non-production” (non-prod). Most long-running server jobs are prod; most batch jobs are non-prod&amp;hellip;&amp;hellip;The discrepancies between allocation and usage will prove important in&amp;hellip;
- 工作负载主要分为生产级别和非生产级别，通常分别对应在线任务(Service)和离线任务(Batch Job)，资源的分配和使用量之间的差值可以被充分利用，这点在后面resource reclaim与资源over-commit可以看到。
-2.2 Clusters and cells  The machines in a cell belong to a single cluster&amp;hellip;</description>
-    </item>
-    
-    <item>
       <title>Raft实现小结</title>
       <link>https://feilengcui008.github.io/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/</link>
       <pubDate>Mon, 20 Mar 2017 19:02:13 +0800</pubDate>
@@ -282,17 +255,6 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
  合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化  Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)  Log Replication
  发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)    细节
  Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data  Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致    测试和其他一些问题</description>
-    </item>
-    
-    <item>
-      <title>Paper Reading - Raft</title>
-      <link>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</link>
-      <pubDate>Sun, 19 Mar 2017 17:15:32 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/raft%E8%AE%BA%E6%96%87/</guid>
-      <description>0 Abstract  In order to enhance understandability, Raft separates the key elements of consensus, such as leader election, log replication, and safety, and it enforces a stronger degree of coherency to reduce the number of states that must be considered
- Raft强化Leader的作用，明确划分了协议各个阶段(leader election, log replication)的边界，并且让leader election中的一部分重要内容-新leader的状态恢复变得很直观简单，并且和普通的日志复制请求与心跳请求整合到同一个RPC。这在后面的分析会看到。
-1 Introduction  Strong leader: Raft uses a stronger form of leader- ship than other consensus algorithms. For example, log entries only flow fromthe leader to other servers.</description>
     </item>
     
     <item>
@@ -361,20 +323,6 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
 目前已添加的内容：
  Redis之eventloop Redis数据结构之dict  Redis之eventloop 简介 Redis的eventloop实现也是比较平常的，主要关注文件描述符和timer相关事件，而且timer只是简单用一个单链表(O(n)遍历寻找最近触发的时间)实现。
 流程  主要在initServer(server.c)中初始化整个eventloop相关的数据结构与回调  // 注册系统timer事件 if (aeCreateTimeEvent(server.el, 1, serverCron, NULL, NULL) == AE_ERR) { serverPanic(&amp;quot;Can&#39;t create event loop timers.&amp;quot;); exit(1); } // 注册poll fd的接收客户端连接的读事件 for (j = 0; j &amp;lt; server.ipfd_count; j++) { if (aeCreateFileEvent(server.el, server.ipfd[j], AE_READABLE, acceptTcpHandler,NULL) == AE_ERR) { serverPanic( &amp;quot;Unrecoverable error creating server.ipfd file event.&amp;quot;); } } // 同上 if (server.sofd &amp;gt; 0 &amp;amp;&amp;amp; aeCreateFileEvent(server.el,server.sofd,AE_READABLE, acceptUnixHandler,NULL) == AE_ERR) serverPanic(&amp;quot;Unrecoverable error creating server.</description>
-    </item>
-    
-    <item>
-      <title>Linux下的时间</title>
-      <link>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</link>
-      <pubDate>Mon, 16 May 2016 17:03:34 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</guid>
-      <description>时钟  硬件时钟
- RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式  通过ioctl  #include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令  通常内核在boot以及从低电量中恢复时，会读取RTC更新system time  软件时钟
- HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。  外部时钟
- 从网络ntp，原子钟等同步   时间  时间类别
- wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间  时间的表示
- time_t 从Epoch开始的秒数 calendar time 字符串 拆分时间 struct tm  struct tm { int tm_sec; /* seconds */ int tm_min; /* minutes */ int tm_hour; /* hours */ int tm_mday; /* day of the month */ int tm_mon; /* month */ int tm_year; /* year */ int tm_wday; /* day of the week */ int tm_yday; /* day in the year */ int tm_isdst; /* daylight saving time */ };   struct timeval/struct timespec  struct timeval { time_t seconds; suseconds_t useconds; } struct timespec { time_t tv_sec; /* seconds */ long tv_nsec; /* nanoseconds */ };   系统时间的操作 #include &amp;lt;time.</description>
     </item>
     
     <item>
@@ -512,69 +460,6 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
  11.init/main.c[start_kernel]
  12.然后后面的事情就比较好知道了:)
    ref: Linux source code 3.</description>
-    </item>
-    
-    <item>
-      <title>支持向量机</title>
-      <link>https://feilengcui008.github.io/post/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/</link>
-      <pubDate>Sun, 24 May 2015 20:05:23 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA/</guid>
-      <description>1.概述 SVM全称Support Vector Machine，即支持向量机，是机器学习中的一种监督学习分类算法，一般用于二分类问题。对于线性可分的二分类问题，SVM可以直接求解，对于非线性可分问题，也可以通过核函数将低维映射到高维空间从而转变为线性可分。
-2.问题的提出  考虑一个线性可分的二分类问题
- m个训练样本$x$是特征向量，$y$是目标变量 &amp;gt;${x^{(i)},y^{(i)}},x^{(i)}\in R^n,y^{(i)}\in {1,-1},i=1,2,\cdots,m$ 决策函数：$h_{w,b}(x) = g(w^Tx+b)，g(z)=\begin{cases} 1,if\;\;x&amp;gt;0 \ 0,if\;\;x&amp;lt;0 \end{cases}$ 直线代表 $w^Tx+b=0$  首先定义一些符号
- functional margin（函数边界） &amp;gt; $\hat r=min{\hat r^{(i)}},\;i=1,2,\cdots,m;\;\;\hat r^{(i)}=y^{(i)}*(w^Tx^{(i)}+b)$
- geometrical margin（几何边界） &amp;gt; $r=min{r^{(i)}},\;i=1,2,\cdots,m;\;\;r^{(i)}=\frac{y^{(i)*(w^Tx^{(i)}+b)}}{|w|}$
- 符号解释： &amp;gt; - 函数边界：由于$y^{(i)}$只能取$1,-1$，所以当$w^T*x^{(i)}+b&amp;gt;&amp;gt;0$时，$y=1$和$y=-1$分别表示点分布在距离超平面$w^Tx+b=0$两边很远的地方,注意如果加倍$w$与$x$，函数边界是会加倍的
- 目标：几何边界最大，即 &amp;gt; $max{r}$
-   3.问题的转化  依次转化：
- $max{r}$ $max{min{r^{(i)}=\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}};i=1,2,\cdots,m}$ $\begin{cases}max{r}\s.t. \;\;\frac{y^{(i)}*(w^Tx^{(i)}+b)}{|w|}\ge r\end{cases}$ $\begin{cases}max{\frac{\hat r}{|w|}}\s.t. \;\;y^{(i)}*(w^Tx^{(i)}+b)\ge \hat r\end{cases}$ 注意函数边界的改变不影响优化问题的求解结果    $let \;\hat r=1$ 问题转化为: $\begin{cases}max{\frac{1}{|w|}}\s.</description>
-    </item>
-    
-    <item>
-      <title>Lambda与闭包</title>
-      <link>https://feilengcui008.github.io/post/lambda%E4%B8%8E%E9%97%AD%E5%8C%85/</link>
-      <pubDate>Mon, 18 May 2015 14:35:17 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/lambda%E4%B8%8E%E9%97%AD%E5%8C%85/</guid>
-      <description>本文通过javascript/c++11/java8/python/scala等几种语言对lambda和闭包的支持的对比，探讨下lambda和闭包的区别与联系，以及作用域的trick。
-在阅读这篇文章前，首先熟悉以下几个概念（有些概念不会谈，只是和本文所谈的lambda和闭包对比理解），摘自维基百科：
---Closure-- In programming languages, closures (also lexical closures or function closures) are a technique for implementing lexically scoped name binding in languages with first-class functions. Operationally, a closure is a data structure storing a function[a] together with an environment:[1] a mapping associating each free variable of the function (variables that are used locally, but defined in an enclosing scope) with the value or storage location the name was bound to at the time the closure was created.</description>
-    </item>
-    
-    <item>
-      <title>C&#43;&#43; RVO/NRVO以及move语义的影响</title>
-      <link>https://feilengcui008.github.io/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/</link>
-      <pubDate>Sat, 09 May 2015 13:22:37 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/c-rvo-nrvo%E4%BB%A5%E5%8F%8Amove%E8%AF%AD%E4%B9%89%E7%9A%84%E5%BD%B1%E5%93%8D/</guid>
-      <description>C++返回值优化和具名返回值优化是编译器的优化，在大多数情况下能提高性能，但是却难以受程序员控制。C++11中加入了move语义的支持，由此对RVO和NRVO会造成一定影响。下面以一段代码来说明。
-RVO和NRVO在分别在copy/move construct，copy/move assignment八种简单情况，测试条件是g++ 4.8.2和clang++ 3.4，默认优化。
-#include &amp;lt;iostream&amp;gt; #include &amp;lt;vector&amp;gt; #include &amp;lt;string&amp;gt; struct Test { Test() { std::cout &amp;lt;&amp;lt; &amp;quot;construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } Test(const Test&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;copy construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } Test&amp;amp; operator=(const Test&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;copy assignment a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; return *this; } Test(Test&amp;amp;&amp;amp;) { std::cout &amp;lt;&amp;lt; &amp;quot;move construct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } /* Test&amp;amp; operator=(Test &amp;amp;&amp;amp;t) { std::cout &amp;lt;&amp;lt; &amp;quot;move assignment a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; return *this; } */ ~Test() { std::cout &amp;lt;&amp;lt; &amp;quot;destruct a Test object&amp;quot; &amp;lt;&amp;lt; std::endl; } }; Test getTest() { return Test(); } Test getTestWithName() { Test temp; return temp; } int main() { std::cout &amp;lt;&amp;lt; &amp;quot;=============RVO==============&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for copy construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj1 = getTest(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for move construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj111 = std::move(getTest()); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj rvo for copy assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj11; obj11 = getTest(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test object rvo for move assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj1111; obj1111 = std::move(getTest()); std::cout &amp;lt;&amp;lt; &amp;quot;=============NRVO==============&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for copy construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj2 = getTestWithName(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for move construct&amp;quot; &amp;lt;&amp;lt; std::endl; auto obj222 = std::move(getTestWithName()); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for copy assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj22; obj22 = getTestWithName(); std::cout &amp;lt;&amp;lt; &amp;quot;--------------&amp;quot; &amp;lt;&amp;lt; std::endl; std::cout &amp;lt;&amp;lt; &amp;quot;++Test obj nrvo for move assignment&amp;quot; &amp;lt;&amp;lt; std::endl; Test obj2222; obj2222 = std::move(getTestWithName()); std::cout &amp;lt;&amp;lt; &amp;quot;==============================&amp;quot; &amp;lt;&amp;lt; std::endl; // std::string s1 = &amp;quot;s1 string move semantics test&amp;quot;, s2; //std::cout &amp;lt;&amp;lt; &amp;quot;++before move s1\t&amp;quot; &amp;lt;&amp;lt; s1 &amp;lt;&amp;lt; std::endl; //s2 = std::move(s1); //std::cout &amp;lt;&amp;lt; &amp;quot;++after move s1\t&amp;quot; &amp;lt;&amp;lt; s1 &amp;lt;&amp;lt; std::endl; //std::cout &amp;lt;&amp;lt; &amp;quot;=============&amp;quot; &amp;lt;&amp;lt; std::endl; return 0; }  测试结果：</description>
-    </item>
-    
-    <item>
-      <title>C&#43;&#43;内存对齐</title>
-      <link>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</link>
-      <pubDate>Mon, 09 Mar 2015 15:40:53 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/c-c-%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</guid>
-      <description>有时会在C++中看到这种形式
-#pragma pack(n) #pragma pack()  前一句代表设置对齐的字节数为n，而不是编译器默认的对齐字节数（ubuntu 14.04 x86_64下为8），后一句代表恢复默认值，合理地使用内存对齐能减少程序占用的内存空间，使用不当也会降低存取效率从而降低程序性能。在分析内存对齐时，只需要采用以下的原则，这里以一段代码简单解释下
-#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; int main() { //缺省，一般8字节对齐 //struct有成员字节大于pack值,对齐为pack的整数倍=&amp;gt;24 struct default_pack_struct_size_bigger { struct c { long long a; char d; } m; char b; }; printf(&amp;quot;default_pack_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_bigger)); //struct成员字节数都小于pack,按字节数最大的对齐=&amp;gt;4 struct default_pack_struct_size_smaller { char a; short int b; }; printf(&amp;quot;default_pack_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct default_pack_struct_size_smaller)); //设置pack为4 #pragma pack(4) //结构成员有大于4字节的 =&amp;gt; 12 struct pack_4_struct_size_bigger { unsigned short int a; long long b; }; printf(&amp;quot;pack_4_struct_size_bigger:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_bigger)); //结构成员都小于4字节 =&amp;gt; 4 struct pack_4_struct_size_smaller { char a; unsigned short int b; }; printf(&amp;quot;pack_4_struct_size_smaller:%d\n&amp;quot;,(int)sizeof(struct pack_4_struct_size_smaller)); #pragma pack() return 0; }  结果：</description>
-    </item>
-    
-    <item>
-      <title>Tornado源码分析</title>
-      <link>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</link>
-      <pubDate>Mon, 09 Mar 2015 12:08:28 +0800</pubDate>
-      
-      <guid>https://feilengcui008.github.io/post/tornado%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
-      <description>Tornado是一个高性能的异步网络库和Web框架，其事件循环和异步io的封装实现得很漂亮，本文主要介绍这两部分的实现。
- main
-def main(): # 解析命令行参数 tornado.options.parse_command_line() # 构造一个httpserver，其实大部分都是继承至tcpserver，注意参数Application() # 是个可调用的对象，它实现了__call__魔术方法。 http_server = tornado.httpserver.HTTPServer(Application()) http_server.listen(options.port) # 构造事件循环，并执行触发事件的相应handler/注册的timeout事件/注册的callback等。 tornado.ioloop.IOLoop.instance().start()  http_server.listen
-def listen(self, port, address=&amp;quot;&amp;quot;): # 调用netutil中的bind_socket，返回的是绑定的所有(IP,port)地址的socket sockets = bind_sockets(port, address=address) # 自身的add_sockets方法中调用了netutil中的add_accept_handler self.add_sockets(sockets)  add_sockets
-def add_sockets(self, sockets): if self.io_loop is None: self.io_loop = IOLoop.current() for sock in sockets: self._sockets[sock.fileno()] = sock # 这里回调的是_handle_connection，是处理tcp连接的核心 add_accept_handler(sock, self._handle_connection, io_loop=self.io_loop) def add_accept_handler(sock, callback, io_loop=None): if io_loop is None: io_loop = IOLoop.current() def accept_handler(fd, events): while True: try: connection, address = sock.</description>
     </item>
     
     <item>
