@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.24.1" />
+<title></title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/darcula.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+<div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+  <div class="sidebar-toggle sidebar-toggle-0">
+    <a href="/"><span class="icon icon-home dot"></span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-1">
+    <a href="/categories"><span class="icon icon-list dot"></span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-2">
+    <a href="/tags"><span class="icon icon-tags dot"></span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-3">
+    <a href="/index.xml"><span class="icon icon-rss dot"></span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-4">
+    <a href="/about"><span class="icon icon-user dot"></span></a>
+  </div>
+  <div class="sidebar-toggle sidebar-toggle-5">
+    <a href="/links"><span class="icon icon-link dot"></span></a>
+  </div>
+</div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+
+<div class="personal_content content-archive">
+    <div class="post-list-box archive-body">
+        <ul class="list-post">
+            <li class="item-post item">
+                
+
+<h3 id="bash">Bash</h3>
+
+<ul>
+<li><p>terminal</p>
+
+<pre><code>echo $#  # arguments number
+echo $0  # exec filename
+echo $1  # first argument
+echo $2  # second argument 
+echo &quot;$*&quot;  # all arguments as a whole string   
+echo &quot;$@&quot;  # all arguments as an array
+echo $!  # last executed cmd pid
+echo $?  # exec status 
+echo $$  # current bash script process pid 
+</code></pre></li>
+
+<li><p>output color</p>
+
+<pre><code>RED_COLOR='\E[1;31m'
+GREEN_COLOR='\E[1;32m'
+YELLOW_COLOR='\E[1;33m'
+BLUE_COLOR='\E[1;34m'
+END_COLOR='\E[0m'
+echo -e &quot;${RED_COLOR}installing basic utilities...${END_COLOR}&quot;
+</code></pre></li>
+
+<li><p>syntax
+```
+if [ -e &ldquo;/bin/bash&rdquo; ]; then
+echo &ldquo;yes&rdquo;
+else
+echo &ldquo;no&rdquo;
+fi</p></li>
+</ul>
+
+<p>read temp
+case $temp in
+  1)
+    echo &ldquo;1&rdquo;
+    ;;
+  2)
+    echo &ldquo;2&rdquo;
+    ;;
+  [3-9])
+    echo &ldquo;3-9&rdquo;
+esac</p>
+
+<p>for i in &ldquo;$*&ldquo;; do
+  echo $i
+done</p>
+
+<p>for i in <code>ls</code>; do
+  echo $i
+done</p>
+
+<p>for (( i = 0; i &lt; $#; i++ )); do
+  echo $i
+done</p>
+
+<p>x=1
+while [[ $x -le $# ]]; do
+  echo $x
+  let x=x+1
+done</p>
+
+<p>function testFunc1 {
+  echo &ldquo;in testFunc1&rdquo;
+}
+testFunc2() {
+  echo &ldquo;in testFunc2&rdquo;, $*
+}
+testFunc1
+testFunc2 123 456</p>
+
+<p>-e filename   =&gt;  file exists
+-d dirname    =&gt;  dir exists
+-f filename   =&gt;  regular file
+-L filename   =&gt;  symbol link
+-r filename   =&gt;  can be read
+-w filename   =&gt;  can be written
+-x filename   =&gt;  can be executed
+filename1 -nt filename2   =&gt;  newer than
+filename1 -ot filename2   =&gt;  older than</p>
+
+<p>-z string        =&gt;  null string
+-n string        =&gt;  not null string
+string1=string2  =&gt;  equal
+string1!=string2 =&gt;  not equal</p>
+
+<p>num1 -eq num2    =&gt;  =
+num1 -ne num2    =&gt;  !=
+num1 -lt num2    =&gt;  &lt;
+num1 -le num2    =&gt;  &lt;=
+num1 -gt num2    =&gt;  &gt;
+num1 -ge num2    =&gt;  &gt;=
+```</p>
+
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+<script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/jquery-3.2.1.min.js"></script>
+<script src="https://feilengcui008.github.io/js/av-core-mini-0.6.1.js"></script>
+
+
+
+<script>
+    AV.initialize("sKCGt9cqaRvCq8ij2XsSRQET-gzGzoHsz", "Uusqiv2yEoQBC0vy7KnlzCqI");
+</script>
+<script>
+    function showTime(Counter) {
+        var query = new AV.Query(Counter);
+        var entries = [];
+        var $visitors = $(".leancloud_visitors");
+
+        $visitors.each(function () {
+            entries.push( $(this).attr("id").trim() );
+        });
+
+        query.containedIn('url', entries);
+        query.find()
+        .done(function (results) {
+            var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+            if (results.length === 0) {
+                $visitors.find(COUNT_CONTAINER_REF).text(0);
+                return;
+            }
+
+            for (var i = 0; i < results.length; i++) {
+                var item = results[i];
+                var url = item.get('url');
+                var time = item.get('time');
+                var element = document.getElementById(url);
+
+                $(element).find(COUNT_CONTAINER_REF).text(" - " + time);
+            }
+        })
+        .fail(function (object, error) {
+            console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+        var $visitors = $(".leancloud_visitors");
+        var url = $visitors.attr('id').trim();
+        var title = $visitors.attr('data-flag-title').trim();
+        var query = new AV.Query(Counter);
+
+        query.equalTo("url", url);
+        query.find({
+                success: function(results) {
+                    if (results.length > 0) {
+                        var counter = results[0];
+                        counter.fetchWhenSave(true);
+                        counter.increment("time");
+                        counter.save(null, {
+                                success: function(counter) {
+                                    var $element = $(document.getElementById(url));
+                                    $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                                },
+                                error: function(counter, error) {
+                                    console.log('Failed to save Visitor num, with error message: ' + error.message);
+                                }
+                        });
+                    } else {
+                        var newcounter = new Counter();
+                         
+                        var acl = new AV.ACL();
+                        acl.setPublicReadAccess(true);
+                        acl.setPublicWriteAccess(true);
+                        newcounter.setACL(acl);
+                         
+                        newcounter.set("title", title);
+                        newcounter.set("url", url);
+                        newcounter.set("time", 1);
+                        newcounter.save(null, {
+                            success: function(newcounter) {
+                                var $element = $(document.getElementById(url));
+                                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                            },
+                            error: function(newcounter, error) {
+                                console.log('Failed to create');
+                            }
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.log('Error:' + error.code + " " + error.message);
+                }
+        });
+    }
+
+    $(function() {
+        var Counter = AV.Object.extend("Counter");
+        if ($('.post-list-flag').length > 0) {
+            showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
+        }
+    });
+</script>
+
+  </body>
+</html>

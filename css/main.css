@@ -271,6 +271,11 @@ code, pre, samp {
   /*display: none;*/
 }
 
+.sidebar-toggle-6 {
+  left: 132px;
+  /*display: none;*/
+}
+
 .category-box {
   margin-left: 0px;
 }
