@@ -39,13 +39,13 @@
 
         
         <div class="sidebar-toggle">
-            <a href="/cheatsheet"><span class="icon icon-pencil dot"></span></a>
+            <a href="/cheatsheets"><span class="icon icon-pencil dot"></span></a>
         </div>
         
 
         
         <div class="sidebar-toggle">
-            <a href="/link"><span class="icon icon-link dot"></span></a>
+            <a href="/links"><span class="icon icon-link dot"></span></a>
         </div>
         
 
@@ -73,7 +73,9 @@
 |
 <a href="#iptables">iptables</a>
 |
-<a href="#mysql">mysql</a></p>
+<a href="#mysql">mysql</a>
+|
+<a href="#regex">regex</a></p>
 
 <hr />
 
@@ -419,6 +421,27 @@ sql_str=&quot;\&quot;
     \&quot;&quot;
 MYSQL_EXEC=&quot;/usr/bin/mysql -e $sql_str -u$ROOTUSER -p$ROOTPASSWORD&quot; 
 eval $MYSQL_EXEC
+</code></pre>
+
+<hr />
+
+<p><span id="regex"></span></p>
+
+<h3 id="regex">regex</h3>
+
+<pre><code>^  # 行首
+$  # 行尾
+[abc], [a-z], [^abc], [^a-z]  # 范围内匹配字符 
+(a|b|c)  # 或
+?  # 0或1个字符
+.  # 任意字符
++  # 1个或多个字符
+*  # 0个或多个字符
+{b, e}  # b到e个字符
+\s, \S  # 空格，非空格
+\t  # tab
+\d, \D  # 数字，非数字
+\w, \W  # 字母、数字或下划线，非字母、数字和下划线
 </code></pre>
 
 </div>

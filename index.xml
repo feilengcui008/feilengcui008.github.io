@@ -472,32 +472,33 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
     
     <item>
       <title></title>
-      <link>https://feilengcui008.github.io/bash/</link>
+      <link>https://feilengcui008.github.io/cheatsheets/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://feilengcui008.github.io/bash/</guid>
-      <description>an example for bash cmdline tab autocompletion function _solactl() { local cur prev opts COMPREPLY=() cur=&amp;ldquo;${COMP_WORDS[COMP_CWORD]}&amp;rdquo; prev=&amp;ldquo;${COMP_WORDS[COMP_CWORD-1]}&amp;rdquo; opts_first_stage=&amp;ldquo;service server task job mission&amp;rdquo; opts_service_follow=&amp;ldquo;up down start stop restart&amp;rdquo; opts_server_follow=&amp;ldquo;prepare start stop&amp;rdquo; opts_task_follow=&amp;ldquo;pause resume cancel redo info&amp;rdquo; opts_job_follow=&amp;ldquo;create&amp;rdquo; opts_mission_follow=&amp;ldquo;create&amp;rdquo;
-if [[ ${prev} == *solactl ]]; then COMPREPLY=( $(compgen -W &amp;quot;${opts_first_stage}&amp;quot; -- ${cur}) ) fi case ${prev} in service) COMPREPLY=( $(compgen -W &amp;quot;${opts_service_follow}&amp;quot; -- ${cur}) ) return 0 ;; server) COMPREPLY=( $(compgen -W &amp;quot;${opts_server_follow}&amp;quot; -- ${cur}) ) return 0 ;; task) COMPREPLY=( $(compgen -W &amp;quot;${opts_task_follow}&amp;quot; -- ${cur}) ) return 0 ;; job) COMPREPLY=( $(compgen -W &amp;quot;${opts_job_follow}&amp;quot; -- ${cur}) ) return 0 ;; mission) COMPREPLY=( $(compgen -W &amp;quot;${opts_mission_follow}&amp;quot; -- ${cur}) ) return 0 esac  } complete -F _solactl solactl</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>https://feilengcui008.github.io/cheatsheet/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>https://feilengcui008.github.io/cheatsheet/</guid>
-      <description>目录 bash | vim | iptables | mysql
+      <guid>https://feilengcui008.github.io/cheatsheets/</guid>
+      <description>目录 bash | vim | iptables | mysql | regex
 
 bash  terminal  echo $# # arguments number echo $0 # exec filename echo $1 # first argument echo $2 # second argument echo &amp;quot;$*&amp;quot; # all arguments as a whole string echo &amp;quot;$@&amp;quot; # all arguments as an array echo $! # last executed cmd pid echo $? # exec status echo $$ # current bash script process pid   output color  RED_COLOR=&#39;\E[1;31m&#39; GREEN_COLOR=&#39;\E[1;32m&#39; YELLOW_COLOR=&#39;\E[1;33m&#39; BLUE_COLOR=&#39;\E[1;34m&#39; END_COLOR=&#39;\E[0m&#39; echo -e &amp;quot;${RED_COLOR}installing basic utilities.</description>
     </item>
     
     <item>
       <title></title>
-      <link>https://feilengcui008.github.io/link/</link>
+      <link>https://feilengcui008.github.io/links/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://feilengcui008.github.io/link/</guid>
-      <description>线性代数的本质</description>
+      <guid>https://feilengcui008.github.io/links/</guid>
+      <description>线性代数的本质  
+微积分的本质  
+Dimensions</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://feilengcui008.github.io/temp/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://feilengcui008.github.io/temp/</guid>
+      <description>线性代数的本质微积分的本质Dimensions</description>
     </item>
     
   </channel>

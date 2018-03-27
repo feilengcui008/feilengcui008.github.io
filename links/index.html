@@ -39,13 +39,13 @@
 
         
         <div class="sidebar-toggle">
-            <a href="/cheatsheet"><span class="icon icon-pencil dot"></span></a>
+            <a href="/cheatsheets"><span class="icon icon-pencil dot"></span></a>
         </div>
         
 
         
         <div class="sidebar-toggle">
-            <a href="/link"><span class="icon icon-link dot"></span></a>
+            <a href="/links"><span class="icon icon-link dot"></span></a>
         </div>
         
 
@@ -62,100 +62,31 @@
     <section id="wrapper">
         
         
-<div class="content content-post CENTER">
-  <article id="" class="article article-type-post" itemprop="blogPost">
-  <header class="article-header">
-    <h1 class="post-title"></h1>
 
-    <div class="article-meta">
-      <p>
-      <span>
-        <i class="icon-calendar"></i>
-        <span>01-01-0001</span>
-      </span>
-      </p>
-      <span>
-        
-      </span>
-      
-      <span>
-        
-      </span>
-      <span id="/bash/" class="leancloud_visitors" data-flag-title="">
-        <span class="post-flag"><span>
-      </span>
+<div class="personal_content content-archive">
+    <div class="post-list-box archive-body">
+        <ul class="list-post">
+            <p><li class="item-post">
+    <a class="post-title" href="https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab">
+        线性代数的本质
+    </a>
+</li></p>
+
+<p><li class="item-post">
+    <a class="post-title" href="https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr">
+        微积分的本质
+    </a>
+</li></p>
+
+<p><li class="item-post">
+    <a class="post-title" href="https://www.youtube.com/playlist?list=PL3C690048E1531DC7">
+        Dimensions
+    </a>
+</li></p>
+
+        </ul>
     </div>
-  </header>
-
-  <div class="article-content">
-    
-
-<h1 id="an-example-for-bash-cmdline-tab-autocompletion">an example for bash cmdline tab autocompletion</h1>
-
-<p>function _solactl() {
-    local cur prev opts
-    COMPREPLY=()
-    cur=&ldquo;${COMP_WORDS[COMP_CWORD]}&rdquo;
-    prev=&ldquo;${COMP_WORDS[COMP_CWORD-1]}&rdquo;
-    opts_first_stage=&ldquo;service server task job mission&rdquo;
-    opts_service_follow=&ldquo;up down start stop restart&rdquo;
-    opts_server_follow=&ldquo;prepare start stop&rdquo;
-    opts_task_follow=&ldquo;pause resume cancel redo info&rdquo;
-    opts_job_follow=&ldquo;create&rdquo;
-    opts_mission_follow=&ldquo;create&rdquo;</p>
-
-<pre><code>if [[ ${prev} == *solactl ]]; then 
-  COMPREPLY=( $(compgen -W &quot;${opts_first_stage}&quot; -- ${cur}) )
-fi
-
-case ${prev} in 
-  service)
-    COMPREPLY=( $(compgen -W &quot;${opts_service_follow}&quot; -- ${cur}) )
-    return 0
-    ;;
-  server)
-    COMPREPLY=( $(compgen -W &quot;${opts_server_follow}&quot; -- ${cur}) )
-    return 0
-    ;;
-  task)
-    COMPREPLY=( $(compgen -W &quot;${opts_task_follow}&quot; -- ${cur}) )
-    return 0
-    ;;
-  job)
-    COMPREPLY=( $(compgen -W &quot;${opts_job_follow}&quot; -- ${cur}) )
-    return 0
-    ;;
-  mission)
-    COMPREPLY=( $(compgen -W &quot;${opts_mission_follow}&quot; -- ${cur}) )
-    return 0
-esac
-</code></pre>
-
-<p>}
-complete -F _solactl solactl</p>
-
-  </div>
-</article>
-
-
 </div>
-<div class="fexo-comments comments-post">
-  <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/bash\/';
-    var disqus_title = '';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/bash\/';
-
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
-</div> 
 
 
 

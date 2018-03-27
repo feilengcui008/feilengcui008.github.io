@@ -370,3 +370,11 @@ pre code {
     color:#999;
     border-radius:15px;
 }
+
+.content-post a {
+    color: #000000;
+}
+
+.content-post a:hover {
+    color: #1abc9c;
+}
