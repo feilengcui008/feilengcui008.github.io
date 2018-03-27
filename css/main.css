@@ -1,9 +1,10 @@
 body {
   font-family: "Futura-Medium";
+  overflow: hidden;
 }
 
 .personal_content {
-  margin: 40px auto 80px;
+  margin: 40px auto 0px;
   border-left: 0px solid #f9f9f9;
   width: 40%;
   min-width: 380px;
@@ -84,11 +85,13 @@ body {
 .sidebar-toggle-parent {
     text-align: center;
     display: block;
+    position: fixed;
 }
 
 .sidebar-toggle {
-    position: fixed;
-    /*left: 49.1%; */
+    /*position: fixed;
+    left: 49.1%; */
+    float: left;
     bottom: 0px;
     width: 22px;
     top: 0;
@@ -241,39 +244,6 @@ body {
 code, pre, samp {
   font-family: "Go-Mono";
   font-size: 13px;
-}
-
-.sidebar-toggle-0 {
-}
-
-.sidebar-toggle-1 {
-  left: 22px;
-  /*display: none;*/
-}
-
-.sidebar-toggle-2 {
-  left: 44px;
-  /*display: none;*/
-}
-
-.sidebar-toggle-3 {
-  left: 66px;
-  /*display: none;*/
-}
-
-.sidebar-toggle-4 {
-  left: 88px;
-  /*display: none;*/
-}
-
-.sidebar-toggle-5 {
-  left: 110px;
-  /*display: none;*/
-}
-
-.sidebar-toggle-6 {
-  left: 132px;
-  /*display: none;*/
 }
 
 .category-box {
