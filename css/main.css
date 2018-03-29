@@ -1,7 +1,6 @@
 body {
   font-family: "Futura-Medium";
   overflow: hidden;
-  background: linear-gradient(to bottom, #EEE 0%, #FFF 10%, #FFF 90%, #EEE 100%);
 }
 
 .personal_content {
