@@ -1,1 +1,0 @@
-background: linear-gradient(to bottom, #EEE 0%, #FFF 10%, #FFF 90%, #EEE 100%);
