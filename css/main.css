@@ -384,10 +384,10 @@ pre code {
   font-size: 14px;
 }
 
-.list-post-title a {
+.item-post a {
     color: #000000;
 }
 
-.list-post-title a:hover {
+.item-post a:hover {
     color: #1abc9c;
 }
