@@ -161,7 +161,6 @@ body {
 .content-home-about .slogan {
   font-style: italic;
   font-size: 13px;
-  display: none;
 }
 
 .item-title {
@@ -204,6 +203,7 @@ body {
 
 .icondiv {
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 
 .descdiv {
