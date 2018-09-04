@@ -82,17 +82,20 @@
   </header>
 
   <div class="article-content">
-    <p>RESTFUL是一种风格，并非标准。资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源：</p>
+    <ul>
+<li><p>RESTFUL是一种风格，并非标准。</p></li>
+
+<li><p>资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源</p>
 
 <ul>
 <li><a href="https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto">Google Spanner</a>，以及<a href="https://cloud.google.com/apis/design/resource_names">Google Cloud REST API</a></li>
-
-<li><p><a href="https://thomashunter.name/consumer-centric-api-design/Consumer-Centric%20API%20Design%20v0.3.1.pdf">Consumer-Centric API Design</a></p></li>
+<li><a href="https://thomashunter.name/consumer-centric-api-design/Consumer-Centric%20API%20Design%20v0.3.1.pdf">Consumer-Centric API Design</a></li>
+</ul></li>
 
 <li><p>一次请求在父级资源下创建多个子源，如何设计接口？见<a href="https://www.zhihu.com/question/287118106">这个讨论</a></p>
 
 <ul>
-<li>这个其实可以用Google的Custom Method的方式，比如<code>POST /parentResources/{parentResourceId}/childResources:batchCreate</code>，这种方式保证URL的一致性的同时，扩展性非常强
+<li>这个其实可以用Google的Custom Method的方式，比如&rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&rdquo;，这种方式保证URL的一致性的同时，扩展性非常强
 <br /></li>
 </ul></li>
 </ul>

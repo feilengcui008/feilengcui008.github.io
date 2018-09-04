@@ -17,10 +17,10 @@
       <pubDate>Tue, 04 Sep 2018 16:19:37 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/restful-api-design/</guid>
-      <description>RESTFUL是一种风格，并非标准。资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源：
- Google Spanner，以及Google Cloud REST API Consumer-Centric API Design
- 一次请求在父级资源下创建多个子源，如何设计接口？见这个讨论
- 这个其实可以用Google的Custom Method的方式，比如POST /parentResources/{parentResourceId}/childResources:batchCreate，这种方式保证URL的一致性的同时，扩展性非常强    </description>
+      <description> RESTFUL是一种风格，并非标准。
+ 资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源
+ Google Spanner，以及Google Cloud REST API Consumer-Centric API Design  一次请求在父级资源下创建多个子源，如何设计接口？见这个讨论
+ 这个其实可以用Google的Custom Method的方式，比如&amp;rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&amp;rdquo;，这种方式保证URL的一致性的同时，扩展性非常强    </description>
     </item>
     
     <item>
