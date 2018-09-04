@@ -13,10 +13,10 @@
     
     <item>
       <title>RESTFUL API设计规范</title>
-      <link>https://feilengcui008.github.io/post/restful-api%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83/</link>
+      <link>https://feilengcui008.github.io/post/restful-api-design/</link>
       <pubDate>Tue, 04 Sep 2018 16:19:37 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/restful-api%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83/</guid>
+      <guid>https://feilengcui008.github.io/post/restful-api-design/</guid>
       <description>RESTFUL是一种风格，并非标准。资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源：
  Google Spanner，以及Google Cloud REST API Consumer-Centric API Design
  一次请求在父级资源下创建多个子源，如何设计接口？见这个讨论
