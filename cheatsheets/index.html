@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title></title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -72,8 +72,7 @@
 <h2 id="bash">bash</h2>
 
 <ul>
-<li>terminal</li>
-</ul>
+<li><p>terminal</p>
 
 <pre><code>echo $#  # arguments number
 echo $0  # exec filename
@@ -84,11 +83,9 @@ echo &quot;$@&quot;  # all arguments as an array
 echo $!  # last executed cmd pid
 echo $?  # exec status 
 echo $$  # current bash script process pid 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>output color</li>
-</ul>
+<li><p>output color</p>
 
 <pre><code>RED_COLOR='\E[1;31m'
 GREEN_COLOR='\E[1;32m'
@@ -96,38 +93,36 @@ YELLOW_COLOR='\E[1;33m'
 BLUE_COLOR='\E[1;34m'
 END_COLOR='\E[0m'
 echo -e &quot;${RED_COLOR}installing basic utilities...${END_COLOR}&quot;
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>syntax</li>
-</ul>
+<li><p>syntax</p>
 
 <pre><code># for clause
 for i in &quot;$*&quot;; do
-  echo $i
+echo $i
 done
 
 for i in `ls`; do 
-  echo $i
+echo $i
 done
 
 for (( i = 0; i &lt; $#; i++ )); do
-  echo $i
+echo $i
 done 
 
 # while clause
 x=1
 while [[ $x -le $# ]]; do
-  echo $x
-  let x=x+1
+echo $x
+let x=x+1
 done
 
 # function
 function testFunc1 {
-  echo &quot;in testFunc1&quot;
+echo &quot;in testFunc1&quot;
 }
 testFunc2() {
-  echo &quot;in testFunc2&quot;, $*
+echo &quot;in testFunc2&quot;, $*
 }
 testFunc1
 testFunc2 123 456
@@ -135,14 +130,14 @@ testFunc2 123 456
 # input
 read temp 
 case $temp in
-  1)
-    echo &quot;1&quot;
-    ;;
-  2)
-    echo &quot;2&quot;
-    ;;
-  [3-9])
-    echo &quot;3-9&quot;
+1)
+echo &quot;1&quot;
+;;
+2)
+echo &quot;2&quot;
+;;
+[3-9])
+echo &quot;3-9&quot;
 esac
 
 # check
@@ -170,45 +165,46 @@ num1 -ge num2    =&gt;  &gt;=
 
 # bash autocompletion
 function _solactl() {
-    local cur prev opts
-    COMPREPLY=()
-    cur=&quot;${COMP_WORDS[COMP_CWORD]}&quot;
-    prev=&quot;${COMP_WORDS[COMP_CWORD-1]}&quot;
-    opts_first_stage=&quot;service server task job mission&quot;
-    opts_service_follow=&quot;up down start stop restart&quot;
-    opts_server_follow=&quot;prepare start stop&quot;
-    opts_task_follow=&quot;pause resume cancel redo info&quot;
-    opts_job_follow=&quot;create&quot;
-    opts_mission_follow=&quot;create&quot;
+local cur prev opts
+COMPREPLY=()
+cur=&quot;${COMP_WORDS[COMP_CWORD]}&quot;
+prev=&quot;${COMP_WORDS[COMP_CWORD-1]}&quot;
+opts_first_stage=&quot;service server task job mission&quot;
+opts_service_follow=&quot;up down start stop restart&quot;
+opts_server_follow=&quot;prepare start stop&quot;
+opts_task_follow=&quot;pause resume cancel redo info&quot;
+opts_job_follow=&quot;create&quot;
+opts_mission_follow=&quot;create&quot;
 
-    if [[ ${prev} == *solactl ]]; then 
-      COMPREPLY=( $(compgen -W &quot;${opts_first_stage}&quot; -- ${cur}) )
-    fi
+if [[ ${prev} == *solactl ]]; then 
+  COMPREPLY=( $(compgen -W &quot;${opts_first_stage}&quot; -- ${cur}) )
+fi
     
-    case ${prev} in 
-      service)
-        COMPREPLY=( $(compgen -W &quot;${opts_service_follow}&quot; -- ${cur}) )
-        return 0
-        ;;
-      server)
-        COMPREPLY=( $(compgen -W &quot;${opts_server_follow}&quot; -- ${cur}) )
-        return 0
-        ;;
-      task)
-        COMPREPLY=( $(compgen -W &quot;${opts_task_follow}&quot; -- ${cur}) )
-        return 0
-        ;;
-      job)
-        COMPREPLY=( $(compgen -W &quot;${opts_job_follow}&quot; -- ${cur}) )
-        return 0
-        ;;
-      mission)
-        COMPREPLY=( $(compgen -W &quot;${opts_mission_follow}&quot; -- ${cur}) )
-        return 0
-    esac
+case ${prev} in 
+  service)
+    COMPREPLY=( $(compgen -W &quot;${opts_service_follow}&quot; -- ${cur}) )
+    return 0
+    ;;
+  server)
+    COMPREPLY=( $(compgen -W &quot;${opts_server_follow}&quot; -- ${cur}) )
+    return 0
+    ;;
+  task)
+    COMPREPLY=( $(compgen -W &quot;${opts_task_follow}&quot; -- ${cur}) )
+    return 0
+    ;;
+  job)
+    COMPREPLY=( $(compgen -W &quot;${opts_job_follow}&quot; -- ${cur}) )
+    return 0
+    ;;
+  mission)
+    COMPREPLY=( $(compgen -W &quot;${opts_mission_follow}&quot; -- ${cur}) )
+    return 0
+esac
 }
 complete -F _solactl solactl
-</code></pre>
+</code></pre></li>
+</ul>
 
 <hr />
 
@@ -217,8 +213,7 @@ complete -F _solactl solactl
 <h2 id="vim">vim</h2>
 
 <ul>
-<li>普通模式</li>
-</ul>
+<li><p>普通模式</p>
 
 <pre><code>基本模式：操作符+动作命令
 . 重复上次修改
@@ -233,49 +228,39 @@ gU 转换成大写
 gu 转换成小写
 zz 当前行居中
 ga 查看当前光标下字符编码
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>插入模式</li>
-</ul>
+<li><p>插入模式</p>
 
 <pre><code>&lt;CTRL-h&gt; 删除前一个字符
 &lt;CTRL-w&gt; 删除前一个单词
 &lt;CTRL-u&gt; 删除至行首
 &lt;CTRL-o&gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中
 &lt;CTRL-r-寄存器编号&gt; 插入指定寄存器中的内容
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>可视模式</li>
-</ul>
+<li><p>可视模式</p>
 
 <pre><code>gv 重选上次的可视区域
 o 切换选区活动端
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>命令行模式</li>
-</ul>
+<li><p>命令行模式</p>
 
 <pre><code>基本模式 :[range]cmd
 :{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等
 . 当前行
 % 所有行
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>文件操作</li>
-</ul>
+<li><p>文件操作</p>
 
 <pre><code>:args 参数列表
 :argdo cmd 对参数列表中的所有文件执行命令
 &lt;CTRL-w-=&gt; 所有窗口等宽等高
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>动作命令</li>
-</ul>
+<li><p>动作命令</p>
 
 <pre><code>gj 按screenline跳转到下一行
 gj 按screenline跳转到上一行
@@ -297,11 +282,9 @@ is 句内
 as 整句
 ip 段内
 ap 整段
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>寄存器</li>
-</ul>
+<li><p>寄存器</p>
 
 <pre><code>&quot;&quot; 无名寄存器，x、p等默认使用的寄存器
 &quot;0 复制(yy)专用寄存器
@@ -315,15 +298,14 @@ q 结束录制宏
 @@ 回放上一个录制的宏
 &lt;@-寄存器名&gt; 回放指定寄存器中的宏
 :argdo normal @a 针对多个文件回放寄存器a中保存的宏
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>其他</li>
-</ul>
+<li><p>其他</p>
 
 <pre><code>:g/pattern/cmd global命令，针对所有符合pattern的行执行cmd
 :v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd
-</code></pre>
+</code></pre></li>
+</ul>
 
 <hr />
 

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title>Python退出时hang住的问题</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -203,8 +203,7 @@ print string
 <ul>
 <li><p>线程2的表现是不断创建不断退出，为threading.start入口添加打印traceback，最终定位在一个模块的心跳计时器。调大心跳周期，观察步骤1中的线程id，确定是心跳计时器线程。注: approach 2中可用ctrl-c构造异常，构造hang住的情况。</p></li>
 
-<li><p>重现poc</p></li>
-</ul>
+<li><p>重现poc</p>
 
 <pre><code>import threading
 
@@ -214,79 +213,79 @@ import sys
 
 # approach 1
 class TestClassA(object):
-    timer = None
-    count = 0
-    def __del__(self):
-        print &quot;called del&quot;
-        if self.timer is not None:
-            self.timer.cancel()
+timer = None
+count = 0
+def __del__(self):
+    print &quot;called del&quot;
+    if self.timer is not None:
+        self.timer.cancel()
 
-    def new_timer(self):
-        # current reference 3 + getrefcount 1 = 4
-        print &quot;in new_timer: %d&quot; % (sys.getrefcount(self))
-        print &quot;ffff&quot;
-        self.count += 1
-        # my father timer thread exit, ref count -1, but start
-        # a new thread will make it still 3
-        self.timer = threading.Timer(1, self.new_timer)
-        self.timer.start()
+def new_timer(self):
+    # current reference 3 + getrefcount 1 = 4
+    print &quot;in new_timer: %d&quot; % (sys.getrefcount(self))
+    print &quot;ffff&quot;
+    self.count += 1
+    # my father timer thread exit, ref count -1, but start
+    # a new thread will make it still 3
+    self.timer = threading.Timer(1, self.new_timer)
+    self.timer.start()
 
-    def start_timer(self):
-        self.timer = threading.Timer(1, self.new_timer)
-        self.timer.start()
+def start_timer(self):
+    self.timer = threading.Timer(1, self.new_timer)
+    self.timer.start()
 
 def test():
-    t = TestClassA()
-    print &quot;enter test: %d&quot; % (sys.getrefcount(t),)  # 2
-    t.start_timer() # pass ref to a new timer thread through self.new_timer: 3
-    print &quot;before out test: %d&quot; % (sys.getrefcount(t),) # 3
+t = TestClassA()
+print &quot;enter test: %d&quot; % (sys.getrefcount(t),)  # 2
+t.start_timer() # pass ref to a new timer thread through self.new_timer: 3
+print &quot;before out test: %d&quot; % (sys.getrefcount(t),) # 3
 
 
 # approach 2
 class TestClassB(object):
-    timer = None
-    count = 0
-    def __del__(self):
-        print &quot;called del&quot;
+timer = None
+count = 0
+def __del__(self):
+    print &quot;called del&quot;
 
 def func(*ins):
-    print &quot;fffff&quot;
-    ins[0].count += 1
-    ins[0].timer = threading.Timer(1, func, ins) # will increase reference count of ins
-    ins[0].timer.start()
+print &quot;fffff&quot;
+ins[0].count += 1
+ins[0].timer = threading.Timer(1, func, ins) # will increase reference count of ins
+ins[0].timer.start()
 
 def test_in_scope():
-    t = TestClassB()
-    print &quot;enter test_in_scope: %d&quot; % (sys.getrefcount(t))
-    t.timer = threading.Timer(1, func, (t,))
-    t.timer.start()
-    while t.count &lt; 4:
-        time.sleep(1)
-    #try:
-    #    while t.count &lt; 4:
-    #        time.sleep(1)
-    #except:
-    #    pass
+t = TestClassB()
+print &quot;enter test_in_scope: %d&quot; % (sys.getrefcount(t))
+t.timer = threading.Timer(1, func, (t,))
+t.timer.start()
+while t.count &lt; 4:
+    time.sleep(1)
+#try:
+#    while t.count &lt; 4:
+#        time.sleep(1)
+#except:
+#    pass
 
-    # if we interrupt or raise some other exceptions and not catch that,
-    # will hang
-    t.timer.cancel()
-    print &quot;before exit test_in_scope: %d&quot; % (sys.getrefcount(t))
+# if we interrupt or raise some other exceptions and not catch that,
+# will hang
+t.timer.cancel()
+print &quot;before exit test_in_scope: %d&quot; % (sys.getrefcount(t))
 
 
 # approachh 3
 def test_closure():
-    t = TestClassA()
-    print &quot;enter test_closure: %d&quot; % (sys.getrefcount(t),)
-    def func_inner():
-        print &quot;ffffffff&quot;
-        t.timer = threading.Timer(1, func_inner) # will increase reference count
-        t.count += 1
-        t.timer.start()
-        print &quot;in func: %d&quot; % (sys.getrefcount(t))
-    t.timer = threading.Timer(1, func_inner)
+t = TestClassA()
+print &quot;enter test_closure: %d&quot; % (sys.getrefcount(t),)
+def func_inner():
+    print &quot;ffffffff&quot;
+    t.timer = threading.Timer(1, func_inner) # will increase reference count
+    t.count += 1
     t.timer.start()
-    print &quot;before out test_closure: %d&quot; % (sys.getrefcount(t),)
+    print &quot;in func: %d&quot; % (sys.getrefcount(t))
+t.timer = threading.Timer(1, func_inner)
+t.timer.start()
+print &quot;before out test_closure: %d&quot; % (sys.getrefcount(t),)
 
 
 
@@ -309,7 +308,8 @@ print &quot;after test_in_scope&quot;
 
 print &quot;before exit main thread, it will wait and join all other threads&quot;
 sys.exit()
-</code></pre>
+</code></pre></li>
+</ul>
 
   </div>
 </article>
@@ -318,20 +318,25 @@ sys.exit()
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98\/';
-    var disqus_title = 'Python退出时hang住的问题';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98\/';
-
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div> 
 
 

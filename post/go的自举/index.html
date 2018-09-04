@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title>Go的自举</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -108,18 +108,15 @@
 <h2 id="2-具体实现">2. 具体实现</h2>
 
 <ul>
-<li>生成dist</li>
-</ul>
+<li><p>生成dist</p>
 
 <pre><code>// make.bash
 # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了
 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!!
 GOROOT=&quot;$GOROOT_BOOTSTRAP&quot; GOOS=&quot;&quot; GOARCH=&quot;&quot; &quot;$GOROOT_BOOTSTRAP/bin/go&quot; build -o cmd/dist/dist ./cmd/dist
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>生成bootstrap二进制文件和库</li>
-</ul>
+<li><p>生成bootstrap二进制文件和库</p>
 
 <pre><code>// make.bash
 # 设置环境变量
@@ -128,37 +125,32 @@ eval $(./cmd/dist/dist env -p || echo FAIL=true)
 # 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量
 # 这里可提供GOARCH和GOOS环境变量交叉编译
 ./cmd/dist/dist bootstrap $buildall $GO_DISTFLAGS -v # builds go_bootstrap
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>重新生成当前平台的go</li>
-</ul>
+<li><p>重新生成当前平台的go</p>
 
 <pre><code>// make.bash
 // std, cmd, all在go里有特殊的含义，这里重新编译了所有标准库和默认工具的二进制程序
 if [ &quot;$GOHOSTARCH&quot; != &quot;$GOARCH&quot; -o &quot;$GOHOSTOS&quot; != &quot;$GOOS&quot; ]; then
-  echo &quot;##### Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH.&quot;
-  # 重置GOOS和GOARCH环境变量，不会影响外层的环境变量
-  CC=$CC GOOS=$GOHOSTOS GOARCH=$GOHOSTARCH \
-    &quot;$GOTOOLDIR&quot;/go_bootstrap install -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
-  echo
+echo &quot;##### Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH.&quot;
+# 重置GOOS和GOARCH环境变量，不会影响外层的环境变量
+CC=$CC GOOS=$GOHOSTOS GOARCH=$GOHOSTARCH \
+&quot;$GOTOOLDIR&quot;/go_bootstrap install -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
+echo
 fi
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>生成目标平台的Go</li>
-</ul>
+<li><p>生成目标平台的Go</p>
 
 <pre><code>CC=$CC_FOR_TARGET &quot;$GOTOOLDIR&quot;/go_bootstrap install $GO_FLAGS -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>dist bootstrap逻辑</li>
-</ul>
+<li><p>dist bootstrap逻辑</p>
 
 <pre><code>// cmd/dist
 dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compile, link工具，然后用它们编译cmd/go及其依赖的runtime和标准库。中间主要是用compile编译.go文件、asm汇编.s文件和用link/pack链接归档打包目标文件的过程。
-</code></pre>
+</code></pre></li>
+</ul>
 
 <hr />
 
@@ -186,20 +178,25 @@ dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compi
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%87%AA%E4%B8%BE\/';
-    var disqus_title = 'Go的自举';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/go%E7%9A%84%E8%87%AA%E4%B8%BE\/';
-
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div> 
 
 

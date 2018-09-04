@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://feilengcui008.github.io/post/restful-api%E8%AE%BE%E8%AE%A1%E8%A7%84%E8%8C%83/</loc>
+    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</loc>
     <lastmod>2018-03-08T19:52:51+08:00</lastmod>
   </url>
@@ -171,7 +176,7 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/tags/c/c&#43;&#43;/</loc>
+    <loc>https://feilengcui008.github.io/tags/c-c&#43;&#43;/</loc>
     <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
@@ -206,14 +211,14 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/tags/linux/</loc>
-    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/categories/linux/</loc>
+    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/categories/linux/</loc>
-    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/tags/linux/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -225,13 +230,19 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/</loc>
-    <lastmod>2018-03-08T19:52:51+08:00</lastmod>
+    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://feilengcui008.github.io/categories/python/</loc>
     <lastmod>2016-10-16T17:46:43+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://feilengcui008.github.io/tags/restful/</loc>
+    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -261,7 +272,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/</loc>
-    <lastmod>2018-03-08T19:52:51+08:00</lastmod>
+    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -286,6 +297,12 @@
   <url>
     <loc>https://feilengcui008.github.io/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>
     <lastmod>2016-03-03T17:21:15+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://feilengcui008.github.io/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1/</loc>
+    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
     <priority>0</priority>
   </url>
   

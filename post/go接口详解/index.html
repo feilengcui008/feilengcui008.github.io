@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title>Go接口详解</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -188,125 +188,120 @@ func walkexpr(n *Node, init *Nodes) *Node {
 <p>下面分析runtime中接口相关的几个主要函数:</p>
 
 <ul>
-<li>getitab</li>
-</ul>
+<li><p>getitab</p>
 
 <pre><code>// 根据接口类型和实际数据类型生成itab
 func getitab(inter *interfacetype, typ *_type, canfail bool) *itab {
-  // 先从缓存中找
-  h := itabhash(inter, typ)
-  // look twice - once without lock, once with.
-  // common case will be no lock contention.
-  var m *itab
-  var locked int
-  for locked = 0; locked &lt; 2; locked++ {
-    if locked != 0 {
-      lock(&amp;ifaceLock)
-    }
-    for m = (*itab)(atomic.Loadp(unsafe.Pointer(&amp;hash[h]))); m != nil; m = m.link {
-      // 找到
-      if m.inter == inter &amp;&amp; m._type == typ {
-        if m.bad {
-          if !canfail {
-            // 检查并绑定方法地址表
-            additab(m, locked != 0, false)
-          }
-          m = nil
-        }
-        if locked != 0 {
-          unlock(&amp;ifaceLock)
-        }
-        return m
-      }
-    }
-  }
-
-  // 缓存中没找到则分配itab的内存: itab结构本身内存 + 末尾存方法地址表的可变长度
-  m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(inter.mhdr)-1)*sys.PtrSize, 0, &amp;memstats.other_sys))
-  m.inter = inter           // 设置接口类型信息
-  m._type = typ             // 设置实际数据类型信息
-  additab(m, true, canfail) // 设置itab函数调用表
-  unlock(&amp;ifaceLock)
-  if m.bad {
-    return nil
-  }
-  return m
+// 先从缓存中找
+h := itabhash(inter, typ)
+// look twice - once without lock, once with.
+// common case will be no lock contention.
+var m *itab
+var locked int
+for locked = 0; locked &lt; 2; locked++ {
+if locked != 0 {
+  lock(&amp;ifaceLock)
 }
-</code></pre>
+for m = (*itab)(atomic.Loadp(unsafe.Pointer(&amp;hash[h]))); m != nil; m = m.link {
+  // 找到
+  if m.inter == inter &amp;&amp; m._type == typ {
+    if m.bad {
+      if !canfail {
+        // 检查并绑定方法地址表
+        additab(m, locked != 0, false)
+      }
+      m = nil
+    }
+    if locked != 0 {
+      unlock(&amp;ifaceLock)
+    }
+    return m
+  }
+}
+}
 
-<ul>
-<li>additab</li>
-</ul>
+// 缓存中没找到则分配itab的内存: itab结构本身内存 + 末尾存方法地址表的可变长度
+m = (*itab)(persistentalloc(unsafe.Sizeof(itab{})+uintptr(len(inter.mhdr)-1)*sys.PtrSize, 0, &amp;memstats.other_sys))
+m.inter = inter           // 设置接口类型信息
+m._type = typ             // 设置实际数据类型信息
+additab(m, true, canfail) // 设置itab函数调用表
+unlock(&amp;ifaceLock)
+if m.bad {
+return nil
+}
+return m
+}
+</code></pre></li>
+
+<li><p>additab</p>
 
 <pre><code>// 检查具体类型是否实现了接口规定的方法，并使用具体类型的方法
 // 地址填充方法表。
 func additab(m *itab, locked, canfail bool) {
-  inter := m.inter
-  typ := m._type
-  x := typ.uncommon()
-  ni := len(inter.mhdr) // 接口方法数量
-  nt := int(x.mcount)   // 实际数据类型方法数量
-  xmhdr := (*[1 &lt;&lt; 16]method)(add(unsafe.Pointer(x), uintptr(x.moff)))[:nt:nt]
-  j := 0
-  for k := 0; k &lt; ni; k++ {
-    // 对每个接口方法的地址
-    i := &amp;inter.mhdr[k]
-    // 使用接口的类型信息获取实际类型, 函数名字，包名字
-    itype := inter.typ.typeOff(i.ityp)
-    name := inter.typ.nameOff(i.name)
-    iname := name.name()
-    ipkg := name.pkgPath()
-    if ipkg == &quot;&quot; {
-      ipkg = inter.pkgpath.name()
-    }
-    for ; j &lt; nt; j++ {
-      // 对每个具体类型的方法
-      t := &amp;xmhdr[j]
-      tname := typ.nameOff(t.name)
-      // 具体类型的方法类型和接口方法的类型相同，并且名字相同，则匹配成功
-      if typ.typeOff(t.mtyp) == itype &amp;&amp; tname.name() == iname {
-        pkgPath := tname.pkgPath()
-        if pkgPath == &quot;&quot; {
-          pkgPath = typ.nameOff(x.pkgpath).name()
-        }
-        if tname.isExported() || pkgPath == ipkg {
-          if m != nil {
-            // 具体类型的某个方法地址
-            ifn := typ.textOff(t.ifn)
-            // 填充itab的func表地址
-            *(*unsafe.Pointer)(add(unsafe.Pointer(&amp;m.fun[0]), uintptr(k)*sys.PtrSize)) = ifn
-          }
-          goto nextimethod
-        }
-      }
-    }
-    // didn't find method
-    // 不匹配panic
-    if !canfail {
-      if locked {
-        unlock(&amp;ifaceLock)
-      }
-      panic(&amp;TypeAssertionError{&quot;&quot;, typ.string(), inter.typ.string(), iname})
-    }
-    // 或者设置失败标识
-    m.bad = true
-    break
-  nextimethod:
-  }
-  if !locked {
-    throw(&quot;invalid itab locking&quot;)
-  }
-  h := itabhash(inter, typ)
-  m.link = hash[h]
-  m.inhash = true
-  // 存到itab的hash表缓存
-  atomicstorep(unsafe.Pointer(&amp;hash[h]), unsafe.Pointer(m))
+inter := m.inter
+typ := m._type
+x := typ.uncommon()
+ni := len(inter.mhdr) // 接口方法数量
+nt := int(x.mcount)   // 实际数据类型方法数量
+xmhdr := (*[1 &lt;&lt; 16]method)(add(unsafe.Pointer(x), uintptr(x.moff)))[:nt:nt]
+j := 0
+for k := 0; k &lt; ni; k++ {
+// 对每个接口方法的地址
+i := &amp;inter.mhdr[k]
+// 使用接口的类型信息获取实际类型, 函数名字，包名字
+itype := inter.typ.typeOff(i.ityp)
+name := inter.typ.nameOff(i.name)
+iname := name.name()
+ipkg := name.pkgPath()
+if ipkg == &quot;&quot; {
+  ipkg = inter.pkgpath.name()
 }
-</code></pre>
+for ; j &lt; nt; j++ {
+  // 对每个具体类型的方法
+  t := &amp;xmhdr[j]
+  tname := typ.nameOff(t.name)
+  // 具体类型的方法类型和接口方法的类型相同，并且名字相同，则匹配成功
+  if typ.typeOff(t.mtyp) == itype &amp;&amp; tname.name() == iname {
+    pkgPath := tname.pkgPath()
+    if pkgPath == &quot;&quot; {
+      pkgPath = typ.nameOff(x.pkgpath).name()
+    }
+    if tname.isExported() || pkgPath == ipkg {
+      if m != nil {
+        // 具体类型的某个方法地址
+        ifn := typ.textOff(t.ifn)
+        // 填充itab的func表地址
+        *(*unsafe.Pointer)(add(unsafe.Pointer(&amp;m.fun[0]), uintptr(k)*sys.PtrSize)) = ifn
+      }
+      goto nextimethod
+    }
+  }
+}
+// didn't find method
+// 不匹配panic
+if !canfail {
+  if locked {
+    unlock(&amp;ifaceLock)
+  }
+  panic(&amp;TypeAssertionError{&quot;&quot;, typ.string(), inter.typ.string(), iname})
+}
+// 或者设置失败标识
+m.bad = true
+break
+nextimethod:
+}
+if !locked {
+throw(&quot;invalid itab locking&quot;)
+}
+h := itabhash(inter, typ)
+m.link = hash[h]
+m.inhash = true
+// 存到itab的hash表缓存
+atomicstorep(unsafe.Pointer(&amp;hash[h]), unsafe.Pointer(m))
+}
+</code></pre></li>
 
-<ul>
-<li>convI2I</li>
-</ul>
+<li><p>convI2I</p>
 
 <pre><code>// 将已有的接口，转换为新的接口类型，失败panic
 // 比如:
@@ -314,46 +309,45 @@ func additab(m *itab, locked, canfail bool) {
 // var r io.Reader
 // rc = io.ReadCloser(r)
 func convI2I(inter *interfacetype, i iface) (r iface) {
-  tab := i.tab
-  if tab == nil {
-    return
-  }
-  // 接口类型相同直接赋值即可
-  if tab.inter == inter {
-    r.tab = tab
-    r.data = i.data
-    return
-  }
-  // 否则重新生成itab
-  r.tab = getitab(inter, tab._type, false)
-  // 注意这里没有分配内存拷贝数据
-  r.data = i.data
-  return
+tab := i.tab
+if tab == nil {
+return
 }
-</code></pre>
+// 接口类型相同直接赋值即可
+if tab.inter == inter {
+r.tab = tab
+r.data = i.data
+return
+}
+// 否则重新生成itab
+r.tab = getitab(inter, tab._type, false)
+// 注意这里没有分配内存拷贝数据
+r.data = i.data
+return
+}
+</code></pre></li>
 
-<ul>
-<li>convT2I</li>
-</ul>
+<li><p>convT2I</p>
 
 <pre><code>// 使用itab并拷贝数据，得到iface
 func convT2I(tab *itab, elem unsafe.Pointer) (i iface) {
-  t := tab._type
-  if raceenabled {
-    raceReadObjectPC(t, elem, getcallerpc(unsafe.Pointer(&amp;tab)), funcPC(convT2I))
-  }
-  if msanenabled {
-    msanread(elem, t.size)
-  }
-  // 注意这里发生了内存分配和数据拷贝
-  x := mallocgc(t.size, t, true)
-  // memmove内部的拷贝对大块内存做了优化
-  typedmemmove(t, x, elem)
-  i.tab = tab
-  i.data = x
-  return
+t := tab._type
+if raceenabled {
+raceReadObjectPC(t, elem, getcallerpc(unsafe.Pointer(&amp;tab)), funcPC(convT2I))
 }
-</code></pre>
+if msanenabled {
+msanread(elem, t.size)
+}
+// 注意这里发生了内存分配和数据拷贝
+x := mallocgc(t.size, t, true)
+// memmove内部的拷贝对大块内存做了优化
+typedmemmove(t, x, elem)
+i.tab = tab
+i.data = x
+return
+}
+</code></pre></li>
+</ul>
 
 <p>从上面convX2I我们可以看到，在接口类型之间转换时，并没有分配内存和拷贝数据，但是将非接口类型转换为接口类型时，却发生了内存分配和数据拷贝。这里的原因是Go接口的数据不能被改变，所以接口之间的转换可以使用同一块内存，但是其他情况为了避免外部改变导致接口内数据改变，所以会进行内存分配和数据拷贝。另外，这也是反射非指针变量时无法直接改变变量数据的原因，因为反射会先将变量转换为空接口类型可以参考<a href="https://groups.google.com/forum/#!topic/golang-nuts/e5ddPzR7eKI">go-nuts</a>。这里我们用一个简单的程序测试一下。</p>
 
@@ -524,20 +518,25 @@ callSay(s2)
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3\/';
-    var disqus_title = 'Go接口详解';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3\/';
-
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div> 
 
 

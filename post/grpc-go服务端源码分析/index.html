@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title>gRPC-Go服务端源码分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -154,37 +154,36 @@
 </ol>
 
 <ul>
-<li>实例化Server</li>
-</ul>
+<li><p>实例化Server</p>
 
 <pre><code>// 工厂方法
 func NewServer(opt ...ServerOption) *Server {
-  var opts options
-  // 默认最大消息长度: 4M
-  opts.maxMsgSize = defaultMaxMsgSize
-  // 设置定制的参数
-  for _, o := range opt {
-    o(&amp;opts)
-  }
-  // 默认编解码方式为protobuf
-  if opts.codec == nil {
-    // Set the default codec.
-    opts.codec = protoCodec{}
-  }
-  // 实例化Server
-  s := &amp;Server{
-    lis:   make(map[net.Listener]bool),
-    opts:  opts,
-    conns: make(map[io.Closer]bool),
-    m:     make(map[string]*service),
-  }
-  s.cv = sync.NewCond(&amp;s.mu)
-  s.ctx, s.cancel = context.WithCancel(context.Background())
-  if EnableTracing {
-    _, file, line, _ := runtime.Caller(1)
-    s.events = trace.NewEventLog(&quot;grpc.Server&quot;, fmt.Sprintf(&quot;%s:%d&quot;, file, line))
-  }
-  return s
+var opts options
+// 默认最大消息长度: 4M
+opts.maxMsgSize = defaultMaxMsgSize
+// 设置定制的参数
+for _, o := range opt {
+o(&amp;opts)
+}
+// 默认编解码方式为protobuf
+if opts.codec == nil {
+// Set the default codec.
+opts.codec = protoCodec{}
+}
+// 实例化Server
+s := &amp;Server{
+lis:   make(map[net.Listener]bool),
+opts:  opts,
+conns: make(map[io.Closer]bool),
+m:     make(map[string]*service),
+}
+s.cv = sync.NewCond(&amp;s.mu)
+s.ctx, s.cancel = context.WithCancel(context.Background())
+if EnableTracing {
+_, file, line, _ := runtime.Caller(1)
+s.events = trace.NewEventLog(&quot;grpc.Server&quot;, fmt.Sprintf(&quot;%s:%d&quot;, file, line))
+}
+return s
 }
 
 // Server结构体
@@ -192,119 +191,117 @@ func NewServer(opt ...ServerOption) *Server {
 // 多个Service，每个Service可以有多个方法，主程序需要
 // 实例化Server，注册Service，然后调用s.Serve(l)
 type Server struct {
-  opts options
-  mu sync.Mutex // guards following
-  // 监听地址列表
-  lis map[net.Listener]bool
-  // 客户端的连接
-  conns map[io.Closer]bool
-  drain bool
-  // 上下文
-  ctx    context.Context
-  cancel context.CancelFunc
-  // A CondVar to let GracefulStop() blocks until all the pending RPCs are finished
-  // and all the transport goes away.
-  // 优雅退出时，会等待在此信号，直到所有的RPC都处理完了，并且所有
-  // 的传输层断开
-  cv *sync.Cond
-  // 服务名: 服务
-  m map[string]*service // service name -&gt; service info
-  // 事件追踪
-  events trace.EventLog
+opts options
+mu sync.Mutex // guards following
+// 监听地址列表
+lis map[net.Listener]bool
+// 客户端的连接
+conns map[io.Closer]bool
+drain bool
+// 上下文
+ctx    context.Context
+cancel context.CancelFunc
+// A CondVar to let GracefulStop() blocks until all the pending RPCs are finished
+// and all the transport goes away.
+// 优雅退出时，会等待在此信号，直到所有的RPC都处理完了，并且所有
+// 的传输层断开
+cv *sync.Cond
+// 服务名: 服务
+m map[string]*service // service name -&gt; service info
+// 事件追踪
+events trace.EventLog
 }
 
 // Server配置项
 // Server可设置的选项
 type options struct {
-  // 加密信息， 目前实现了TLS
-  creds credentials.TransportCredentials
-  // 数据编解码，目前实现了protobuf，并用缓存池sync.Pool优化
-  codec Codec
-  // 数据压缩，目前实现了gzip
-  cp Compressor
-  // 数据解压，目前实现了gzip
-  dc Decompressor
-  // 最大消息长度
-  maxMsgSize int
-  // 单次请求的拦截器
-  unaryInt UnaryServerInterceptor
-  // 流式请求的拦截器
-  streamInt   StreamServerInterceptor
-  inTapHandle tap.ServerInHandle
-  // 统计
-  statsHandler stats.Handler
-  // 最大并发流数量，http2协议规范
-  maxConcurrentStreams uint32
-  useHandlerImpl       bool // use http.Handler-based server
-  unknownStreamDesc    *StreamDesc
-  // server端的keepalive参数，会由单独的gorotine负责探测客户端连接的活性
-  keepaliveParams keepalive.ServerParameters
-  keepalivePolicy keepalive.EnforcementPolicy
+// 加密信息， 目前实现了TLS
+creds credentials.TransportCredentials
+// 数据编解码，目前实现了protobuf，并用缓存池sync.Pool优化
+codec Codec
+// 数据压缩，目前实现了gzip
+cp Compressor
+// 数据解压，目前实现了gzip
+dc Decompressor
+// 最大消息长度
+maxMsgSize int
+// 单次请求的拦截器
+unaryInt UnaryServerInterceptor
+// 流式请求的拦截器
+streamInt   StreamServerInterceptor
+inTapHandle tap.ServerInHandle
+// 统计
+statsHandler stats.Handler
+// 最大并发流数量，http2协议规范
+maxConcurrentStreams uint32
+useHandlerImpl       bool // use http.Handler-based server
+unknownStreamDesc    *StreamDesc
+// server端的keepalive参数，会由单独的gorotine负责探测客户端连接的活性
+keepaliveParams keepalive.ServerParameters
+keepalivePolicy keepalive.EnforcementPolicy
 }
 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>注册Service</li>
-</ul>
+<li><p>注册Service</p>
 
 <pre><code>// 注册service: sd接口，ss实现
 // 如果使用protobuf的gRPC-Go插件，则会生成sd接口
 func (s *Server) RegisterService(sd *ServiceDesc, ss interface{}) {
-  // 检查ss是否实现sd定义的服务方法接口
-  ht := reflect.TypeOf(sd.HandlerType).Elem()
-  st := reflect.TypeOf(ss)
-  if !st.Implements(ht) {
-    grpclog.Fatalf(&quot;grpc: Server.RegisterService found the handler of type %v that does not satisfy %v&quot;, st, ht)
-  }
-  s.register(sd, ss)
+// 检查ss是否实现sd定义的服务方法接口
+ht := reflect.TypeOf(sd.HandlerType).Elem()
+st := reflect.TypeOf(ss)
+if !st.Implements(ht) {
+grpclog.Fatalf(&quot;grpc: Server.RegisterService found the handler of type %v that does not satisfy %v&quot;, st, ht)
+}
+s.register(sd, ss)
 }
 
 func (s *Server) register(sd *ServiceDesc, ss interface{}) {
-  /* ... */
-  // 检查是否已注册
-  if _, ok := s.m[sd.ServiceName]; ok {
-    grpclog.Fatalf(&quot;grpc: Server.RegisterService found duplicate service registration for %q&quot;, sd.ServiceName)
-  }
-  // 实例化一个服务
-  srv := &amp;service{
-    // 具体实现
-    server: ss,
-    // 单次方法信息
-    md:    make(map[string]*MethodDesc),
-    // 流式方法信息
-    sd:    make(map[string]*StreamDesc),
-    mdata: sd.Metadata,
-  }
-  for i := range sd.Methods {
-    d := &amp;sd.Methods[i]
-    srv.md[d.MethodName] = d
-  }
-  for i := range sd.Streams {
-    d := &amp;sd.Streams[i]
-    srv.sd[d.StreamName] = d
-  }
-  // 注册服务到server
-  s.m[sd.ServiceName] = srv
+/* ... */
+// 检查是否已注册
+if _, ok := s.m[sd.ServiceName]; ok {
+grpclog.Fatalf(&quot;grpc: Server.RegisterService found duplicate service registration for %q&quot;, sd.ServiceName)
+}
+// 实例化一个服务
+srv := &amp;service{
+// 具体实现
+server: ss,
+// 单次方法信息
+md:    make(map[string]*MethodDesc),
+// 流式方法信息
+sd:    make(map[string]*StreamDesc),
+mdata: sd.Metadata,
+}
+for i := range sd.Methods {
+d := &amp;sd.Methods[i]
+srv.md[d.MethodName] = d
+}
+for i := range sd.Streams {
+d := &amp;sd.Streams[i]
+srv.sd[d.StreamName] = d
+}
+// 注册服务到server
+s.m[sd.ServiceName] = srv
 }
 
 // 一个由protobuf grcp-go插件生成的sd例子
 var _Greeter_serviceDesc = grpc.ServiceDesc{
-  // 服务名
-  ServiceName: &quot;app.Greeter&quot;,
-  // 此服务的处理类型(通常为实现某服务接口的具体实现结构体)
-  HandlerType: (*GreeterServer)(nil),
-  // 单次方法
-  Methods: []grpc.MethodDesc{
-    {
-      // 方法名
-      MethodName: &quot;SayHello&quot;,
-      // 最终调用的对应/service/method的方法
-      Handler:    _Greeter_SayHello_Handler,
-    },
-  },
-  Streams:  []grpc.StreamDesc{},
-  Metadata: &quot;app.proto&quot;,
+// 服务名
+ServiceName: &quot;app.Greeter&quot;,
+// 此服务的处理类型(通常为实现某服务接口的具体实现结构体)
+HandlerType: (*GreeterServer)(nil),
+// 单次方法
+Methods: []grpc.MethodDesc{
+{
+  // 方法名
+  MethodName: &quot;SayHello&quot;,
+  // 最终调用的对应/service/method的方法
+  Handler:    _Greeter_SayHello_Handler,
+},
+},
+Streams:  []grpc.StreamDesc{},
+Metadata: &quot;app.proto&quot;,
 }
 
 // 要注意的是protobuf的gRPC-Go插件为我们生成的MethodDesc中的Handler
@@ -313,623 +310,616 @@ var _Greeter_serviceDesc = grpc.ServiceDesc{
 // 因此流式方法可多次读写流。
 // 单次方法的一个例子
 func _Greeter_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-  in := new(HelloRequest)
-  // 注意这个dec方法参数，负责反序列化，解压
-  if err := dec(in); err != nil {
-    return nil, err
-  }
-  if interceptor == nil {
-    return srv.(GreeterServer).SayHello(ctx, in)
-  }
-  /* ... */
+in := new(HelloRequest)
+// 注意这个dec方法参数，负责反序列化，解压
+if err := dec(in); err != nil {
+return nil, err
+}
+if interceptor == nil {
+return srv.(GreeterServer).SayHello(ctx, in)
+}
+/* ... */
 }
 // 流式方法的一个例子(假设是客户端可流式发送)
 func _Greeter_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error {
-  // 这里应该由业务逻辑实现的SayHello处理流式读取处理的逻辑
-  return srv.(GreeterServer).SayHello(&amp;greeterSayHelloServer{stream})
+// 这里应该由业务逻辑实现的SayHello处理流式读取处理的逻辑
+return srv.(GreeterServer).SayHello(&amp;greeterSayHelloServer{stream})
 }
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>监听并接收连接请求</li>
-</ul>
+<li><p>监听并接收连接请求</p>
 
 <pre><code>func (s *Server) Serve(lis net.Listener) error {
-  /* ... */
-  var tempDelay time.Duration // how long to sleep on accept failure
-  // 循环处理连接，每个连接使用一个goroutine处理
-  // accept如果失败，则下次accept之前睡眠一段时间
-  for {
-    rawConn, err := lis.Accept()
-    if err != nil {
-      if ne, ok := err.(interface {
-        Temporary() bool
-      }); ok &amp;&amp; ne.Temporary() {
-        if tempDelay == 0 {
-          // 初始5ms
-          tempDelay = 5 * time.Millisecond
-        } else {
-          // 否则翻倍
-          tempDelay *= 2
-        }
-        // 不超过1s
-        if max := 1 * time.Second; tempDelay &gt; max {
-          tempDelay = max
-        }
-  d     /* ... */
-        // 等待超时重试，或者context事件的发生
-        select {
-        case &lt;-time.After(tempDelay):
-        case &lt;-s.ctx.Done():
-        }
-        continue
-      }
-      /* ... */
+/* ... */
+var tempDelay time.Duration // how long to sleep on accept failure
+// 循环处理连接，每个连接使用一个goroutine处理
+// accept如果失败，则下次accept之前睡眠一段时间
+for {
+rawConn, err := lis.Accept()
+if err != nil {
+  if ne, ok := err.(interface {
+    Temporary() bool
+  }); ok &amp;&amp; ne.Temporary() {
+    if tempDelay == 0 {
+      // 初始5ms
+      tempDelay = 5 * time.Millisecond
+    } else {
+      // 否则翻倍
+      tempDelay *= 2
     }
-    // 重置延时
-    tempDelay = 0
-    // Start a new goroutine to deal with rawConn
-    // so we don't stall this Accept loop goroutine.
-    // 每个新的tcp连接使用单独的goroutine处理
-    go s.handleRawConn(rawConn)
+    // 不超过1s
+    if max := 1 * time.Second; tempDelay &gt; max {
+      tempDelay = max
+    }
+d     /* ... */
+    // 等待超时重试，或者context事件的发生
+    select {
+    case &lt;-time.After(tempDelay):
+    case &lt;-s.ctx.Done():
+    }
+    continue
   }
+  /* ... */
 }
-</code></pre>
+// 重置延时
+tempDelay = 0
+// Start a new goroutine to deal with rawConn
+// so we don't stall this Accept loop goroutine.
+// 每个新的tcp连接使用单独的goroutine处理
+go s.handleRawConn(rawConn)
+}
+}
+</code></pre></li>
 
-<ul>
-<li>连接与请求处理</li>
-</ul>
+<li><p>连接与请求处理</p>
 
 <pre><code>func (s *Server) handleRawConn(rawConn net.Conn) {
-  // 是否加密
-  conn, authInfo, err := s.useTransportAuthenticator(rawConn)
-  /* ... */
-  s.mu.Lock()
-  // 如果此goroutine处于处理连接中时，server被关闭，则直接关闭连接返回
-  if s.conns == nil {
-    s.mu.Unlock()
-    conn.Close()
-    return
-  }
-  s.mu.Unlock()
+// 是否加密
+conn, authInfo, err := s.useTransportAuthenticator(rawConn)
+/* ... */
+s.mu.Lock()
+// 如果此goroutine处于处理连接中时，server被关闭，则直接关闭连接返回
+if s.conns == nil {
+s.mu.Unlock()
+conn.Close()
+return
+}
+s.mu.Unlock()
 
-  if s.opts.useHandlerImpl {
-    // 测试时使用
-    s.serveUsingHandler(conn)
-  } else {
-    // 处理http2连接的建立，http2连接的建立也需要客户端和
-    // 服务端交换，即http2 Connection Preface，所以后面
-    // 的宏观逻辑是，先处理http2连接建立过程中的帧数据信息，
-    // 然后一直循环处理新的流的建立(即新的http2请求的到达)
-    // 和帧的数据收发。
-    s.serveHTTP2Transport(conn, authInfo)
-  }
+if s.opts.useHandlerImpl {
+// 测试时使用
+s.serveUsingHandler(conn)
+} else {
+// 处理http2连接的建立，http2连接的建立也需要客户端和
+// 服务端交换，即http2 Connection Preface，所以后面
+// 的宏观逻辑是，先处理http2连接建立过程中的帧数据信息，
+// 然后一直循环处理新的流的建立(即新的http2请求的到达)
+// 和帧的数据收发。
+s.serveHTTP2Transport(conn, authInfo)
+}
 }
 
 // 每个http2连接在服务端会生成一个ServerTransport，这里是 htt2server
 func (s *Server) serveHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) {
-  config := &amp;transport.ServerConfig{
-    MaxStreams:      s.opts.maxConcurrentStreams,
-    AuthInfo:        authInfo,
-    InTapHandle:     s.opts.inTapHandle,
-    StatsHandler:    s.opts.statsHandler,
-    KeepaliveParams: s.opts.keepaliveParams,
-    KeepalivePolicy: s.opts.keepalivePolicy,
-  }
-  // 返回实现了ServerTransport接口的http2server
-  // 接口规定了HandleStream, Write等方法
-  st, err := transport.NewServerTransport(&quot;http2&quot;, c, config)
-  /* ... */
-  // 加入每个连接的ServerTransport
-  if !s.addConn(st) {
-    // 出错关闭Transport，即关闭客户端的net.Conn
-    st.Close()
-    return
-  }
-  // 开始处理连接Transport，处理新的帧数据和流的打开
-  s.serveStreams(st)
+config := &amp;transport.ServerConfig{
+MaxStreams:      s.opts.maxConcurrentStreams,
+AuthInfo:        authInfo,
+InTapHandle:     s.opts.inTapHandle,
+StatsHandler:    s.opts.statsHandler,
+KeepaliveParams: s.opts.keepaliveParams,
+KeepalivePolicy: s.opts.keepalivePolicy,
+}
+// 返回实现了ServerTransport接口的http2server
+// 接口规定了HandleStream, Write等方法
+st, err := transport.NewServerTransport(&quot;http2&quot;, c, config)
+/* ... */
+// 加入每个连接的ServerTransport
+if !s.addConn(st) {
+// 出错关闭Transport，即关闭客户端的net.Conn
+st.Close()
+return
+}
+// 开始处理连接Transport，处理新的帧数据和流的打开
+s.serveStreams(st)
 }
 
 // 新建ServerTransport
 func newHTTP2Server(conn net.Conn, config *ServerConfig) (_ ServerTransport, err error) {
-  // 封装帧的读取，底层使用的是http2.frame
-  framer := newFramer(conn)
-  // 初始的配置帧
-  // Send initial settings as connection preface to client.
-  var settings []http2.Setting
-  // TODO(zhaoq): Have a better way to signal &quot;no limit&quot; because 0 is
-  // permitted in the HTTP2 spec.
-  // 流的最大数量
-  maxStreams := config.MaxStreams
-  if maxStreams == 0 {
-    maxStreams = math.MaxUint32
-  } else {
-    settings = append(settings, http2.Setting{
-      ID:  http2.SettingMaxConcurrentStreams,
-      Val: maxStreams,
-    })
-  }
-  // 流窗口大小，默认16K
-  if initialWindowSize != defaultWindowSize {
-    settings = append(settings, http2.Setting{
-      ID:  http2.SettingInitialWindowSize,
-      Val: uint32(initialWindowSize)})
-  }
-  if err := framer.writeSettings(true, settings...); err != nil {
-    return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
-  }
-  // Adjust the connection flow control window if needed.
-  if delta := uint32(initialConnWindowSize - defaultWindowSize); delta &gt; 0 {
-    if err := framer.writeWindowUpdate(true, 0, delta); err != nil {
-      return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
-    }
-  }
-  // tcp连接的KeepAlive相关参数
-  kp := config.KeepaliveParams
-  // 最大idle时间，超过此客户端连接将被关闭，默认无穷
-  if kp.MaxConnectionIdle == 0 {
-    kp.MaxConnectionIdle = defaultMaxConnectionIdle
-  }
-  if kp.MaxConnectionAge == 0 {
-    kp.MaxConnectionAge = defaultMaxConnectionAge
-  }
-  // Add a jitter to MaxConnectionAge.
-  kp.MaxConnectionAge += getJitter(kp.MaxConnectionAge)
-  if kp.MaxConnectionAgeGrace == 0 {
-    kp.MaxConnectionAgeGrace = defaultMaxConnectionAgeGrace
-  }
-  if kp.Time == 0 {
-    kp.Time = defaultServerKeepaliveTime
-  }
-  if kp.Timeout == 0 {
-    kp.Timeout = defaultServerKeepaliveTimeout
-  }
-  kep := config.KeepalivePolicy
-  if kep.MinTime == 0 {
-    kep.MinTime = defaultKeepalivePolicyMinTime
-  }
-  var buf bytes.Buffer
-  t := &amp;http2Server{
-    ctx:             context.Background(),
-    conn:            conn,
-    remoteAddr:      conn.RemoteAddr(),
-    localAddr:       conn.LocalAddr(),
-    authInfo:        config.AuthInfo,
-    framer:          framer,
-    hBuf:            &amp;buf,
-    hEnc:            hpack.NewEncoder(&amp;buf),
-    maxStreams:      maxStreams,
-    inTapHandle:     config.InTapHandle,
-    controlBuf:      newRecvBuffer(),
-    fc:              &amp;inFlow{limit: initialConnWindowSize},
-    sendQuotaPool:   newQuotaPool(defaultWindowSize),
-    state:           reachable,
-    writableChan:    make(chan int, 1),
-    shutdownChan:    make(chan struct{}),
-    activeStreams:   make(map[uint32]*Stream),
-    streamSendQuota: defaultWindowSize,
-    stats:           config.StatsHandler,
-    kp:              kp,
-    idle:            time.Now(),
-    kep:             kep,
-  }
-  /* ... */
-  // 专门处理控制信息
-  go t.controller()
-  // 专门处理tcp连接的保火逻辑
-  go t.keepalive()
-  // 解锁
-  t.writableChan &lt;- 0
-  return t, nil
+// 封装帧的读取，底层使用的是http2.frame
+framer := newFramer(conn)
+// 初始的配置帧
+// Send initial settings as connection preface to client.
+var settings []http2.Setting
+// TODO(zhaoq): Have a better way to signal &quot;no limit&quot; because 0 is
+// permitted in the HTTP2 spec.
+// 流的最大数量
+maxStreams := config.MaxStreams
+if maxStreams == 0 {
+maxStreams = math.MaxUint32
+} else {
+settings = append(settings, http2.Setting{
+  ID:  http2.SettingMaxConcurrentStreams,
+  Val: maxStreams,
+})
+}
+// 流窗口大小，默认16K
+if initialWindowSize != defaultWindowSize {
+settings = append(settings, http2.Setting{
+  ID:  http2.SettingInitialWindowSize,
+  Val: uint32(initialWindowSize)})
+}
+if err := framer.writeSettings(true, settings...); err != nil {
+return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+}
+// Adjust the connection flow control window if needed.
+if delta := uint32(initialConnWindowSize - defaultWindowSize); delta &gt; 0 {
+if err := framer.writeWindowUpdate(true, 0, delta); err != nil {
+  return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+}
+}
+// tcp连接的KeepAlive相关参数
+kp := config.KeepaliveParams
+// 最大idle时间，超过此客户端连接将被关闭，默认无穷
+if kp.MaxConnectionIdle == 0 {
+kp.MaxConnectionIdle = defaultMaxConnectionIdle
+}
+if kp.MaxConnectionAge == 0 {
+kp.MaxConnectionAge = defaultMaxConnectionAge
+}
+// Add a jitter to MaxConnectionAge.
+kp.MaxConnectionAge += getJitter(kp.MaxConnectionAge)
+if kp.MaxConnectionAgeGrace == 0 {
+kp.MaxConnectionAgeGrace = defaultMaxConnectionAgeGrace
+}
+if kp.Time == 0 {
+kp.Time = defaultServerKeepaliveTime
+}
+if kp.Timeout == 0 {
+kp.Timeout = defaultServerKeepaliveTimeout
+}
+kep := config.KeepalivePolicy
+if kep.MinTime == 0 {
+kep.MinTime = defaultKeepalivePolicyMinTime
+}
+var buf bytes.Buffer
+t := &amp;http2Server{
+ctx:             context.Background(),
+conn:            conn,
+remoteAddr:      conn.RemoteAddr(),
+localAddr:       conn.LocalAddr(),
+authInfo:        config.AuthInfo,
+framer:          framer,
+hBuf:            &amp;buf,
+hEnc:            hpack.NewEncoder(&amp;buf),
+maxStreams:      maxStreams,
+inTapHandle:     config.InTapHandle,
+controlBuf:      newRecvBuffer(),
+fc:              &amp;inFlow{limit: initialConnWindowSize},
+sendQuotaPool:   newQuotaPool(defaultWindowSize),
+state:           reachable,
+writableChan:    make(chan int, 1),
+shutdownChan:    make(chan struct{}),
+activeStreams:   make(map[uint32]*Stream),
+streamSendQuota: defaultWindowSize,
+stats:           config.StatsHandler,
+kp:              kp,
+idle:            time.Now(),
+kep:             kep,
+}
+/* ... */
+// 专门处理控制信息
+go t.controller()
+// 专门处理tcp连接的保火逻辑
+go t.keepalive()
+// 解锁
+t.writableChan &lt;- 0
+return t, nil
 }
 
 
 func (s *Server) serveStreams(st transport.ServerTransport) {
-  // 处理完移除
-  defer s.removeConn(st)
-  // 处理完关闭Transport
-  defer st.Close()
-  var wg sync.WaitGroup
-  // ServerTransport定义的HandleStream, 传入handler和trace callback方法
-  // 这里ServerTransport的HandleStream实现会使用包装的http2.frame，循环不断读取帧
-  // 直到客户端的net.Conn返回错误或者关闭为止，handler只用来处理HEADER类型的帧(即新的http
-  // 请求，新的流的打开)，其他帧比如数据帧会分发到对应的stream, 这里的HEADER帧数据包含
-  // 了grpc定义的http请求头等信息。HandleStream会一直循环读取新到达的帧，知道出现错误
-  // 实在需要关闭客户端的连接，流读写相关的错误一般不会导致连接的关闭。
-  st.HandleStreams(func(stream *transport.Stream) {
-    wg.Add(1)
-    go func() {
-      defer wg.Done()
-      // 处理stream，只有HEADER类型的帧才调用这个处理请求头等信息
-      s.handleStream(st, stream, s.traceInfo(st, stream))
-    }()
-  }, func(ctx context.Context, method string) context.Context {
-    if !EnableTracing {
-      return ctx
-    }
-    tr := trace.New(&quot;grpc.Recv.&quot;+methodFamily(method), method)
-    return trace.NewContext(ctx, tr)
-  })
-  // 等待HandleStream结束，除非客户端的连接由于错误发生需要关闭，一般不会到这
-  wg.Wait()
+// 处理完移除
+defer s.removeConn(st)
+// 处理完关闭Transport
+defer st.Close()
+var wg sync.WaitGroup
+// ServerTransport定义的HandleStream, 传入handler和trace callback方法
+// 这里ServerTransport的HandleStream实现会使用包装的http2.frame，循环不断读取帧
+// 直到客户端的net.Conn返回错误或者关闭为止，handler只用来处理HEADER类型的帧(即新的http
+// 请求，新的流的打开)，其他帧比如数据帧会分发到对应的stream, 这里的HEADER帧数据包含
+// 了grpc定义的http请求头等信息。HandleStream会一直循环读取新到达的帧，知道出现错误
+// 实在需要关闭客户端的连接，流读写相关的错误一般不会导致连接的关闭。
+st.HandleStreams(func(stream *transport.Stream) {
+wg.Add(1)
+go func() {
+  defer wg.Done()
+  // 处理stream，只有HEADER类型的帧才调用这个处理请求头等信息
+  s.handleStream(st, stream, s.traceInfo(st, stream))
+}()
+}, func(ctx context.Context, method string) context.Context {
+if !EnableTracing {
+  return ctx
+}
+tr := trace.New(&quot;grpc.Recv.&quot;+methodFamily(method), method)
+return trace.NewContext(ctx, tr)
+})
+// 等待HandleStream结束，除非客户端的连接由于错误发生需要关闭，一般不会到这
+wg.Wait()
 }
 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>连接的处理细节(http2连接的建立)</li>
-</ul>
+<li><p>连接的处理细节(http2连接的建立)</p>
 
 <pre><code>// 实现的ServerTransport的HandleStreams接口
 func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.Context, string) context.Context) {
-  // Check the validity of client preface.
-  // 检查是否是http2
-  // 建立一个http2连接之后，之后的所有stream复用此连接
-  preface := make([]byte, len(clientPreface))
-  if _, err := io.ReadFull(t.conn, preface); err != nil {
-    grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to receive the preface from client: %v&quot;, err)
-    t.Close()
-    return
-  }
-  if !bytes.Equal(preface, clientPreface) {
-    grpclog.Printf(&quot;transport: http2Server.HandleStreams received bogus greeting from client: %q&quot;, preface)
-    t.Close()
-    return
-  }
-  // 读取一帧配置信息，参考http2的规范
-  frame, err := t.framer.readFrame()
-  /* ... */
-  sf, ok := frame.(*http2.SettingsFrame)
-  /* ... */
-  t.handleSettings(sf)
+// Check the validity of client preface.
+// 检查是否是http2
+// 建立一个http2连接之后，之后的所有stream复用此连接
+preface := make([]byte, len(clientPreface))
+if _, err := io.ReadFull(t.conn, preface); err != nil {
+grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to receive the preface from client: %v&quot;, err)
+t.Close()
+return
+}
+if !bytes.Equal(preface, clientPreface) {
+grpclog.Printf(&quot;transport: http2Server.HandleStreams received bogus greeting from client: %q&quot;, preface)
+t.Close()
+return
+}
+// 读取一帧配置信息，参考http2的规范
+frame, err := t.framer.readFrame()
+/* ... */
+sf, ok := frame.(*http2.SettingsFrame)
+/* ... */
+t.handleSettings(sf)
 
-  // 一直循环读取并处理帧, 注意什么时候底层的tcp连接会关闭，通常大多数情况下不会导致连接的关闭
-  // 从这里开始就是处理流和数据帧的逻辑了，连接复用在这里真正被体现
-  for {
-    frame, err := t.framer.readFrame()
-    atomic.StoreUint32(&amp;t.activity, 1)
-    if err != nil {
-      // StreamError，不退出，
-      if se, ok := err.(http2.StreamError); ok {
-        t.mu.Lock()
-        s := t.activeStreams[se.StreamID]
-        t.mu.Unlock()
-        // 关闭Stream
-        if s != nil {
-          t.closeStream(s)
-        }
-        // 控制输出错误信息
-        t.controlBuf.put(&amp;resetStream{se.StreamID, se.Code})
-        continue
-      }
-      // io.EOF什么时候触发? 客户端关闭连接?
-      if err == io.EOF || err == io.ErrUnexpectedEOF {
-        t.Close()
-        return
-      }
-      grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to read frame: %v&quot;, err)
-      t.Close()
-      return
+// 一直循环读取并处理帧, 注意什么时候底层的tcp连接会关闭，通常大多数情况下不会导致连接的关闭
+// 从这里开始就是处理流和数据帧的逻辑了，连接复用在这里真正被体现
+for {
+frame, err := t.framer.readFrame()
+atomic.StoreUint32(&amp;t.activity, 1)
+if err != nil {
+  // StreamError，不退出，
+  if se, ok := err.(http2.StreamError); ok {
+    t.mu.Lock()
+    s := t.activeStreams[se.StreamID]
+    t.mu.Unlock()
+    // 关闭Stream
+    if s != nil {
+      t.closeStream(s)
     }
-    // HTTP2定义的帧类型
-    switch frame := frame.(type) {
-    // HEADER frame用来打开一个stream，表示一个新请求的到来和一个新的流的建立，这里需要使用Server定义的处理逻辑
-    // 解析请求头，得到服务和方法的名称
-    case *http2.MetaHeadersFrame:
-      // 上层传递过来的handle处理stream
-      if t.operateHeaders(frame, handle, traceCtx) {
-        t.Close()
-        break
-      }
-    // DataFrame, RSTStream, WindowUpdateFrame都属于特定stream id的Stream
-    // 会被分派给对应的Stream
-    case *http2.DataFrame:
-      t.handleData(frame)
-    case *http2.RSTStreamFrame:
-      t.handleRSTStream(frame)
-    case *http2.SettingsFrame:
-      t.handleSettings(frame)
-    case *http2.PingFrame:
-      t.handlePing(frame)
-    case *http2.WindowUpdateFrame:
-      t.handleWindowUpdate(frame)
-    case *http2.GoAwayFrame:
-      // TODO: Handle GoAway from the client appropriately.
-    default:
-      grpclog.Printf(&quot;transport: http2Server.HandleStreams found unhandled frame type %v.&quot;, frame)
-    }
+    // 控制输出错误信息
+    t.controlBuf.put(&amp;resetStream{se.StreamID, se.Code})
+    continue
   }
+  // io.EOF什么时候触发? 客户端关闭连接?
+  if err == io.EOF || err == io.ErrUnexpectedEOF {
+    t.Close()
+    return
+  }
+  grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to read frame: %v&quot;, err)
+  t.Close()
+  return
+}
+// HTTP2定义的帧类型
+switch frame := frame.(type) {
+// HEADER frame用来打开一个stream，表示一个新请求的到来和一个新的流的建立，这里需要使用Server定义的处理逻辑
+// 解析请求头，得到服务和方法的名称
+case *http2.MetaHeadersFrame:
+  // 上层传递过来的handle处理stream
+  if t.operateHeaders(frame, handle, traceCtx) {
+    t.Close()
+    break
+  }
+// DataFrame, RSTStream, WindowUpdateFrame都属于特定stream id的Stream
+// 会被分派给对应的Stream
+case *http2.DataFrame:
+  t.handleData(frame)
+case *http2.RSTStreamFrame:
+  t.handleRSTStream(frame)
+case *http2.SettingsFrame:
+  t.handleSettings(frame)
+case *http2.PingFrame:
+  t.handlePing(frame)
+case *http2.WindowUpdateFrame:
+  t.handleWindowUpdate(frame)
+case *http2.GoAwayFrame:
+  // TODO: Handle GoAway from the client appropriately.
+default:
+  grpclog.Printf(&quot;transport: http2Server.HandleStreams found unhandled frame type %v.&quot;, frame)
+}
+}
 }
 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>新请求的处理细节(新流的打开和帧数据的处理)</li>
-</ul>
+<li><p>新请求的处理细节(新流的打开和帧数据的处理)</p>
 
 <pre><code>// 解析流，提取服务名，方法名等信息，handleStream实现的是stream的业务逻辑处理
 func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Stream, trInfo *traceInfo) {
-  sm := stream.Method()
-  if sm != &quot;&quot; &amp;&amp; sm[0] == '/' {
-    sm = sm[1:]
-  }
-  pos := strings.LastIndex(sm, &quot;/&quot;)
-  /* ... */
-  // 服务名
-  service := sm[:pos]
-  // 方法名
-  method := sm[pos+1:]
-  // 服务
-  srv, ok := s.m[service]
-  // 未注册的服务
-  if !ok {
-    if unknownDesc := s.opts.unknownStreamDesc; unknownDesc != nil {
-      s.processStreamingRPC(t, stream, nil, unknownDesc, trInfo)
-      return
-    }
-    /* ... */
-    return
-  }
-  // Unary RPC or Streaming RPC?
-  // 处理单次请求
-  if md, ok := srv.md[method]; ok {
-    s.processUnaryRPC(t, stream, srv, md, trInfo)
-    return
-  }
-  // 处理流式请求
-  if sd, ok := srv.sd[method]; ok {
-    s.processStreamingRPC(t, stream, srv, sd, trInfo)
-    return
-  }
+sm := stream.Method()
+if sm != &quot;&quot; &amp;&amp; sm[0] == '/' {
+sm = sm[1:]
+}
+pos := strings.LastIndex(sm, &quot;/&quot;)
+/* ... */
+// 服务名
+service := sm[:pos]
+// 方法名
+method := sm[pos+1:]
+// 服务
+srv, ok := s.m[service]
+// 未注册的服务
+if !ok {
+if unknownDesc := s.opts.unknownStreamDesc; unknownDesc != nil {
+  s.processStreamingRPC(t, stream, nil, unknownDesc, trInfo)
+  return
+}
+/* ... */
+return
+}
+// Unary RPC or Streaming RPC?
+// 处理单次请求
+if md, ok := srv.md[method]; ok {
+s.processUnaryRPC(t, stream, srv, md, trInfo)
+return
+}
+// 处理流式请求
+if sd, ok := srv.sd[method]; ok {
+s.processStreamingRPC(t, stream, srv, sd, trInfo)
+return
+}
   
-  // 没找到对应方法
-  if unknownDesc := s.opts.unknownStreamDesc; unknownDesc != nil {
-    s.processStreamingRPC(t, stream, nil, unknownDesc, trInfo)
-    return
-  }
-  /* ... */
+// 没找到对应方法
+if unknownDesc := s.opts.unknownStreamDesc; unknownDesc != nil {
+s.processStreamingRPC(t, stream, nil, unknownDesc, trInfo)
+return
+}
+/* ... */
 }
 
 // 处理单次请求
 func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.Stream, srv *service, md *MethodDesc, trInfo *traceInfo) (err error) {
+/* ... */
+// 发送数据的压缩格式
+if s.opts.cp != nil {
+// NOTE: this needs to be ahead of all handling, https://github.com/grpc/gRPC-Go/issues/686.
+stream.SetSendCompress(s.opts.cp.Type())
+}
+// 解析消息
+p := &amp;parser{r: stream}
+for { // TODO: delete
+// 第一个HEADER帧过后，后面的数据帧包含消息数据
+// 头5个字节：第一个字节代表是否压缩，2-5个字节消息体的长度，后面的数据全部读取给req
+pf, req, err := p.recvMsg(s.opts.maxMsgSize)
+/* ... */
+// 检查压缩类型是否正确
+if err := checkRecvPayload(pf, stream.RecvCompress(), s.opts.dc); err != nil {
   /* ... */
-  // 发送数据的压缩格式
-  if s.opts.cp != nil {
-    // NOTE: this needs to be ahead of all handling, https://github.com/grpc/gRPC-Go/issues/686.
-    stream.SetSendCompress(s.opts.cp.Type())
+}
+// 解压解码等操作，最终数据放到v中，而这个v则指向服务接口实现对应方法的请求参数req
+df := func(v interface{}) error {
+  if inPayload != nil {
+    inPayload.WireLength = len(req)
   }
-  // 解析消息
-  p := &amp;parser{r: stream}
-  for { // TODO: delete
-    // 第一个HEADER帧过后，后面的数据帧包含消息数据
-    // 头5个字节：第一个字节代表是否压缩，2-5个字节消息体的长度，后面的数据全部读取给req
-    pf, req, err := p.recvMsg(s.opts.maxMsgSize)
-    /* ... */
-    // 检查压缩类型是否正确
-    if err := checkRecvPayload(pf, stream.RecvCompress(), s.opts.dc); err != nil {
-      /* ... */
+  if pf == compressionMade {
+    var err error
+    // 解压
+    req, err = s.opts.dc.Do(bytes.NewReader(req))
+    if err != nil {
+      return Errorf(codes.Internal, err.Error())
     }
-    // 解压解码等操作，最终数据放到v中，而这个v则指向服务接口实现对应方法的请求参数req
-    df := func(v interface{}) error {
-      if inPayload != nil {
-        inPayload.WireLength = len(req)
-      }
-      if pf == compressionMade {
-        var err error
-        // 解压
-        req, err = s.opts.dc.Do(bytes.NewReader(req))
-        if err != nil {
-          return Errorf(codes.Internal, err.Error())
-        }
-      }
-      // 解压之后超过最大消息长度
-      if len(req) &gt; s.opts.maxMsgSize {
-        // TODO: Revisit the error code. Currently keep it consistent with
-        // java implementation.
-        return status.Errorf(codes.Internal, &quot;grpc: server received a message of %d bytes exceeding %d limit&quot;, len(req), s.opts.maxMsgSize)
-      }
-      // 解码
-      if err := s.opts.codec.Unmarshal(req, v); err != nil {
-        return status.Errorf(codes.Internal, &quot;grpc: error unmarshalling request: %v&quot;, err)
-      }
-      /* ... */
-    }
+  }
+  // 解压之后超过最大消息长度
+  if len(req) &gt; s.opts.maxMsgSize {
+    // TODO: Revisit the error code. Currently keep it consistent with
+    // java implementation.
+    return status.Errorf(codes.Internal, &quot;grpc: server received a message of %d bytes exceeding %d limit&quot;, len(req), s.opts.maxMsgSize)
+  }
+  // 解码
+  if err := s.opts.codec.Unmarshal(req, v); err != nil {
+    return status.Errorf(codes.Internal, &quot;grpc: error unmarshalling request: %v&quot;, err)
+  }
+  /* ... */
+}
 
-    // 处理原始消息数据，调用服务方法，这个Handler即上面protobuf的gRPC-Go插件为我们生成的处理函数
-    reply, appErr := md.Handler(srv.server, stream.Context(), df, s.opts.unaryInt)
-    /* ... */
-    // 发送响应，输出会在Transport和Stream两层做流控
-    if err := s.sendResponse(t, stream, reply, s.opts.cp, opts); err != nil {
-      // 单次请求处理完毕，直接返回
-      if err == io.EOF {
-        // The entire stream is done (for unary RPC only).
-        return err
-      }
-      /* ... */
-    }
-    
-    // TODO: Should we be logging if writing status failed here, like above?
-    // Should the logging be in WriteStatus?  Should we ignore the WriteStatus
-    // error or allow the stats handler to see it?
-    // 发送http响应头，关闭stream
-    return t.WriteStatus(stream, status.New(codes.OK, &quot;&quot;))
+// 处理原始消息数据，调用服务方法，这个Handler即上面protobuf的gRPC-Go插件为我们生成的处理函数
+reply, appErr := md.Handler(srv.server, stream.Context(), df, s.opts.unaryInt)
+/* ... */
+// 发送响应，输出会在Transport和Stream两层做流控
+if err := s.sendResponse(t, stream, reply, s.opts.cp, opts); err != nil {
+  // 单次请求处理完毕，直接返回
+  if err == io.EOF {
+    // The entire stream is done (for unary RPC only).
+    return err
   }
+  /* ... */
+}
+    
+// TODO: Should we be logging if writing status failed here, like above?
+// Should the logging be in WriteStatus?  Should we ignore the WriteStatus
+// error or allow the stats handler to see it?
+// 发送http响应头，关闭stream
+return t.WriteStatus(stream, status.New(codes.OK, &quot;&quot;))
+}
 }
 
 // 处理流式方法
 func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transport.Stream, srv *service, sd *StreamDesc, trInfo *traceInfo) (err error) {
-  /* ... */
-  ss := &amp;serverStream{
-    t:            t,
-    s:            stream,
-    p:            &amp;parser{r: stream},
-    codec:        s.opts.codec,
-    cp:           s.opts.cp,
-    dc:           s.opts.dc,
-    maxMsgSize:   s.opts.maxMsgSize,
-    trInfo:       trInfo,
-    statsHandler: sh,
-  }
-  if ss.cp != nil {
-    ss.cbuf = new(bytes.Buffer)
-  }
-  /* ... */
-  var appErr error
-  var server interface{}
-  if srv != nil {
-    server = srv.server
-  }
-  if s.opts.streamInt == nil {
-    // 调用protobuf gRPC-Go插件生成的ServiceDesc中的Handler
-    appErr = sd.Handler(server, ss)
-  } else {
-    info := &amp;StreamServerInfo{
-      FullMethod:     stream.Method(),
-      IsClientStream: sd.ClientStreams,
-      IsServerStream: sd.ServerStreams,
-    }
-    appErr = s.opts.streamInt(server, ss, info, sd.Handler)
-  }
-  /* ... */
-  // 注意，业务逻辑的实现函数返回后，最终还是会由服务端关闭流
-  return t.WriteStatus(ss.s, status.New(codes.OK, &quot;&quot;))
+/* ... */
+ss := &amp;serverStream{
+t:            t,
+s:            stream,
+p:            &amp;parser{r: stream},
+codec:        s.opts.codec,
+cp:           s.opts.cp,
+dc:           s.opts.dc,
+maxMsgSize:   s.opts.maxMsgSize,
+trInfo:       trInfo,
+statsHandler: sh,
+}
+if ss.cp != nil {
+ss.cbuf = new(bytes.Buffer)
+}
+/* ... */
+var appErr error
+var server interface{}
+if srv != nil {
+server = srv.server
+}
+if s.opts.streamInt == nil {
+// 调用protobuf gRPC-Go插件生成的ServiceDesc中的Handler
+appErr = sd.Handler(server, ss)
+} else {
+info := &amp;StreamServerInfo{
+  FullMethod:     stream.Method(),
+  IsClientStream: sd.ClientStreams,
+  IsServerStream: sd.ServerStreams,
+}
+appErr = s.opts.streamInt(server, ss, info, sd.Handler)
+}
+/* ... */
+// 注意，业务逻辑的实现函数返回后，最终还是会由服务端关闭流
+return t.WriteStatus(ss.s, status.New(codes.OK, &quot;&quot;))
 }
 
 // 发送响应数据，输出写数据时做了流量的控制
 func (s *Server) sendResponse(t transport.ServerTransport, stream *transport.Stream, msg interface{}, cp Compressor, opts *transport.Options) error {
-  // 编码并压缩
-  p, err := encode(s.opts.codec, msg, cp, cbuf, outPayload)
-  // ok, 写响应，加了出带宽的流控
-  err = t.Write(stream, p, opts)
-  /* ... */
-  return err
+// 编码并压缩
+p, err := encode(s.opts.codec, msg, cp, cbuf, outPayload)
+// ok, 写响应，加了出带宽的流控
+err = t.Write(stream, p, opts)
+/* ... */
+return err
 }
 func (t *http2Server) Write(s *Stream, data []byte, opts *Options) (err error) {
-  // TODO(zhaoq): Support multi-writers for a single stream.
-  var writeHeaderFrame bool
-  s.mu.Lock()
-  // stream已经关闭了
-  if s.state == streamDone {
-    s.mu.Unlock()
-    return streamErrorf(codes.Unknown, &quot;the stream has been done&quot;)
-  }
-  // 需要写header
-  if !s.headerOk {
-    writeHeaderFrame = true
-  }
-  s.mu.Unlock()
-  // 写响应头
-  if writeHeaderFrame {
-    t.WriteHeader(s, nil)
-  }
+// TODO(zhaoq): Support multi-writers for a single stream.
+var writeHeaderFrame bool
+s.mu.Lock()
+// stream已经关闭了
+if s.state == streamDone {
+s.mu.Unlock()
+return streamErrorf(codes.Unknown, &quot;the stream has been done&quot;)
+}
+// 需要写header
+if !s.headerOk {
+writeHeaderFrame = true
+}
+s.mu.Unlock()
+// 写响应头
+if writeHeaderFrame {
+t.WriteHeader(s, nil)
+}
 
-  // 缓冲
-  r := bytes.NewBuffer(data)
-  for {
-    if r.Len() == 0 {
-      return nil
-    }
-    // 每个frame最多16k
-    size := http2MaxFrameLen
-    // ServerTransport的quota默认等于Stream的quota，为默认窗口大小65535字节
-    // 流层限流
-    sq, err := wait(s.ctx, nil, nil, t.shutdownChan, s.sendQuotaPool.acquire())
-    // 传输层限流
-    tq, err := wait(s.ctx, nil, nil, t.shutdownChan, t.sendQuotaPool.acquire())
-    if sq &lt; size {
-      size = sq
-    }
-    if tq &lt; size {
-      size = tq
-    }
-    // 实际需要发送的数据, 返回buf的size长度的slice
-    p := r.Next(size)
-    ps := len(p)
-    // 小于本次的quota，则归还多的部分
-    if ps &lt; sq {
-      // Overbooked stream quota. Return it back.
-      // add会重置channel中的可用quota
-      s.sendQuotaPool.add(sq - ps)
-    }
-    if ps &lt; tq {
-      // Overbooked transport quota. Return it back.
-      t.sendQuotaPool.add(tq - ps)
-    }
-    t.framer.adjustNumWriters(1)
-    // 等待拿到此transport的锁，通过t.writableChan实现，由于可能有多个stream等待写transport，所以需要
-    // 用chan序列化
-    if _, err := wait(s.ctx, nil, nil, t.shutdownChan, t.writableChan); err != nil {
-      /* ... */
-    }
-    select {
-    case &lt;-s.ctx.Done():
-      t.sendQuotaPool.add(ps)
-      if t.framer.adjustNumWriters(-1) == 0 {
-        t.controlBuf.put(&amp;flushIO{})
-      }
-      // 需要释放锁
-      t.writableChan &lt;- 0
-      return ContextErr(s.ctx.Err())
-    default:
-    }
-    var forceFlush bool
-    // 没有剩下的数据可写了，直接flush，注意http2.frame写的时候是写到framer的Buffer writer
-    // 中，需要flush buffer writer，让数据完全写到客户端的net.Conn里去
-    // 注意这里的opts.Last，客户端发送完数据后需要显示调用CloseSend标识opts.Last为true
-    // 只有在不是显示由客户端发送结束标识，并且是最后一个使用这个stream，且没有可再读取
-    // 的数据时才强制flush
-    if r.Len() == 0 &amp;&amp; t.framer.adjustNumWriters(0) == 1 &amp;&amp; !opts.Last {
-      forceFlush = true
-    }
-    // 写到buffer reader中
-    if err := t.framer.writeData(forceFlush, s.id, false, p); err != nil {
-      t.Close()
-      return connectionErrorf(true, err, &quot;transport: %v&quot;, err)
-    }
-    // flush
-    if t.framer.adjustNumWriters(-1) == 0 {
-      t.framer.flushWrite()
-    }
-    // 需要释放锁，让其他stream写
-    t.writableChan &lt;- 0
+// 缓冲
+r := bytes.NewBuffer(data)
+for {
+if r.Len() == 0 {
+  return nil
+}
+// 每个frame最多16k
+size := http2MaxFrameLen
+// ServerTransport的quota默认等于Stream的quota，为默认窗口大小65535字节
+// 流层限流
+sq, err := wait(s.ctx, nil, nil, t.shutdownChan, s.sendQuotaPool.acquire())
+// 传输层限流
+tq, err := wait(s.ctx, nil, nil, t.shutdownChan, t.sendQuotaPool.acquire())
+if sq &lt; size {
+  size = sq
+}
+if tq &lt; size {
+  size = tq
+}
+// 实际需要发送的数据, 返回buf的size长度的slice
+p := r.Next(size)
+ps := len(p)
+// 小于本次的quota，则归还多的部分
+if ps &lt; sq {
+  // Overbooked stream quota. Return it back.
+  // add会重置channel中的可用quota
+  s.sendQuotaPool.add(sq - ps)
+}
+if ps &lt; tq {
+  // Overbooked transport quota. Return it back.
+  t.sendQuotaPool.add(tq - ps)
+}
+t.framer.adjustNumWriters(1)
+// 等待拿到此transport的锁，通过t.writableChan实现，由于可能有多个stream等待写transport，所以需要
+// 用chan序列化
+if _, err := wait(s.ctx, nil, nil, t.shutdownChan, t.writableChan); err != nil {
+  /* ... */
+}
+select {
+case &lt;-s.ctx.Done():
+  t.sendQuotaPool.add(ps)
+  if t.framer.adjustNumWriters(-1) == 0 {
+    t.controlBuf.put(&amp;flushIO{})
   }
+  // 需要释放锁
+  t.writableChan &lt;- 0
+  return ContextErr(s.ctx.Err())
+default:
+}
+var forceFlush bool
+// 没有剩下的数据可写了，直接flush，注意http2.frame写的时候是写到framer的Buffer writer
+// 中，需要flush buffer writer，让数据完全写到客户端的net.Conn里去
+// 注意这里的opts.Last，客户端发送完数据后需要显示调用CloseSend标识opts.Last为true
+// 只有在不是显示由客户端发送结束标识，并且是最后一个使用这个stream，且没有可再读取
+// 的数据时才强制flush
+if r.Len() == 0 &amp;&amp; t.framer.adjustNumWriters(0) == 1 &amp;&amp; !opts.Last {
+  forceFlush = true
+}
+// 写到buffer reader中
+if err := t.framer.writeData(forceFlush, s.id, false, p); err != nil {
+  t.Close()
+  return connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+}
+// flush
+if t.framer.adjustNumWriters(-1) == 0 {
+  t.framer.flushWrite()
+}
+// 需要释放锁，让其他stream写
+t.writableChan &lt;- 0
+}
 }
 
 // Data帧的处理，直接写到对应流的buf
 func (t *http2Server) handleData(f *http2.DataFrame) {
-  // 根据stream id找到stream
-  s, ok := t.getStream(f)
+// 根据stream id找到stream
+s, ok := t.getStream(f)
 
-  if size &gt; 0 {
-    if f.Header().Flags.Has(http2.FlagDataPadded) {
-      if w := t.fc.onRead(uint32(size) - uint32(len(f.Data()))); w &gt; 0 {
-        t.controlBuf.put(&amp;windowUpdate{0, w})
-      }
-    }
-    /* ... */
-    s.mu.Unlock()
-    // TODO(bradfitz, zhaoq): A copy is required here because there is no
-    // guarantee f.Data() is consumed before the arrival of next frame.
-    // Can this copy be eliminated?
-    if len(f.Data()) &gt; 0 {
-      data := make([]byte, len(f.Data()))
-      copy(data, f.Data())
-      // 写入stream的buf
-      s.write(recvMsg{data: data})
-    }
-  }
-  if f.Header().Flags.Has(http2.FlagDataEndStream) {
-    // Received the end of stream from the client.
-    s.mu.Lock()
-    if s.state != streamDone {
-      s.state = streamReadDone
-    }
-    s.mu.Unlock()
-    // 写入stream的buf
-    s.write(recvMsg{err: io.EOF})
+if size &gt; 0 {
+if f.Header().Flags.Has(http2.FlagDataPadded) {
+  if w := t.fc.onRead(uint32(size) - uint32(len(f.Data()))); w &gt; 0 {
+    t.controlBuf.put(&amp;windowUpdate{0, w})
   }
 }
-</code></pre>
+/* ... */
+s.mu.Unlock()
+// TODO(bradfitz, zhaoq): A copy is required here because there is no
+// guarantee f.Data() is consumed before the arrival of next frame.
+// Can this copy be eliminated?
+if len(f.Data()) &gt; 0 {
+  data := make([]byte, len(f.Data()))
+  copy(data, f.Data())
+  // 写入stream的buf
+  s.write(recvMsg{data: data})
+}
+}
+if f.Header().Flags.Has(http2.FlagDataEndStream) {
+// Received the end of stream from the client.
+s.mu.Lock()
+if s.state != streamDone {
+  s.state = streamReadDone
+}
+s.mu.Unlock()
+// 写入stream的buf
+s.write(recvMsg{err: io.EOF})
+}
+}
+</code></pre></li>
+</ul>
 
 <hr />
 
@@ -944,20 +934,25 @@ func (t *http2Server) handleData(f *http2.DataFrame) {
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
-    var disqus_title = 'gRPC-Go服务端源码分析';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90\/';
-
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div> 
 
 

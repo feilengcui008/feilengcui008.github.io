@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.24.1" />
+<meta name="generator" content="Hugo 0.49-DEV" />
 <title>Linux下x86_64进程地址空间布局</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -219,8 +219,7 @@ grep gettimeofday temp
 <p><img src="http://img.blog.csdn.net/20160604234042802" alt="这里写图片描述" /></p>
 
 <ul>
-<li>测试代码１：</li>
-</ul>
+<li><p>测试代码１：</p>
 
 <pre><code>#include &lt;pthread.h&gt;
 #include &lt;unistd.h&gt;
@@ -228,51 +227,49 @@ grep gettimeofday temp
 
 void *routine(void *args)
 {
-  fprintf(stdout, &quot;========\n&quot;);
-  char arr[10000];
-  fprintf(stdout, &quot;temp var arr address in child thread : %p\n&quot;, arr);
-  char arr1[10000];
-  fprintf(stdout, &quot;temp var arr1 address in child thread : %p\n&quot;, arr1);
+fprintf(stdout, &quot;========\n&quot;);
+char arr[10000];
+fprintf(stdout, &quot;temp var arr address in child thread : %p\n&quot;, arr);
+char arr1[10000];
+fprintf(stdout, &quot;temp var arr1 address in child thread : %p\n&quot;, arr1);
 
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr1 - arr);
+fprintf(stdout, &quot;delta : %ld\n&quot;, arr1 - arr);
 
-  for(;;) {
-    sleep(5);
-  }
+for(;;) {
+sleep(5);
+}
 }
 
 int main(int argc, char *argv[])
 {
-  // argc 4
-  // argv ?
-  pthread_t pt; // 4
-  pthread_t pt1; // 4
-  int ret;  // 4
-  // pthread max stack size(can be changed): 0x800000 = 8M
-  // char bigArr[0x800000 - 10000]; // SEGMENT FAULT
-  //char arr1[144000];
-  char arr1[144];
-  arr1[0] = 'a';
-  fprintf(stdout, &quot;temp var arr1 address in main thread lower than 139 K : %p\n&quot;, arr1);
-  //char arr2[100];
-  char arr2[1];
-  fprintf(stdout, &quot;temp var arr2 address in main thread lower than 139 K : %p\n&quot;, arr2);
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr2 - arr1);
-  //char arr3[100];
-  char arr3[10];
-  fprintf(stdout, &quot;temp var arr3 address in main thread lower than 139 K : %p\n&quot;, arr3);
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr3 - arr2);
-  ret = pthread_create(&amp;pt, NULL, routine, NULL);
-  ret = pthread_create(&amp;pt1, NULL, routine, NULL);
-  pthread_join(pt, NULL); 
-  pthread_join(pt1, NULL); 
-  return 0;
+// argc 4
+// argv ?
+pthread_t pt; // 4
+pthread_t pt1; // 4
+int ret;  // 4
+// pthread max stack size(can be changed): 0x800000 = 8M
+// char bigArr[0x800000 - 10000]; // SEGMENT FAULT
+//char arr1[144000];
+char arr1[144];
+arr1[0] = 'a';
+fprintf(stdout, &quot;temp var arr1 address in main thread lower than 139 K : %p\n&quot;, arr1);
+//char arr2[100];
+char arr2[1];
+fprintf(stdout, &quot;temp var arr2 address in main thread lower than 139 K : %p\n&quot;, arr2);
+fprintf(stdout, &quot;delta : %ld\n&quot;, arr2 - arr1);
+//char arr3[100];
+char arr3[10];
+fprintf(stdout, &quot;temp var arr3 address in main thread lower than 139 K : %p\n&quot;, arr3);
+fprintf(stdout, &quot;delta : %ld\n&quot;, arr3 - arr2);
+ret = pthread_create(&amp;pt, NULL, routine, NULL);
+ret = pthread_create(&amp;pt1, NULL, routine, NULL);
+pthread_join(pt, NULL); 
+pthread_join(pt1, NULL); 
+return 0;
 }
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>测试代码2：打印内核栈地址</li>
-</ul>
+<li><p>测试代码2：打印内核栈地址</p>
 
 <pre><code>#include &lt;linux/module.h&gt;
 #include &lt;linux/errno.h&gt;
@@ -286,18 +283,18 @@ MODULE_PARM_DESC(test_param, &quot;a test parameter&quot;);
 
 static int print_all_processes_init(void)
 {
-  struct task_struct *p;
-  for_each_process(p) {
-    if (p-&gt;pid == 1) {
-      printk(KERN_INFO &quot;stack : %p\n&quot;, p-&gt;stack);
-    }
-  };
-  return 0;
+struct task_struct *p;
+for_each_process(p) {
+if (p-&gt;pid == 1) {
+  printk(KERN_INFO &quot;stack : %p\n&quot;, p-&gt;stack);
+}
+};
+return 0;
 }
 
 static void print_all_processes_exit(void)
 {
-  printk(KERN_INFO &quot;unload module print_all_processes\n&quot;);
+printk(KERN_INFO &quot;unload module print_all_processes\n&quot;);
 }
 
 module_init(print_all_processes_init);
@@ -307,10 +304,9 @@ MODULE_AUTHOR(&quot;FEILENGCUI&quot;);
 MODULE_LICENSE(&quot;GPL&quot;);
 MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
 
-</code></pre>
+</code></pre></li>
 
-<ul>
-<li>对应init进程的内核栈stack起始地址</li>
+<li><p>对应init进程的内核栈stack起始地址</p></li>
 </ul>
 
 <p><img src="http://img.blog.csdn.net/20160604234414619" alt="这里写图片描述" /></p>
@@ -329,20 +325,25 @@ MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="text/javascript">
-    var disqus_shortname = 'feilengcui008';
-    var disqus_identifier = 'https:\/\/feilengcui008.github.io\/post\/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80\/';
-    var disqus_title = 'Linux下x86_64进程地址空间布局';
-    var disqus_url = 'https:\/\/feilengcui008.github.io\/post\/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80\/';
-
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
     (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
     })();
 </script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
-<a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
 </div> 
 
 

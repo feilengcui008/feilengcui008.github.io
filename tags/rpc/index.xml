@@ -20,7 +20,9 @@
       <description>基本设计 gRPC-Go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。
 另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实现(目前只实现了轮询方式)，另一种方式是外部的load balancer。
  内部自带的策略实现: 这种方式主要针对一些简单的负载均衡策略比如轮询。轮询的实现逻辑是建立连接时通过定义的服务地址解析接口Resolver得到服务的地址列表，并单独用goroutine负责更新保持可用的连接，Watcher定义了具体更新实现的接口(比如多长时间解析更新一次)，最终在请求调用时会从可用连接列表中轮询选择其中一个连接发送请求。所以，grpc的负载均衡策略是请求级别的而不是连接级别的。 外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。gRPC-Go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。  客户端主要流程 客户端的逻辑主要可分为下面两部分:
- 建立连接 请求调用、发送与响应  1. 建立连接  典型的步骤  func main() { // 建立连接 conn, err := grpc.Dial(address, grpc.WithInsecure()) c := pb.NewGreeterClient(conn) // 请求调用 r, err := c.SayHello(context.Background(), &amp;amp;pb.HelloRequest{Name: name}) // 处理返回r // 对于单次请求，grpc直接负责返回响应数据 // 对于流式请求，grpc会返回一个流的封装，由开发者负责流中数据的读写 }   建立tcp(http2)连接  func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialContext(context.Background(), target, opts.</description>
+ 建立连接 请求调用、发送与响应  1. 建立连接  典型的步骤
+func main() { // 建立连接 conn, err := grpc.Dial(address, grpc.WithInsecure()) c := pb.NewGreeterClient(conn) // 请求调用 r, err := c.SayHello(context.Background(), &amp;amp;pb.HelloRequest{Name: name}) // 处理返回r // 对于单次请求，grpc直接负责返回响应数据 // 对于流式请求，grpc会返回一个流的封装，由开发者负责流中数据的读写 }  建立tcp(http2)连接
+func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialContext(context.Background(), target, opts...) } func DialContext(ctx context.</description>
     </item>
     
     <item>
@@ -32,7 +34,8 @@
       <description>基本设计  服务抽象
  一个Server可包含多个Service，每个Service包含多个业务逻辑方法，应用开发者需要:  不使用protobuf  规定Service需要实现的接口 实现此Service对应的ServiceDesc，ServiceDesc描述了服务名、处理此服务的接口类型、单次调用的方法数组、流式方法数组、其他元数据。 实现Service接口具体业务逻辑的结构体 实例化Server，并讲ServiceDesc和Service具体实现注册到Server 监听并启动Server服务  使用protobuf  实现protobuf grpc插件生成的Service接口 实例化Server，并注册Service接口的具体实现 监听并启动Server  可见，protobuf的gRPC-Go插件帮助我们生成了Service的接口和ServiceDesc。   底层传输协议
  gRPC-Go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，gRPC-Go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考http2的规范  http2帧分为几大类，gRPC-Go使用中比较重要的是HEADERS和DATA帧类型。  HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，gRPC-Go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。 数据帧从属于某个stream，按照stream id查找，并写入对应的stream中。  Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。 客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。 客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。 gRPC-Go中的单次方法和流式方法  无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此&amp;rdquo;复用&amp;rdquo;这个流。 客户端如果是流式方法，需要显示调用CloseSend，表示数据发送的结束     服务端主要流程 由于比较多，所以分以下几个部分解读主要逻辑:
- 实例化Server 注册Service 监听并接收连接请求 连接与请求处理 连接的处理细节(http2连接的建立) 新请求的处理细节(新流的打开和帧数据的处理)   实例化Server  // 工厂方法 func NewServer(opt ...ServerOption) *Server { var opts options // 默认最大消息长度: 4M opts.</description>
+ 实例化Server 注册Service 监听并接收连接请求 连接与请求处理 连接的处理细节(http2连接的建立) 新请求的处理细节(新流的打开和帧数据的处理)   实例化Server
+// 工厂方法 func NewServer(opt ...ServerOption) *Server { var opts options // 默认最大消息长度: 4M opts.</description>
     </item>
     
   </channel>
