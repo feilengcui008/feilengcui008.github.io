@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.49-DEV" />
-<title>Categories</title>
+<title>RESTFUL API设计规范</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -48,48 +48,86 @@
 </nav>
 
     <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="RESTFUL API设计规范" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">RESTFUL API设计规范</h1>
 
-    <div class="personal_content">
-    <section class="category-box">
-        <div class="category-list">
-            
-                <a class="category-item" href="/categories/go">
-                    <span class="category-name">Go</span>
-                </a>
-            
-                <a class="category-item" href="/categories/linux">
-                    <span class="category-name">Linux</span>
-                </a>
-            
-                <a class="category-item" href="/categories/python">
-                    <span class="category-name">Python</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F">
-                    <span class="category-name">分布式系统</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF">
-                    <span class="category-name">基础技术</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7">
-                    <span class="category-name">效率工具</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
-                    <span class="category-name">算法与数据结构</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1">
-                    <span class="category-name">系统设计</span>
-                </a>
-            
-        </div>
-    </section>
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>09-04-2018</span>
+      </span>
+      </p>
+      <span>
+        
+        <span class="article-meta-span"><a href="/categories/%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1">系统设计</a></span>
+        
+      </span>
+      
+        | 
+      
+      <span>
+        
+        <span class="article-meta-span"><a href="/tags/restful">RESTFUL</a></span>
+        
+      </span>
+      <span id="/post/restful-api-design/" class="leancloud_visitors" data-flag-title="RESTFUL API设计规范">
+        <span class="post-flag"><span>
+      </span>
     </div>
+  </header>
 
-    <footer id="footer">
+  <div class="article-content">
+    <p>RESTFUL是一种风格，并非标准。资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源：</p>
+
+<ul>
+<li><a href="https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto">Google Spanner</a>，以及<a href="https://cloud.google.com/apis/design/resource_names">Google Cloud REST API</a></li>
+
+<li><p><a href="https://thomashunter.name/consumer-centric-api-design/Consumer-Centric%20API%20Design%20v0.3.1.pdf">Consumer-Centric API Design</a></p></li>
+
+<li><p>一次请求在父级资源下创建多个子源，如何设计接口？见<a href="https://www.zhihu.com/question/287118106">这个讨论</a></p>
+
+<ul>
+<li>这个其实可以用Google的Custom Method的方式，比如<code>POST /parentResources/{parentResourceId}/childResources:batchCreate</code>，这种方式保证URL的一致性的同时，扩展性非常强
+<br /></li>
+</ul></li>
+</ul>
+
+  </div>
+</article>
+
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
 </footer>
 
     </section>
@@ -205,4 +243,3 @@
 
   </body>
 </html>
-
