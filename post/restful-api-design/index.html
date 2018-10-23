@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.50-DEV" />
-<title>RESTFUL API设计规范</title>
+<title>RESTFUL API 设计规范</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -51,9 +51,9 @@
         
         
 <div class="content content-post CENTER">
-  <article id="RESTFUL API设计规范" class="article article-type-post" itemprop="blogPost">
+  <article id="RESTFUL API 设计规范" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">RESTFUL API设计规范</h1>
+    <h1 class="post-title">RESTFUL API 设计规范</h1>
 
     <div class="article-meta">
       <p>
@@ -75,7 +75,7 @@
         <span class="article-meta-span"><a href="/tags/restful">RESTFUL</a></span>
         
       </span>
-      <span id="/post/restful-api-design/" class="leancloud_visitors" data-flag-title="RESTFUL API设计规范">
+      <span id="/post/restful-api-design/" class="leancloud_visitors" data-flag-title="RESTFUL API 设计规范">
         <span class="post-flag"><span>
       </span>
     </div>
@@ -83,9 +83,9 @@
 
   <div class="article-content">
     <ul>
-<li><p>RESTFUL是一种风格，并非标准。</p></li>
+<li><p>RESTFUL 是一种风格，并非标准。</p></li>
 
-<li><p>资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源</p>
+<li><p>资源URI定位的两种方式：Resource Name、Resource ID，参考这两个资源</p>
 
 <ul>
 <li><a href="https://github.com/googleapis/googleapis/blob/master/google/spanner/v1/spanner.proto">Google Spanner</a>，以及<a href="https://cloud.google.com/apis/design/resource_names">Google Cloud REST API</a></li>
@@ -95,7 +95,7 @@
 <li><p>一次请求在父级资源下创建多个子源，如何设计接口？见<a href="https://www.zhihu.com/question/287118106">这个讨论</a></p>
 
 <ul>
-<li>这个其实可以用Google的Custom Method的方式，比如&rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&rdquo;，这种方式保证URL的一致性的同时，扩展性非常强
+<li>这个其实可以用 Google 的 Custom Method 的方式，比如&rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&rdquo;，这种方式保证URL的一致性的同时，扩展性非常强
 <br /></li>
 </ul></li>
 </ul>

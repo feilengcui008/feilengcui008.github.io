@@ -12,49 +12,39 @@
     
     
     <item>
-      <title>PaaS呓语</title>
+      <title>PaaS 呓语</title>
       <link>https://feilengcui008.github.io/post/paas/</link>
       <pubDate>Tue, 23 Oct 2018 10:20:49 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/paas/</guid>
       <description> 虽然不同 PaaS 平台的核心功能类似，但是针对上层的 workflow 来说，每个开发者对 PaaS 系统的理解都不相同。你的 PaaS 要给别人用，你能否理清你这个 PaaS 平台的整个工作流的逻辑？是否足够清晰？是否尽量简洁，入门容易，而不是抽象一大堆概念，堆砌一大堆所谓的功能？
- Service服务级托管【Solaria、Opera、Kubernetes】
- 线上的部署文件的全量更新 一个Container，一个Service实例，多个应用可以以独立进程的形式部署在同一个Container中 服务之间上线的并发性  服务上线的是全量的部署包，所以服务之间不会依赖同一个模块的上线，本身可并发进行  服务上线和扩容之间的并发性  类Web应用模块级托管【ORP、ORCP】
- 线上的部署文件的部分（假设部署文件由多个部分组成，每个部分称为一个模块）更新
- 这种情况主要针对模块较多，并且模块之间有依赖关系，且使用一个共同的运行层（比如Web容器、一些基础so库等），部分模块更新频繁（比如业务逻辑相关的模块），且不同模块可由多个RD维护上线，运行层更新很少，如果每次模块上线都使用一个全量的包，则上线流程可能比较慢（某个模块A的上线需要依赖其他很多模块的某个版本，所以为了保证上线包的一致性，打包必须是串行的）
- 这种模式本质的复杂性在于，具有依赖关系的且分多人维护的多模块的上线，如何在保证线上部署文件的最终一致性（某个模块上线后在线上只有一个版本）的同时，为业务上线提供最大的并发性
- Docker Image能否解决这个问题？
- 答案是不能，Docker Image虽然提供了分层的方式，但是本质上也是全量包，一次上线也是全量包上线，所以对于某个模块的上线，业务RD依然需要准备好所有依赖的模（即使用程序自动化，也需要指定某个模块的版本）块，使用代价太大   一个Container，一个Web容器，多个服务部署到同一个Web容器中，一个服务可能对应到多个模块（一个模块通常对应于一个代码库、Web容器的一个部署目录）
- 服务（以及模块）之间上线的并发性
- 同一个Web容器的多个服务以及同一个服务多个模块之间可以并发上线，并且每个模块有自己独立的上线版本，同一个模块同一时间只能上线一个版本，不能多个版本同时上线 通常情况下，一个服务可以对应到一个模块，这样业务的上线通常是独立的，但是有时多个业务（比如业务A、B）可能依赖一个公共模块（比如C），此时业务A和B都需要上线模块C，则这种情况下需要互斥，保证模块C只有同一个版本在上线，所以此中情况下A和B的上线无法并发进行  应用（以及模块）上线和扩容之间的并发性
- 为什么有这个需求？  对于规模较小的公司来说，扩容和上线可能都是RD自己操作，可以自己协调，扩容和上线互斥是保证线上版本最终一致的较好的方法 对于规模较大的公司，以及多模块的场景来说，由于上线是很频繁的，并且可能由不同业务的RD发起，而扩容可能由不同业务的OP发起，扩容阻塞上线或者上线阻塞扩容都是不太友好的，效率较低。这种情况下，如何保证上线和扩容并发进行的同时，线上的版本达到最终一致？  显然扩容不会做文件的变更，只有上线才会，并且扩容拿到的部署版本一定是之前上线过的，即扩容版本Vc &amp;lt;= 上线的最新版本Vo，所以扩容需要不断检查上线历史，并和上线的最新版本保持一致，所以要么是扩容检测上线历史，要么是上线通知扩容  扩容检测上线历史，所有扩容开始以后处于上线成功的都需要按照顺序依次追加部署，处于上线进行中的需要等待检查上线的成功与失败状态，如果是成功的则追加部署，否则忽略。【OXP的追单部署方式】  全量包 增量包  上线通知扩容，类似分布式事务的方式，如果没收到扩容的确认消息，则不断拿着上线的版本通知扩容确认  全量包 增量包        </description>
+ Service 服务级托管【Solaria、Opera、Kubernetes】
+ 线上的部署文件的全量更新 一个 Container，一个 Service 实例，多个应用可以以独立进程的形式部署在同一个 Container 中 服务之间上线的并发性  服务上线的是全量的部署包，所以服务之间不会依赖同一个模块的上线，本身可并发进行  服务上线和扩容之间的并发性  类Web应用模块级托管【ORP、ORCP】
+ 线上的部署文件的部分（假设部署文件由多个部分组成，每个部分称为一个模块）更新  这种情况主要针对模块较多，并且模块之间有依赖关系，且使用一个共同的运行层（比如 Web 容器、一些基础 so 库等），部分模块更新频繁（比如业务逻辑相关的模块），且不同模块可由多个 RD 维护上线，运行层更新很少，如果每次模块上线都使用一个全量的包，则上线流程可能比较慢（某个模块A的上线需要依赖其他很多模块的某个版本，所以为了保证上线包的一致性，打包必须是串行的） 这种模式本质的复杂性在于，具有依赖关系的且分多人维护的多模块的上线，如何在保证线上部署文件的最终一致性（某个模块上线后在线上只有一个版本）的同时，为业务上线提供最大的并发性 Docker Image 能否解决这个问题？  答案是不能，Docker Image 虽然提供了分层的方式，但是本质上也是全量包，一次上线也是全量包上线，所以对于某个模块的上线，业务 RD 依然需要准备好所有依赖的模（即使用程序自动化，也需要指定某个模块的版本）块，使用代价太大   一个 Container，一个 Web 容器，多个服务部署到同一个 Web 容器中，一个服务可能对应到多个模块（一个模块通常对应于一个代码库、Web 容器的一个部署目录） 服务（以及模块）之间上线的并发性  同一个 Web 容器的多个服务以及同一个服务多个模块之间可以并发上线，并且每个模块有自己独立的上线版本，同一个模块同一时间只能上线一个版本，不能多个版本同时上线 通常情况下，一个服务可以对应到一个模块，这样业务的上线通常是独立的，但是有时多个业务（比如业务 A、B）可能依赖一个公共模块（比如 C），此时业务A和B都需要上线模块 C，则这种情况下需要互斥，保证模块 C 只有同一个版本在上线，所以此中情况下 A 和 B 的上线无法并发进行  应用（以及模块）上线和扩容之间的并发性  为什么有这个需求？  对于规模较小的公司来说，扩容和上线可能都是 RD 自己操作，可以自己协调，扩容和上线互斥是保证线上版本最终一致的较好的方法 对于规模较大的公司，以及多模块的场景来说，由于上线是很频繁的，并且可能由不同业务的RD发起，而扩容可能由不同业务的 OP 发起，扩容阻塞上线或者上线阻塞扩容都是不太友好的，效率较低。这种情况下，如何保证上线和扩容并发进行的同时，线上的版本达到最终一致？  显然扩容不会做文件的变更，只有上线才会，并且扩容拿到的部署版本一定是之前上线过的，即扩容版本 Vc &amp;lt;= 上线的最新版本 Vo，所以扩容需要不断检查上线历史，并和上线的最新版本保持一致，所以要么是扩容检测上线历史，要么是上线通知扩容  扩容检测上线历史，所有扩容开始以后处于上线成功的都需要按照顺序依次追加部署，处于上线进行中的需要等待检查上线的成功与失败状态，如果是成功的则追加部署，否则忽略。【OXP 的追单部署方式】  全量包 增量包  上线通知扩容，类似分布式事务的方式，如果没收到扩容的确认消息，则不断拿着上线的版本通知扩容确认  全量包 增量包        </description>
     </item>
     
     <item>
-      <title>RESTFUL API设计规范</title>
+      <title>RESTFUL API 设计规范</title>
       <link>https://feilengcui008.github.io/post/restful-api-design/</link>
       <pubDate>Tue, 04 Sep 2018 16:19:37 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/restful-api-design/</guid>
-      <description> RESTFUL是一种风格，并非标准。
- 资源URI定位的两种方式：Resource Name，Resource ID，参考这两个资源
+      <description> RESTFUL 是一种风格，并非标准。
+ 资源URI定位的两种方式：Resource Name、Resource ID，参考这两个资源
  Google Spanner，以及Google Cloud REST API Consumer-Centric API Design  一次请求在父级资源下创建多个子源，如何设计接口？见这个讨论
- 这个其实可以用Google的Custom Method的方式，比如&amp;rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&amp;rdquo;，这种方式保证URL的一致性的同时，扩展性非常强    </description>
+ 这个其实可以用 Google 的 Custom Method 的方式，比如&amp;rdquo;POST /parentResources/{parentResourceId}/childResources:batchCreate&amp;rdquo;，这种方式保证URL的一致性的同时，扩展性非常强    </description>
     </item>
     
     <item>
-      <title>Raft读请求</title>
+      <title>Raft 读请求</title>
       <link>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</link>
       <pubDate>Thu, 08 Mar 2018 19:52:51 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</guid>
-      <description> Raft保证读请求Linearizability的方法  1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
- 2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
- 3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
- 4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
-  Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）  Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
-Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.
-  举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。  </description>
+      <description>Raft 保证读请求 Linearizability 的方法  1.Leader 把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次 RTT、一次磁盘写）
+ 2.使用 Leader Lease，保证整个集群只有一个 Leader，Leader 接收到都请求后，记录下当前的 commitIndex 为 readIndex，当 applyIndex 大于等于 readIndex 后，则可以读取状态机中的数据返回。（0 次 RTT、0 次磁盘写）
+ 3.不使用 Leader Lease，而是当 Leader 通过以下两点来保证整个集群中只有其一个正常工作的 Leader：（1）在每个 Term 开始时，由于新选出的 Leader 可能不知道上一个 Term 的 commitIndex，所以需要先在当前新的 Term 提交一条空操作的日志；（2）Leader 每次接到读请求后，向多数节点发送心跳确认自己的 Leader 身份。之后的读流程与 Leader Lease 的做法相同。（一次 RTT、0 次磁盘写）
+ 4.从 Follower 节点读：Follower 先向 Leader 询问 readIndex，Leader 收到 Follower 的请求后依然要通过 2 或 3 中的方法确认自己 Leader 的身份，然后返回当前的 commitIndex 作为 readIndex，Follower 拿到 readIndex 后，等待本地的 applyIndex 大于等于 readIndex 后，即可读取状态机中的数据返回。（ 2 次或 1 次 RTT、0 次磁盘写）</description>
     </item>
     
     <item>
