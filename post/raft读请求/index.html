@@ -84,7 +84,7 @@
   <div class="article-content">
     
 
-<h3 id="raft-保证读请求-linearizability-的方法">Raft 保证读请求 Linearizability 的方法</h3>
+<h2 id="raft-保证读请求-linearizability-的方法">Raft 保证读请求 Linearizability 的方法</h2>
 
 <ul>
 <li><p>1.Leader 把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次 RTT、一次磁盘写）</p></li>
@@ -96,13 +96,17 @@
 <li><p>4.从 Follower 节点读：Follower 先向 Leader 询问 readIndex，Leader 收到 Follower 的请求后依然要通过 2 或 3 中的方法确认自己 Leader 的身份，然后返回当前的 commitIndex 作为 readIndex，Follower 拿到 readIndex 后，等待本地的 applyIndex 大于等于 readIndex 后，即可读取状态机中的数据返回。（ 2 次或 1 次 RTT、0 次磁盘写）</p></li>
 </ul>
 
-<h3 id="raft-保证读请求-sequential-consistency-的方法">Raft 保证读请求 Sequential Consistency 的方法</h3>
+<hr />
+
+<h2 id="raft-保证读请求-sequential-consistency-的方法">Raft 保证读请求 Sequential Consistency 的方法</h2>
 
 <ul>
 <li>Leader 处理每次读写、Follower 处理每次读请求时，都返回本节点的 applyIndex，客户端在本地保存自己看到的最新的 applyIndex。客户端每次请求时都带上这个 applyIndex（假设为 clientIndex），Leader 或者 Follower 拿客户端请求中的 clientIndex 和自己本地的 applyIndex 比较，如果 applyIndex 大于等于 clientIndex，则可以读取状态机数据返回，否则等待，直到 applyIndex 大于等于 clientIndex。（0 次 RTT、0 次写磁盘）</li>
 </ul>
 
-<h3 id="linearizability-和-sequential-consistency-的区别">Linearizability 和 Sequential Consistency 的区别</h3>
+<hr />
+
+<h2 id="linearizability-和-sequential-consistency-的区别">Linearizability 和 Sequential Consistency 的区别</h2>
 
 <blockquote>
 <p>Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp</p>
