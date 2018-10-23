@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.50-DEV" />
-<title>KMP简单证明</title>
+<title>PaaS呓语</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -51,190 +51,103 @@
         
         
 <div class="content content-post CENTER">
-  <article id="KMP简单证明" class="article article-type-post" itemprop="blogPost">
+  <article id="PaaS呓语" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">KMP简单证明</h1>
+    <h1 class="post-title">PaaS呓语</h1>
 
     <div class="article-meta">
       <p>
       <span>
         <i class="icon-calendar"></i>
-        <span>03-03-2016</span>
+        <span>10-23-2018</span>
       </span>
       </p>
       <span>
         
-        <span class="article-meta-span"><a href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">算法与数据结构</a></span>
-        
       </span>
-      
-        | 
       
       <span>
         
-        <span class="article-meta-span"><a href="/tags/kmp">KMP</a></span>
-        
       </span>
-      <span id="/post/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/" class="leancloud_visitors" data-flag-title="KMP简单证明">
+      <span id="/post/paas/" class="leancloud_visitors" data-flag-title="PaaS呓语">
         <span class="post-flag"><span>
       </span>
     </div>
   </header>
 
   <div class="article-content">
-    
+    <ul>
+<li><p>虽然不同 PaaS 平台的核心功能类似，但是针对上层的 workflow 来说，每个开发者对 PaaS 系统的理解都不相同。你的 PaaS 要给别人用，你能否理清你这个 PaaS 平台的整个工作流的逻辑？是否足够清晰？是否尽量简洁，入门容易，而不是抽象一大堆概念，堆砌一大堆所谓的功能？</p></li>
 
-<p>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。</p>
-
-<h4 id="朴素算法">朴素算法</h4>
-
-<p>朴素算法比较明了，不再赘述，下面是简单的代码：</p>
-
-<pre><code>  // time : O(n*m), space : O(1)
-  int naive(const std::string &amp;text, const std::string &amp;pattern)
-  {
-    // corner case 
-    int len1 = text.length();
-    int len2 = pattern.length();
-    if (len2 &gt; len1) return -1;
-    int end = len1 - len2;
-    for (int i = 0; i &lt;= end; ++i) {
-      int j;
-      for (j = 0; j &lt; len2; ++j) {
-        if (text[i + j] != pattern[j]) {
-          break;
-        }
-      }
-      if (j == len2) return i;
-    }
-    return -1;
-  }
-
-</code></pre>
-
-<p>分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前
-的已匹配的相同前缀的信息。</p>
-
-<h4 id="模式串不含有相同字符">模式串不含有相同字符</h4>
-
-<p>这种情况下，当模式串的一个位置不匹配的时候，我们可以优化朴素算法直接跳过前面模式串已经匹配的长度，实际上这种思路和
-KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
-
-<pre><code>  // if pattern has different chars 
-  // we can optimize it to O(n)
-  // proof:
-  // assume match break in index j of pattern length m
-  // current index i : T1 T2 T3 ..Tj.. Tm ... Tn
-  //                   P1 P2 P3 ..Pj.. Pm
-  //                   Tj != Pj 
-  // (Pk != Pt) for 1 &lt;= k,t &lt;= m and k != t
-  // (Pk == Tk) for 1 &lt;= k &lt; j
-  // =&gt; P1 != Pk for 1 &lt;= k &lt; j
-  // =&gt; so move i to j
-  int special_case(const std::string &amp;text, const std::string &amp;pattern)
-  {
-    int len1 = text.length();
-    int len2 = pattern.length();
-    if (len2 &gt; len1) return -1;
-    int end = len1 - len2;
-    for (int i = 0; i &lt;= end; ++i) {
-      int j;
-      for (j = 0; j &lt; len2; ++j) {
-        if (text[i + j] != pattern[j]) {
-          break;
-        }
-      }
-      if (j == len2) return i;
-      // notice ++i
-      if (j != 0) {
-        i += (j - 1);
-      }
-    }
-    return -1;
-  }
-  
-</code></pre>
-
-<h4 id="kmp">KMP</h4>
+<li><p>Service服务级托管【Solaria、Opera、Kubernetes】</p>
 
 <ul>
-<li><p>KMP第一遍不是特别容易理解，所以就琢磨着给出一个证明，来加深理解，所以就想出了下面这么个不是很正规和形式化的证明。关于KMP算法的流程可以搜索相关文章，比如<a href="http://kb.cnblogs.com/page/176818/">这篇</a>挺不错的。</p></li>
-
-<li><p>前提假设：目标文本串T的长度为n，模式串P的长度为m，Arr为所谓的next数组，i为在模式串的第i个位置匹配失败。</p></li>
-
-<li><p>需要证明的问题：对于形如A B X1 X2&hellip; A B Y1 Y2&hellip; A B的模式串，为什么可以将模式串直接移到最后一个A B处进行下一次匹配，而不是在中间某个A B处？也就是说为什么以中间某个 A B开头进行匹配不可能成功。(注意这里为了方便只有A B两个字符，实际上可能是多个，并且中间的A B和第一个以及最后一个 A B使可能部分重合的)。</p></li>
-
-<li><p>简单证明</p>
+<li>线上的部署文件的全量更新</li>
+<li>一个Container，一个Service实例，多个应用可以以独立进程的形式部署在同一个Container中</li>
+<li>服务之间上线的并发性
 
 <ul>
-<li><p>首先，一次匹配成功则必然有在T中的对应的位置以A B开头，所以从T中最后一个A B处开始进行下一次匹配，成功是可能的。(即是KMP算法中下一次匹配移动模式串的位置)</p></li>
+<li>服务上线的是全量的部署包，所以服务之间不会依赖同一个模块的上线，本身可并发进行</li>
+</ul></li>
+<li>服务上线和扩容之间的并发性</li>
+</ul></li>
 
-<li><p>下面证明为什么从中间某个位置的A B处匹配不可能成功</p>
+<li><p>类Web应用模块级托管【ORP、ORCP】</p>
 
 <ul>
-<li><p>若序列X1 X2&hellip;与序列Y1 Y2&hellip;不完全相同，显然在第二个A B串处后面不可能匹配成功</p></li>
+<li><p>线上的部署文件的部分（假设部署文件由多个部分组成，每个部分称为一个模块）更新</p>
 
-<li><p>若序列X1 X2&hellip;与序列Y1 Y2&hellip;完全相同，则显然A B X1 X2&hellip;A B与A B Y1 Y2&hellip; A B是相等的更长的前缀和后缀，这自然回到了next数组</p></li>
+<ul>
+<li><p>这种情况主要针对<strong><em>模块较多</em></strong>，并且<strong><em>模块之间有依赖关系</em></strong>，且使用一个共同的运行层（比如Web容器、一些基础so库等），<strong><em>部分模块更新频繁</em></strong>（比如业务逻辑相关的模块），且<strong><em>不同模块可由多个RD维护上线</em></strong>，运行层更新很少，如果每次模块上线都使用一个全量的包，则上线流程可能比较慢（某个模块A的上线需要依赖其他很多模块的某个版本，所以为了保证上线包的一致性，打包必须是串行的）</p></li>
+
+<li><p>这种模式本质的复杂性在于，具有依赖关系的且分多人维护的多模块的上线，如何在保证线上部署文件的最终一致性（某个模块上线后在线上只有一个版本）的同时，为业务上线提供最大的并发性</p></li>
+
+<li><p>Docker Image能否解决这个问题？</p>
+
+<ul>
+<li>答案是不能，Docker Image虽然提供了分层的方式，但是本质上也是全量包，一次上线也是全量包上线，所以对于某个模块的上线，业务RD依然需要准备好所有依赖的模（即使用程序自动化，也需要指定某个模块的版本）块，使用代价太大</li>
 </ul></li>
 </ul></li>
 
-<li><p>虽然不是很正规(应该很不正规&hellip;)，但是还是多少能帮助理解吧:-)</p></li>
+<li><p>一个Container，一个Web容器，多个服务部署到同一个Web容器中，一个服务可能对应到多个模块（一个模块通常对应于一个代码库、Web容器的一个部署目录）</p></li>
 
-<li><p>最后附上kmp代码</p>
+<li><p>服务（以及模块）之间上线的并发性</p>
 
-<pre><code>// longest common prefix and suffix of
-// substr of pattern[0, i] 
-// use dyamic programming 
-// time : O(m), space : O(m)
-std::vector&lt;int&gt; nextArray(const std::string &amp;pattern)
-{
-int len = pattern.length();
-if (len == 0) return std::vector&lt;int&gt;();
-std::vector&lt;int&gt; res(len, 0);
-res[0] = 0;
-for (int i = 1; i &lt; len; ++i) {
-  if (pattern[res[i - 1]] == pattern[i]) {
-    res[i] = res[i - 1] + 1;
-  }
-  res[i] = res[i - 1];
-}
-//for (auto &amp;&amp;ele : res) {
-//  std::cout &lt;&lt; ele &lt;&lt; std::endl;
-//}
-return res;
-}
+<ul>
+<li>同一个Web容器的多个服务以及同一个服务多个模块之间可以并发上线，并且每个模块有自己独立的上线版本，同一个模块同一时间只能上线一个版本，不能多个版本同时上线</li>
+<li>通常情况下，一个服务可以对应到一个模块，这样业务的上线通常是独立的，但是有时多个业务（比如业务A、B）可能依赖一个公共模块（比如C），此时业务A和B都需要上线模块C，则这种情况下需要互斥，保证模块C只有同一个版本在上线，所以此中情况下A和B的上线无法并发进行</li>
+</ul></li>
 
-// time : O(n) + O(m), space : O(m)
-int kmp(const std::string &amp;text, const std::string &amp;pattern)
-{
-int len1 = text.length();
-int len2 = pattern.length();
-if (len2 &gt; len1) return -1;
-// get next array
-std::vector&lt;int&gt; next = nextArray(pattern);
-int i = 0;
-int end = len1 - len2;
-for (; i &lt;= end; ++i) {
-  int j;
-  for (j = 0; j &lt; len2; ++j) {
-    if (text[i + j] != pattern[j]) {
-      break;
-    }
-  }
-  // got one 
-  if (j == len2) return i;
-  // move to next position
-  // notice the ++i 
-  // we can skip j == 0
-  if (j != 0) {
-    i += (j - next[j - 1]);
-  }
-  //std::cout &lt;&lt; &quot;j:&quot; &lt;&lt; j &lt;&lt; &quot; i:&quot; &lt;&lt; i &lt;&lt; std::endl;
-}
-return -1;
-}
+<li><p>应用（以及模块）上线和扩容之间的并发性</p>
 
-</code></pre></li>
+<ul>
+<li>为什么有这个需求？
+
+<ul>
+<li>对于规模较小的公司来说，扩容和上线可能都是RD自己操作，可以自己协调，扩容和上线互斥是保证线上版本最终一致的较好的方法</li>
+<li>对于规模较大的公司，以及多模块的场景来说，由于上线是很频繁的，并且可能由不同业务的RD发起，而扩容可能由不同业务的OP发起，扩容阻塞上线或者上线阻塞扩容都是不太友好的，效率较低。这种情况下，如何保证上线和扩容并发进行的同时，线上的版本达到最终一致？
+
+<ul>
+<li>显然扩容不会做文件的变更，只有上线才会，并且扩容拿到的部署版本一定是之前上线过的，即<code>扩容版本Vc &lt;= 上线的最新版本Vo</code>，所以扩容需要不断检查上线历史，并和上线的最新版本保持一致，所以要么是扩容检测上线历史，要么是上线通知扩容
+
+<ul>
+<li>扩容检测上线历史，所有扩容开始以后处于上线成功的都需要按照顺序依次追加部署，处于上线进行中的需要等待检查上线的成功与失败状态，如果是成功的则追加部署，否则忽略。【OXP的追单部署方式】
+
+<ul>
+<li>全量包</li>
+<li>增量包</li>
+</ul></li>
+<li>上线通知扩容，类似分布式事务的方式，如果没收到扩容的确认消息，则不断拿着上线的版本通知扩容确认
+
+<ul>
+<li>全量包</li>
+<li>增量包</li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
+</ul></li>
 </ul>
 
   </div>

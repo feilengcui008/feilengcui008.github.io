@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://feilengcui008.github.io/post/paas/</loc>
+    <lastmod>2018-10-23T10:20:49+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/post/restful-api-design/</loc>
     <lastmod>2018-09-04T16:19:37+08:00</lastmod>
   </url>
@@ -211,14 +216,14 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/categories/linux/</loc>
-    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/tags/linux/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/tags/linux/</loc>
-    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/categories/linux/</loc>
+    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -230,7 +235,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/</loc>
-    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
+    <lastmod>2018-10-23T10:20:49+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -272,7 +277,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/</loc>
-    <lastmod>2018-09-04T16:19:37+08:00</lastmod>
+    <lastmod>2018-10-23T10:20:49+08:00</lastmod>
     <priority>0</priority>
   </url>
   
