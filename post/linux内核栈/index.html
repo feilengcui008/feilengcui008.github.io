@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.50-DEV" />
-<title>Linux 内核栈与 thread_info</title>
+<title>Linux内核栈与thread_info</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -51,9 +51,9 @@
         
         
 <div class="content content-post CENTER">
-  <article id="Linux 内核栈与 thread_info" class="article article-type-post" itemprop="blogPost">
+  <article id="Linux内核栈与thread_info" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Linux 内核栈与 thread_info</h1>
+    <h1 class="post-title">Linux内核栈与thread_info</h1>
 
     <div class="article-meta">
       <p>
@@ -71,7 +71,7 @@
       <span>
         
       </span>
-      <span id="/post/linux%E5%86%85%E6%A0%B8%E6%A0%88/" class="leancloud_visitors" data-flag-title="Linux 内核栈与 thread_info">
+      <span id="/post/linux%E5%86%85%E6%A0%B8%E6%A0%88/" class="leancloud_visitors" data-flag-title="Linux内核栈与thread_info">
         <span class="post-flag"><span>
       </span>
     </div>
@@ -80,22 +80,22 @@
   <div class="article-content">
     
 
-<h2 id="内核栈与-thread-info">内核栈与 thread_info</h2>
+<h2 id="内核栈与thread-info">内核栈与thread_info</h2>
 
-<p>Linux 内核在 x86 平台下，PAGE_SIZE 为 4KB(32 位和 64 位相同)，THREAD_SIZE 为 8KB(32 位)或者 16KB(64 位)。THREAD_SIZE 表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:</p>
+<p>Linux内核在x86平台下，PAGE_SIZE为4KB(32位和64位相同)，THREAD_SIZE为8KB(32位)或者16KB(64位)。THREAD_SIZE表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:</p>
 
 <ul>
-<li>thread_info 结构体</li>
+<li>thread_info结构体</li>
 <li>溢出标志</li>
-<li>从溢出标志开始到 kernel_stack 之间的实际可用栈内存空间，kernel_stack 为 percpu 变量，通过它可间接找到内核栈的起始地址</li>
-<li>从 kernel_stack 到栈底的长度为 KERNEL_STACK_OFFSET 的保留空间</li>
+<li>从溢出标志开始到kernel_stack之间的实际可用栈内存空间，kernel_stack为percpu变量，通过它可间接找到内核栈的起始地址</li>
+<li>从kernel_stack到栈底的长度为KERNEL_STACK_OFFSET的保留空间</li>
 </ul>
 
 <p><img src="/images/kernel_stack.jpg" alt="kernel_stack" /></p>
 
-<p>内核引入 thread_info 的一大原因是方便通过它直接找到进(线)程的 task_struct 指针，x86 平台的 thread_info 结构体定义在 arch/x86/include/asm/thread_info.h。</p>
+<p>内核引入thread_info的一大原因是方便通过它直接找到进(线)程的task_struct指针，x86 平台的thread_info结构体定义在arch/x86/include/asm/thread_info.h。</p>
 
-<pre><code>// Linux 3.19.3 x86 平台的 thread_info
+<pre><code>// Linux 3.19.3 x86平台的thread_info
 struct thread_info {
 	struct task_struct	*task;		/* main task structure */
 	struct exec_domain	*exec_domain;	/* execution domain */
@@ -110,21 +110,21 @@ struct thread_info {
 };
 </code></pre>
 
-<p>由于 thread_info 结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到 thread_info，进而得到 task_struct，后面会分析这个过程的实现。</p>
+<p>由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</p>
 
 <hr />
 
-<h2 id="current-宏">current 宏</h2>
+<h2 id="current宏">current宏</h2>
 
-<p>current 宏在 Linux 内核中负责获取当前 cpu 上的 task_struct，通常是借助 thread_info 和内核栈实现，这种方式的主要逻辑是:</p>
+<p>current宏在Linux 内核中负责获取当前cpu上的task_struct，通常是借助thread_info和内核栈实现，这种方式的主要逻辑是:</p>
 
 <ul>
-<li>定义 kernel_stack percpu 变量，通过 kernel_stack + KERNEL_STACK_OFFSET - THREAD_SIZE 即可获得内核栈的起始地址</li>
-<li>内核栈的起始地址即是 thread_info 的起始地址，所以通过 thread_info-&gt;task 即可获得 task_struct 指针</li>
+<li>定义kernel_stack percpu变量，通过kernel_stack + KERNEL_STACK_OFFSET - THREAD_SIZE即可获得内核栈的起始地址</li>
+<li>内核栈的起始地址即是thread_info的起始地址，所以通过thread_info-&gt;task即可获得task_struct指针</li>
 
-<li><p>在每次上下文切换时，更新 kernel_stack percpu 变量</p>
+<li><p>在每次上下文切换时，更新kernel_stack percpu变量</p>
 
-<pre><code>// 以 Linux 3.19.3 x86 的源码为例
+<pre><code>// 以Linux 3.19.3 x86的源码为例
 // 注意，arch/xxx/include/asm/...下的头文件是对应
 // include/asm-generic/...下的平台相关实现，若arch
 // 目录下没有相同的头文件，则使用asm-generic目录下

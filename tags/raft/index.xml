@@ -12,15 +12,18 @@
     
     
     <item>
-      <title>Raft 读请求</title>
+      <title>Raft读请求</title>
       <link>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</link>
       <pubDate>Thu, 08 Mar 2018 19:52:51 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</guid>
-      <description>Raft 保证读请求 Linearizability 的方法  1.Leader 把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次 RTT、一次磁盘写）
- 2.使用 Leader Lease，保证整个集群只有一个 Leader，Leader 接收到都请求后，记录下当前的 commitIndex 为 readIndex，当 applyIndex 大于等于 readIndex 后，则可以读取状态机中的数据返回。（0 次 RTT、0 次磁盘写）
- 3.不使用 Leader Lease，而是当 Leader 通过以下两点来保证整个集群中只有其一个正常工作的 Leader：（1）在每个 Term 开始时，由于新选出的 Leader 可能不知道上一个 Term 的 commitIndex，所以需要先在当前新的 Term 提交一条空操作的日志；（2）Leader 每次接到读请求后，向多数节点发送心跳确认自己的 Leader 身份。之后的读流程与 Leader Lease 的做法相同。（一次 RTT、0 次磁盘写）
- 4.从 Follower 节点读：Follower 先向 Leader 询问 readIndex，Leader 收到 Follower 的请求后依然要通过 2 或 3 中的方法确认自己 Leader 的身份，然后返回当前的 commitIndex 作为 readIndex，Follower 拿到 readIndex 后，等待本地的 applyIndex 大于等于 readIndex 后，即可读取状态机中的数据返回。（ 2 次或 1 次 RTT、0 次磁盘写）</description>
+      <description> Raft保证读请求Linearizability的方法  1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
+ 2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex 后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
+ 3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
+ 4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
+  Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）  Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
+Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.
+  举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。  </description>
     </item>
     
     <item>
