@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en-us">
+	<head>
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.50-DEV" />
+<title>PaaS、服务管理和资源管理</title>
+<link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
+<link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
+
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/darcula.min.css">
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+  </head>
+  <body>
+    <nav class="main-nav">
+
+    <div class="sidebar-toggle-parent" onmouseover="mouseOver()" onmouseout="mouseOut()">
+        <div class="sidebar-toggle">
+            <a href="/"><span class="icon icon-home dot"></span></a>
+        </div>
+
+        
+
+        
+
+        
+
+        
+
+        
+
+        
+        <div class="sidebar-toggle">
+            <a href="/about"><span class="icon icon-user dot"></span></a>
+        </div>
+        
+
+    </div>
+
+</nav>
+
+    <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="PaaS、服务管理和资源管理" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">PaaS、服务管理和资源管理</h1>
+
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>02-11-2020</span>
+      </span>
+      </p>
+      <span>
+        
+      </span>
+      
+      <span>
+        
+      </span>
+      <span id="/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/" class="leancloud_visitors" data-flag-title="PaaS、服务管理和资源管理">
+        <span class="post-flag"><span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    
+
+<h2 id="paas">PaaS</h2>
+
+<p>PaaS是什么？怎么做？我想现在也没有一个公司或者开源项目能够给出统一的回答。PaaS本身就应该是面向场景的，它需要上层模型（应用模型和workflow），即使是各公司内部的PaaS也都受限于各种原因（业务场景、研发流程、IDC等）在上层模型上有自己的特点，简单给k8s什么的加个ui，还是大量照搬k8s原生的概念（比如deployment）绝不是一个理想易用的PaaS，典型例子openshift。K8s这些概念抽象得很好，但是并不是研发和运维共同native，而是运维native的，对研发来说并不是最好的概念。对于研发来说，我可能要上线的是一个应用，而不是一个deployment，概念的区别和定位一下就出来了。</p>
+
+<p>公司搞一个”通用“的统一PaaS就够了吗？显然不是。业务场景的多样性和复杂性，以及它们对研发运维流程的特殊要求，决定了垂类PaaS必定会存在的，比如机器学习平台。我可能底层还是基于公司的统一的PaaS，但是上层模型一定是不一样的，搞机器学习的算法工程师一定是需要一套顺手的workflow的，这一套workflow跟通常的研发相比，一定是有自己的特定要求的。其他垂类PaaS，比如针对web类型应用的，针对异构计算的，针对金融场景的&hellip;&hellip;</p>
+
+<h2 id="服务管理">服务管理</h2>
+
+<p>服务这个词概念很模糊，这里定义为一组容器，类似k8s的deployment或者service的概念，这里重点在管理。一组容器在那了，它可能由于机器节点宕机、网络故障、程序bug变得异常，我们需要修复；另外，容器资源随着业务流量的增减也需要自适应地变更，这些本质上都是在做一组容器（即服务）的管理，如何自动化地做这些事情？策略化。K8s的各种controller以及很多概念本质上就是各种服务管理策略，是面向自动化运维的，而不是面向研发。</p>
+
+<h2 id="资源管理">资源管理</h2>
+
+<p>容器创建、调度、状态，机器节点的管理，网络，quota配额，混部资源QOS，单机隔离&hellip;&hellip;这些才是资源管理的事情。资源管理把最基本的管好了，服务管理在策略层面去做更多的事情，分工明确，皆大欢喜。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>给k8s加个ui一定不是个理想易用的PaaS（可能小公司无所谓），无论统一的PaaS还是垂类的PaaS一定需要有上层模型。另外，实际上k8s把资源管理和服务管理都做了，另一种思路是服务管理其实可以到更上层一些或者外围来做。广义PaaS摊子可以很大，中间这一层不好做，用户客服问题会非常之多，垂类PaaS或者更往下的资源管理相对好些。</p>
+
+  </div>
+</article>
+
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
+</footer>
+
+    </section>
+    <script src="https://feilengcui008.github.io/js/scroll-spy.js"></script>
+<script src="https://feilengcui008.github.io/js/head.js"></script>
+<script src="https://feilengcui008.github.io/js/bundle.js"></script>
+<script src="https://feilengcui008.github.io/js/fastclick.js"></script>
+<script src="https://feilengcui008.github.io/js/util.js"></script>
+<script src="https://feilengcui008.github.io/js/zenscroll.js"></script>
+<script src="https://feilengcui008.github.io/js/app.js"></script>
+<script src="https://feilengcui008.github.io/js/jquery-3.2.1.min.js"></script>
+<script src="https://feilengcui008.github.io/js/av-core-mini-0.6.1.js"></script>
+
+
+
+<script>
+    AV.initialize("sKCGt9cqaRvCq8ij2XsSRQET-gzGzoHsz", "Uusqiv2yEoQBC0vy7KnlzCqI");
+</script>
+<script>
+    function showTime(Counter) {
+        var query = new AV.Query(Counter);
+        var entries = [];
+        var $visitors = $(".leancloud_visitors");
+
+        $visitors.each(function () {
+            entries.push( $(this).attr("id").trim() );
+        });
+
+        query.containedIn('url', entries);
+        query.find()
+        .done(function (results) {
+            var COUNT_CONTAINER_REF = '.leancloud-visitors-count';
+
+            if (results.length === 0) {
+                $visitors.find(COUNT_CONTAINER_REF).text(0);
+                return;
+            }
+
+            for (var i = 0; i < results.length; i++) {
+                var item = results[i];
+                var url = item.get('url');
+                var time = item.get('time');
+                var element = document.getElementById(url);
+
+                $(element).find(COUNT_CONTAINER_REF).text(" - " + time);
+            }
+        })
+        .fail(function (object, error) {
+            console.log("Error: " + error.code + " " + error.message);
+        });
+    }
+
+    function addCount(Counter) {
+        var $visitors = $(".leancloud_visitors");
+        var url = $visitors.attr('id').trim();
+        var title = $visitors.attr('data-flag-title').trim();
+        var query = new AV.Query(Counter);
+
+        query.equalTo("url", url);
+        query.find({
+                success: function(results) {
+                    if (results.length > 0) {
+                        var counter = results[0];
+                        counter.fetchWhenSave(true);
+                        counter.increment("time");
+                        counter.save(null, {
+                                success: function(counter) {
+                                    var $element = $(document.getElementById(url));
+                                    $element.find('.leancloud-visitors-count').text(counter.get('time'));
+                                },
+                                error: function(counter, error) {
+                                    console.log('Failed to save Visitor num, with error message: ' + error.message);
+                                }
+                        });
+                    } else {
+                        var newcounter = new Counter();
+                         
+                        var acl = new AV.ACL();
+                        acl.setPublicReadAccess(true);
+                        acl.setPublicWriteAccess(true);
+                        newcounter.setACL(acl);
+                         
+                        newcounter.set("title", title);
+                        newcounter.set("url", url);
+                        newcounter.set("time", 1);
+                        newcounter.save(null, {
+                            success: function(newcounter) {
+                                var $element = $(document.getElementById(url));
+                                $element.find('.leancloud-visitors-count').text(newcounter.get('time'));
+                            },
+                            error: function(newcounter, error) {
+                                console.log('Failed to create');
+                            }
+                        });
+                    }
+                },
+                error: function(error) {
+                    console.log('Error:' + error.code + " " + error.message);
+                }
+        });
+    }
+
+    $(function() {
+        var Counter = AV.Object.extend("Counter");
+        if ($('.post-list-flag').length > 0) {
+            showTime(Counter);
+        }
+        if ($('.post-flag').length > 0) {
+            addCount(Counter);
+        }
+    });
+</script>
+
+  </body>
+</html>

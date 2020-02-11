@@ -3,6 +3,11 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</loc>
+    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</loc>
     <lastmod>2018-03-08T19:52:51+08:00</lastmod>
   </url>
@@ -201,14 +206,14 @@
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/categories/linux/</loc>
-    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/tags/linux/</loc>
+    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://feilengcui008.github.io/tags/linux/</loc>
-    <lastmod>2017-09-21T16:32:02+08:00</lastmod>
+    <loc>https://feilengcui008.github.io/categories/linux/</loc>
+    <lastmod>2017-10-09T11:41:42+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -220,7 +225,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/</loc>
-    <lastmod>2018-03-08T19:52:51+08:00</lastmod>
+    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -280,7 +285,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/</loc>
-    <lastmod>2018-03-08T19:52:51+08:00</lastmod>
+    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
     <priority>0</priority>
   </url>
   
