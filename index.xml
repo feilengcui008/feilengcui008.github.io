@@ -6,7 +6,7 @@
     <description>Recent content on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 11 Feb 2020 13:36:55 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 08 Dec 2019 13:36:55 +0800</lastBuildDate>
     
 	<atom:link href="https://feilengcui008.github.io/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>PaaS、服务管理和资源管理</title>
       <link>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</link>
-      <pubDate>Tue, 11 Feb 2020 13:36:55 +0800</pubDate>
+      <pubDate>Sun, 08 Dec 2019 13:36:55 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</guid>
       <description>PaaS PaaS是什么？怎么做？我想现在也没有一个公司或者开源项目能够给出统一的回答。PaaS本身就应该是面向场景的，它需要上层模型（应用模型和workflow），即使是各公司内部的PaaS也都受限于各种原因（业务场景、研发流程、IDC等）在上层模型上有自己的特点，简单给k8s什么的加个ui，还是大量照搬k8s原生的概念（比如deployment）绝不是一个理想易用的PaaS，典型例子openshift。K8s这些概念抽象得很好，但是并不是研发和运维共同native，而是运维native的，对研发来说并不是最好的概念。对于研发来说，我可能要上线的是一个应用，而不是一个deployment，概念的区别和定位一下就出来了。

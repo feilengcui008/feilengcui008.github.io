@@ -4,7 +4,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</loc>
-    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
+    <lastmod>2019-12-08T13:36:55+08:00</lastmod>
   </url>
   
   <url>
@@ -218,6 +218,12 @@
   </url>
   
   <url>
+    <loc>https://feilengcui008.github.io/categories/paas/</loc>
+    <lastmod>2019-12-08T13:36:55+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>https://feilengcui008.github.io/tags/paxos/</loc>
     <lastmod>2016-03-08T19:05:46+08:00</lastmod>
     <priority>0</priority>
@@ -225,7 +231,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/post/</loc>
-    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
+    <lastmod>2019-12-08T13:36:55+08:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -285,7 +291,7 @@
   
   <url>
     <loc>https://feilengcui008.github.io/</loc>
-    <lastmod>2020-02-11T13:36:55+08:00</lastmod>
+    <lastmod>2019-12-08T13:36:55+08:00</lastmod>
     <priority>0</priority>
   </url>
   
