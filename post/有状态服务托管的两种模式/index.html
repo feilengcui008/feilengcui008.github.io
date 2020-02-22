@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.50-DEV" />
-<title>Categories</title>
+<title>有状态服务托管的两种模式</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -48,52 +48,83 @@
 </nav>
 
     <section id="wrapper">
+        
+        
+<div class="content content-post CENTER">
+  <article id="有状态服务托管的两种模式" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">有状态服务托管的两种模式</h1>
 
-    <div class="personal_content">
-    <section class="category-box">
-        <div class="category-list">
-            
-                <a class="category-item" href="/categories/go">
-                    <span class="category-name">Go</span>
-                </a>
-            
-                <a class="category-item" href="/categories/kubernetes">
-                    <span class="category-name">Kubernetes</span>
-                </a>
-            
-                <a class="category-item" href="/categories/linux">
-                    <span class="category-name">Linux</span>
-                </a>
-            
-                <a class="category-item" href="/categories/paas">
-                    <span class="category-name">PaaS</span>
-                </a>
-            
-                <a class="category-item" href="/categories/python">
-                    <span class="category-name">Python</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F">
-                    <span class="category-name">分布式系统</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E5%9F%BA%E7%A1%80%E6%8A%80%E6%9C%AF">
-                    <span class="category-name">基础技术</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7">
-                    <span class="category-name">效率工具</span>
-                </a>
-            
-                <a class="category-item" href="/categories/%E7%AE%97%E6%B3%95%E4%B8%8E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84">
-                    <span class="category-name">算法与数据结构</span>
-                </a>
-            
-        </div>
-    </section>
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>02-22-2020</span>
+      </span>
+      </p>
+      <span>
+        
+        <span class="article-meta-span"><a href="/categories/paas">PaaS</a></span>
+        
+        <span class="article-meta-span"><a href="/categories/kubernetes">Kubernetes</a></span>
+        
+      </span>
+      
+      <span>
+        
+      </span>
+      <span id="/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/" class="leancloud_visitors" data-flag-title="有状态服务托管的两种模式">
+        <span class="post-flag"><span>
+      </span>
     </div>
+  </header>
 
-    <footer id="footer">
+  <div class="article-content">
+    
+
+<p>通常情况下，PaaS托管的大部分负载都是无状态应用。但是对于一些依赖数据的特殊应用（比如分布式文件系统、zk、mysql），PaaS也应当提供相应的扩展能力，支持这些应用的托管。本质上讲，PaaS支持不同类型的工作负载托管的核心在策略，类似K8S的controller，这些策略适配了不同工作负载的工作方式。对于有状态应用托管，有两种方式。</p>
+
+<h2 id="operator">Operator</h2>
+
+<p>基于K8S的CRD，工作负载的策略以一个Operator的形式实现。这种方式策略的所有逻辑完全实现在PaaS内部，对于不同的有状态应用，PaaS可能需要实现不同的Operator。</p>
+
+<h2 id="回调">回调</h2>
+
+<p>策略由业务自身实现，以Server回调接口的形式暴露给PaaS，PaaS实现删除容器时的回调逻辑，负责通知业务当前容器的状态，由业务的策略Server负责自身业务状态的处理（比如数据搬迁），给PaaS返回成功后，PaaS才真正删除容器。这种方式的好处是，回调机制对于有状态应用是完全通用的，且对于大公司来说，内部大部分有状态应用（比如文件系统、数据库）都已经有了自己的管控系统，只需要实现一个旁路的策略Server即可，成本不高。</p>
+
+<p>当然，基于回调的业务逻辑Server如果由PaaS来实现，其实就很类似Operator了。</p>
+
+  </div>
+</article>
+
+
+</div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+
+
+
+        <footer id="footer">
 </footer>
 
     </section>
@@ -209,4 +240,3 @@
 
   </body>
 </html>
-
