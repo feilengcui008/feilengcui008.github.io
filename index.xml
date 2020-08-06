@@ -130,7 +130,7 @@ Tcplayer Tcplayer主要包含以下几个步骤:
       <pubDate>Tue, 06 Jun 2017 15:13:08 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</guid>
-      <description>之前一直使用hexo作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器hugo，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多。因此，决定切换到hugo，顺便将之前基于fexo改的hexo主题移植到hugo上了，代码仓库在simpost-theme。</description>
+      <description>之前一直使用hexo作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器hugo，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多。因此决定切换到hugo，顺便将之前基于fexo改的hexo主题移植到hugo上了，代码仓库在simpost-theme。</description>
     </item>
     
     <item>
@@ -295,6 +295,23 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
     </item>
     
     <item>
+      <title>Linux下的时间</title>
+      <link>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</link>
+      <pubDate>Mon, 16 May 2016 17:03:34 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</guid>
+      <description>时钟  硬件时钟
+ RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式
+ 通过ioctl
+#include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令
+  通常内核在boot以及从低电量中恢复时，会读取RTC更新system time
+  软件时钟
+ HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。  外部时钟
+ 从网络ntp，原子钟等同步   时间  时间类别
+ wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间  时间的表示</description>
+    </item>
+    
+    <item>
       <title>分布式一致性协议(三)</title>
       <link>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%89/</link>
       <pubDate>Thu, 10 Mar 2016 21:05:15 +0800</pubDate>
@@ -346,10 +363,10 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
     
     <item>
       <title>KMP简单证明</title>
-      <link>https://feilengcui008.github.io/post/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</link>
+      <link>https://feilengcui008.github.io/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</link>
       <pubDate>Thu, 03 Mar 2016 17:21:15 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</guid>
+      <guid>https://feilengcui008.github.io/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</guid>
       <description>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。
 朴素算法 朴素算法比较明了，不再赘述，下面是简单的代码：
  // time : O(n*m), space : O(1) int naive(const std::string &amp;amp;text, const std::string &amp;amp;pattern) { // corner case int len1 = text.length(); int len2 = pattern.length(); if (len2 &amp;gt; len1) return -1; int end = len1 - len2; for (int i = 0; i &amp;lt;= end; ++i) { int j; for (j = 0; j &amp;lt; len2; ++j) { if (text[i + j] != pattern[j]) { break; } } if (j == len2) return i; } return -1; }  分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前 的已匹配的相同前缀的信息。</description>
@@ -432,6 +449,18 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
  11.init/main.c[start_kernel]
  12.然后后面的事情就比较好知道了:)
    ref: Linux source code 3.</description>
+    </item>
+    
+    <item>
+      <title>Y Combinator</title>
+      <link>https://feilengcui008.github.io/post/y-combinator/</link>
+      <pubDate>Thu, 14 May 2015 19:26:59 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/post/y-combinator/</guid>
+      <description>由于匿名函数(通常成为lambda函数但是跟lambda calculus不同)在递归时无法获得函数名，从而导致一些问题，而Y Combinator能很好地解决这个问题。利用不动点的原理，可以利用一般的函数来辅助得到匿名函数的递归形式，从而间接调用无法表达的真正的匿名函数。下面以一个阶乘的递归来说明。
+#Python版本，后面会加上C++版本 #F(f) = f def F(f,n): return 1 if n==0 else n*f(n-1) #或者用lambda #F = lambda f,n: 1 if n==0 else n*f(n-1) #Y不能用lambda，因为Y会调用自己 #Y(F) = f = F(f) = F(Y(F)) def Y(F): return lambda n: F(Y(F),n) a = Y(F) # 6 print a(3)  一些解释：
+ F是伪递归函数，将真正的我们假设的匿名函数作为参数，有性质 F(f)=f. 好了以上是我们的已知条件，为了得到f的间接表达式，我们引入Y函数 使得Y(F) = f 所以有Y(F) = f = F(f) = F(Y(F)) （最终的目标是要用YF的组合表示f），所以很容易就得到了Y(F)的函数表达式为F(Y(F))，而Y不是匿名函数，所以能自身调用(其实感觉这东西没想象中那么玄乎～)，上面的代码也就比较好理解了。我们假设的函数只有一个额外参数n，这完全可以自己添加其他参数，只需稍微修改Y中F的调用。  最后附上一段C++的实现代码：
+//需要C++11支持 #include &amp;lt;iostream&amp;gt; #include &amp;lt;functional&amp;gt; //F(f) = f int F(std::function&amp;lt;int(int)&amp;gt; f, int n) { return n==0 ?</description>
     </item>
     
     <item>

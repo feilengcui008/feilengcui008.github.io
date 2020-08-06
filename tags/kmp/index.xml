@@ -13,10 +13,10 @@
     
     <item>
       <title>KMP简单证明</title>
-      <link>https://feilengcui008.github.io/post/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</link>
+      <link>https://feilengcui008.github.io/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</link>
       <pubDate>Thu, 03 Mar 2016 17:21:15 +0800</pubDate>
       
-      <guid>https://feilengcui008.github.io/post/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</guid>
+      <guid>https://feilengcui008.github.io/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/</guid>
       <description>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。
 朴素算法 朴素算法比较明了，不再赘述，下面是简单的代码：
  // time : O(n*m), space : O(1) int naive(const std::string &amp;amp;text, const std::string &amp;amp;pattern) { // corner case int len1 = text.length(); int len2 = pattern.length(); if (len2 &amp;gt; len1) return -1; int end = len1 - len2; for (int i = 0; i &amp;lt;= end; ++i) { int j; for (j = 0; j &amp;lt; len2; ++j) { if (text[i + j] != pattern[j]) { break; } } if (j == len2) return i; } return -1; }  分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前 的已匹配的相同前缀的信息。</description>

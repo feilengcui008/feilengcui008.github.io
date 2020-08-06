@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.50-DEV" />
-<title>KMP</title>
+<title>Y Combinator</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -50,27 +50,119 @@
     <section id="wrapper">
         
         
-		<div class="personal_content content-archive">
-  <div class="post-list-box archive-body">
-    <ul class="list-post">
+<div class="content content-post CENTER">
+  <article id="Y Combinator" class="article article-type-post" itemprop="blogPost">
+  <header class="article-header">
+    <h1 class="post-title">Y Combinator</h1>
 
-    
-        <li class="item-post item">
-            <a class="post-title" href='/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/'>KMP简单证明</a>
-            <span id='/bak/kmp%E7%AE%80%E5%8D%95%E8%AF%81%E6%98%8E/' class="leancloud_visitors">
-                <span class="leancloud-visitors-count"></span>
-                <span class="post-list-flag"></span>
-            </span>
-            <span class="post-date">03-03-2016</span>
-        </li>
-    
-    </ul>
+    <div class="article-meta">
+      <p>
+      <span>
+        <i class="icon-calendar"></i>
+        <span>05-14-2015</span>
+      </span>
+      </p>
+      <span>
+        
+      </span>
+      
+      <span>
+        
+      </span>
+      <span id="/post/y-combinator/" class="leancloud_visitors" data-flag-title="Y Combinator">
+        <span class="post-flag"><span>
+      </span>
+    </div>
+  </header>
+
+  <div class="article-content">
+    <p>由于匿名函数(通常成为lambda函数但是跟lambda calculus不同)在递归时无法获得函数名，从而导致一些问题，而Y Combinator能很好地解决这个问题。利用不动点的原理，可以利用一般的函数来辅助得到匿名函数的递归形式，从而间接调用无法表达的真正的匿名函数。下面以一个阶乘的递归来说明。</p>
+
+<pre><code>#Python版本，后面会加上C++版本
+#F(f) = f
+def F(f,n):
+    return 1 if n==0 else n*f(n-1)
+#或者用lambda
+#F = lambda f,n: 1 if n==0 else n*f(n-1)
+#Y不能用lambda，因为Y会调用自己
+
+#Y(F) = f = F(f) = F(Y(F))
+def Y(F):
+    return lambda n: F(Y(F),n)
+a = Y(F)
+# 6
+print a(3)
+</code></pre>
+
+<p>一些解释：</p>
+
+<ul>
+<li>F是伪递归函数，将真正的我们假设的匿名函数作为参数，有性质
+F(f)=f.</li>
+<li>好了以上是我们的已知条件，为了得到f的间接表达式，我们引入Y函数
+使得Y(F) = f</li>
+<li>所以有Y(F) = f = F(f) = F(Y(F)) （最终的目标是要用YF的组合表示f），所以很容易就得到了Y(F)的函数表达式为F(Y(F))，而Y不是匿名函数，所以能自身调用(其实感觉这东西没想象中那么玄乎～)，上面的代码也就比较好理解了。我们假设的函数只有一个额外参数n，这完全可以自己添加其他参数，只需稍微修改Y中F的调用。</li>
+</ul>
+
+<p>最后附上一段C++的实现代码：</p>
+
+<pre><code>//需要C++11支持
+#include &lt;iostream&gt;
+#include &lt;functional&gt;
+//F(f) = f
+int 
+F(std::function&lt;int(int)&gt; f, int n)
+{
+    return n==0 ? 1 : n*f(n-1);
+}
+//或者
+//auto F1 = [](std::function&lt;int(int)&gt; f, int n) {
+//    return n==0 ? 1 : n*f(n-1);
+//};
+
+
+//Y(F) = f = F(f) = F(Y(F))
+std::function&lt;int(int)&gt;
+Y(std::function&lt;int(std::function&lt;int(int)&gt;,int)&gt; F)
+{
+    return std::bind(F, std::bind(Y,F), std::placeholders::_1);
+}
+
+int main(int argc, char *argv[])
+{
+    auto f = Y(F);
+    std::cout &lt;&lt; f(3) &lt;&lt; std::endl; //6
+    return 0;
+}
+</code></pre>
+
   </div>
-  <nav class="post-nav">
-    
-</nav>
+</article>
+
 
 </div>
+<div class="fexo-comments comments-post">
+  <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "feilengcui008" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
 
 
 
