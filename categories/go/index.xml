@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Go on 靠谱</title>
@@ -6,11 +6,7 @@
     <description>Recent content in Go on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/categories/go/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 24 Jul 2017 09:48:05 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/go/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Fuzz go struct using reflection</title>
       <link>https://feilengcui008.github.io/post/fuzz-go-struct-using-reflection/</link>
@@ -28,17 +24,17 @@
       <pubDate>Tue, 09 May 2017 19:40:07 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/go%E8%B0%83%E5%BA%A6%E8%AF%A6%E8%A7%A3/</guid>
-      <description> 1. 基本单元 Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是&amp;rdquo;某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程&amp;rdquo;，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。
-2. 调度的整体流程 (1) 关于g0栈和g栈
+      <description>1. 基本单元 Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是&amp;quot;某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程&amp;quot;，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。
+ 2. 调度的整体流程 (1) 关于g0栈和g栈
 由于m是实际执行体，m的整个代码逻辑基本上就是整个调度逻辑。类似于Linux的内核栈和用户栈，Go的m也有两类栈：一类是系统栈(或者叫调度栈)，主要用于运行runtime的程序逻辑；另一类是g栈，用于运行g的程序逻辑。每个m在创建时会分配一个默认的g叫g0，g0不执行任何代码逻辑，只是用来存放m的调度栈等信息。当要执行Go runtime的一些逻辑比如创建g、新建m等，都会首先切换到g0栈然后执行，而执行g任务时，会切换到g的栈上。在调度栈和g栈上不断切换使整个调度过程复杂了不少。
 (2) 关于m的spinning自旋
 在Go的调度中，m一旦被创建则不会退出。在syscall、cgocall、lockOSThread时，为了防止阻塞其他g的执行，Go会新建或者唤醒m(os线程)执行其他的g，所以可能导致m的增加。如何保证m数量不会太多，同时有足够的线程使p(cpu)不会空闲？主要的手段是通过多路复用和m的spinning。多路复用解决网络和文件io时的阻塞(与net poll类似，Go1.8.1的代码中为os.File加了poll接口)，避免每次读写的系统调用消耗线程。而m的spinning的作用是尽量保证始终有m处于spinning寻找g(并不是执行g，充分利用多cpu)的同时，不会有太多m同时处于spinning(浪费cpu)。不同于一般意义的自旋，m处于自旋是指m的本地队列、全局队列、poller都没有g可运行时，m进入自旋并尝试从其他p偷取(steal)g，每当一个spinning的m获取到g后，会退出spinning并尝试唤醒新的m去spinning。所以，一旦总的spinning的m数量大于0时，就不用唤醒新的m了去spinning浪费cpu了。
 (3) 整个调度的流程图
- schedule   findrunnable  3. m的视角看调度 (1) Go中的m大概可分为以下几种
+ schedule   findrunnable   3. m的视角看调度 (1) Go中的m大概可分为以下几种
  系统线程，比如sysmon，其运行不需要p lockedm，与某个g绑定，未拿到对应的lockedg时睡眠，等待被唤醒，无法被调度 陷入syscall的m，执行系统调用中，返回时进入调度逻辑 cgo的m，cgo的调用实际上使用了lockedm和syscall 正在执行goroutine的m 正在执行调度逻辑的m  (2) 什么时候可能需要新建或者唤醒m
- 有新的可运行g或者拿到可运行的g  goready，将g入队列 newproc，新建g并入队列 m从schedule拿到g，自身退出spinning  有p资源被释放handoff(p)  (3) m何时交出资源p，并进入睡眠
- lockedm主动交出p 处于syscall中，并被sysmon抢占(超过10ms)交出p cgocall被sysmon抢占交出p，或由于lockedm主动交出p findrunnable没找到可运行的g，主动交出p，进入睡眠  4. g的视角看调度 (1) 与goroutine相关的调度逻辑
- go(runtime.newproc)产生新的g，放到本地队列或全局队列 gopark，g置为waiting状态，等待显示goready唤醒，在poller中用得较多 goready，g置为runnable状态，放入全局队列 gosched，g显示调用runtime.Gosched或被抢占，置为runnable状态，放入全局队列 goexit，g执行完退出，g所属m切换到g0栈，重新进入schedule g陷入syscall  net io和部分file io，没有事件则gopark 普通的阻塞系统调用，返回时m重新进入schedule  g陷入cgocall  lockedm加上syscall的处理逻辑  g执行超过10ms被sysmon抢占  </description>
+ 有新的可运行g或者拿到可运行的g  goready，将g入队列 newproc，新建g并入队列 m从schedule拿到g，自身退出spinning   有p资源被释放handoff(p)  (3) m何时交出资源p，并进入睡眠
+ lockedm主动交出p 处于syscall中，并被sysmon抢占(超过10ms)交出p cgocall被sysmon抢占交出p，或由于lockedm主动交出p findrunnable没找到可运行的g，主动交出p，进入睡眠   4. g的视角看调度 (1) 与goroutine相关的调度逻辑
+ go(runtime.newproc)产生新的g，放到本地队列或全局队列 gopark，g置为waiting状态，等待显示goready唤醒，在poller中用得较多 goready，g置为runnable状态，放入全局队列 gosched，g显示调用runtime.Gosched或被抢占，置为runnable状态，放入全局队列 goexit，g执行完退出，g所属m切换到g0栈，重新进入schedule g陷入syscall  net io和部分file io，没有事件则gopark 普通的阻塞系统调用，返回时m重新进入schedule   g陷入cgocall  lockedm加上syscall的处理逻辑   g执行超过10ms被sysmon抢占  </description>
     </item>
     
     <item>
@@ -47,11 +43,9 @@
       <pubDate>Sun, 30 Apr 2017 14:45:23 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/</guid>
-      <description>Go接口的设计和实现是Go整个类型系统的一大特点。接口嵌入和组合、duck typing等实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解&amp;rdquo;著名&amp;rdquo;的nil返回值问题以及反射、type switch、type assertion等原理。本文主要基于Go1.8.1的源码介绍接口的内部实现及其使用相关的问题。
-1. 接口的实现  下面是接口在runtime中的实现，注意其中包含了接口本身和实际数据类型的类型信息:
-// src/runtime/runtime2.go type iface struct { // 包含接口的静态类型信息、数据的动态类型信息、函数表 tab *itab // 指向具体数据的内存地址比如slice、map等，或者在接口 // 转换时直接存放小数据(一个指针的长度) data unsafe.Pointer } type itab struct { // 接口的类型信息 inter *interfacetype // 具体数据的类型信息 _type *_type link *itab hash uint32 bad bool inhash bool unused [2]byte // 函数地址表，这里放置和接口方法对应的具体数据类型的方法地址 // 实现接口调用方法的动态分派，一般在给接口赋值发生转换时候会 // 更新此表，或者从直接拿缓存的itab fun [1]uintptr // variable sized }  另外，需要注意与接口相关的两点优化，会影响到反射等的实现:
- (1) 空接口(interface{})的itab优化。当将某个类型的值赋给空接口时，由于空接口没有方法，所以空接口的tab会直接指向数据的具体类型。在Go的reflect包中，reflect.TypeOf和reflect.ValueOf的参数都是空接口，因此所有参数都会先转换为空接口类型。这样，反射就实现了对所有参数类型获取实际数据类型的统一。这在后面反射的基本实现中会分析到。 (2) 发生接口转换时data字段相关的优化。当被转换为接口的数据的类型长度不超过一个指针的长度时(比如pointer、map、func、chan、[1]int等类型)，接口转换时会将数据直接拷贝存放到接口的data字段中(DirectIface)，而不再额外分配内存并拷贝。另外，从go1.8+的源码来看除了DirectIface的优化以外，还对长度较小(不超过64字节，未初始化数据内存的array，空字符串等)的零值做了优化，也不会重新分配内存，而是直接指向一个包级全局数组变量zeroVal的首地址。注意第2点优化发生在接口转换时生成的临时接口上，而不是被赋值的接口左值上。  再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9种非基础类型中:
- array传递会拷贝整块数据内存，传递长度为len(arr) * Sizeof(elem) string、slice、interface传递的是其runtime的实现，所以长度是固定的，分别为16、24、16字节(amd64) map、func、chan、pointer传递的是指针，所以长度固定为8字节(amd64) struct传递的是所有字段的内存拷贝，所以长度是所有字段的长度和 详细的测试可以参考这段程序   2.</description>
+      <description>Go接口的设计和实现是Go整个类型系统的一大特点。接口嵌入和组合、duck typing等实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解&amp;quot;著名&amp;quot;的nil返回值问题以及反射、type switch、type assertion等原理。本文主要基于Go1.8.1的源码介绍接口的内部实现及其使用相关的问题。
+ 1. 接口的实现  下面是接口在runtime中的实现，注意其中包含了接口本身和实际数据类型的类型信息:  // src/runtime/runtime2.go type iface struct { // 包含接口的静态类型信息、数据的动态类型信息、函数表 tab *itab // 指向具体数据的内存地址比如slice、map等，或者在接口 // 转换时直接存放小数据(一个指针的长度) data unsafe.Pointer } type itab struct { // 接口的类型信息 inter *interfacetype // 具体数据的类型信息 _type *_type link *itab hash uint32 bad bool inhash bool unused [2]byte // 函数地址表，这里放置和接口方法对应的具体数据类型的方法地址 // 实现接口调用方法的动态分派，一般在给接口赋值发生转换时候会 // 更新此表，或者从直接拿缓存的itab fun [1]uintptr // variable sized }   另外，需要注意与接口相关的两点优化，会影响到反射等的实现:
+ (1) 空接口(interface{})的itab优化。当将某个类型的值赋给空接口时，由于空接口没有方法，所以空接口的tab会直接指向数据的具体类型。在Go的reflect包中，reflect.TypeOf和reflect.ValueOf的参数都是空接口，因此所有参数都会先转换为空接口类型。这样，反射就实现了对所有参数类型获取实际数据类型的统一。这在后面反射的基本实现中会分析到。 (2) 发生接口转换时data字段相关的优化。当被转换为接口的数据的类型长度不超过一个指针的长度时(比如pointer、map、func、chan、[1]int等类型)，接口转换时会将数据直接拷贝存放到接口的data字段中(DirectIface)，而不再额外分配内存并拷贝。另外，从go1.8+的源码来看除了DirectIface的优化以外，还对长度较小(不超过64字节，未初始化数据内存的array，空字符串等)的零值做了优化，也不会重新分配内存，而是直接指向一个包级全局数组变量zeroVal的首地址。注意第2点优化发生在接口转换时生成的临时接口上，而不是被赋值的接口左值上。    再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9种非基础类型中:</description>
     </item>
     
     <item>
@@ -61,14 +55,12 @@
       
       <guid>https://feilengcui008.github.io/post/go%E7%9A%84%E8%87%AA%E4%B8%BE/</guid>
       <description>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
-1. 基本流程 Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
+ 1. 基本流程 Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
  go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具 go_old + dist -&amp;gt; asm, compile, link: 用老版本的Go和dist工具编译出bootstrap工具，asm用于汇编源码中的.s文件，输出.o对象文件；compile用于编译源码中的.go文件，输出归档打包后的.a文件；link用于链接二进制文件。这里还要依赖外部的pack程序，负责归档打包编译的库。  到这里，dist/asm/compile/link都是链接的老的runtime，所以其运行依赖于go_old。
- asm, compile, link -&amp;gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。
- go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。
+  asm, compile, link -&amp;gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。
+  go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。
   一句话总结，借用老的runtime编译新的代码逻辑(编译器、链接器、新的runtime)生成新代码的编译、链接工具，并用这些工具重新编译新代码和工具本身。
-2. 具体实现  生成dist
-// make.bash # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!! GOROOT=&amp;quot;$GOROOT_BOOTSTRAP&amp;quot; GOOS=&amp;quot;&amp;quot; GOARCH=&amp;quot;&amp;quot; &amp;quot;$GOROOT_BOOTSTRAP/bin/go&amp;quot; build -o cmd/dist/dist ./cmd/dist  生成bootstrap二进制文件和库
-// make.bash # 设置环境变量 eval $(./cmd/dist/dist env -p || echo FAIL=true) # 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量 # 这里可提供GOARCH和GOOS环境变量交叉编译 .</description>
+ 2. 具体实现  生成dist  // make.bash # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!! GOROOT=&amp;quot;$GOROOT_BOOTSTRAP&amp;quot; GOOS=&amp;quot;&amp;quot; GOARCH=&amp;quot;&amp;quot; &amp;quot;$GOROOT_BOOTSTRAP/bin/go&amp;quot; build -o cmd/dist/dist ./cmd/dist  生成bootstrap二进制文件和库  // make.bash # 设置环境变量 eval $(./cmd/dist/dist env -p || echo FAIL=true) # 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量 # 这里可提供GOARCH和GOOS环境变量交叉编译 .</description>
     </item>
     
     <item>
@@ -78,9 +70,7 @@
       
       <guid>https://feilengcui008.github.io/post/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/</guid>
       <description>Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以这种模型可以比较优雅地处理程序的多个逻辑部分，而context很好地实现了这个模型。对于请求响应的形式(比如http)尤其适合这种模型。下面分析下context包的具体实现。
-1. 基本设计  context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。 cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。 emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数 timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。 cancelCtx的cancel有几种方式  主动调用cancel 其父ctx被cancel，触发子ctx的cancel time.Timer事件触发timerCtx的cancel回调  当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理  2. 具体实现  Context接口
-type Context interface { // 只用于timerCtx，即WithDeadline和WithTimeout Deadline() (deadline time.Time, ok bool) // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan Done() &amp;lt;-chan struct{} // 错误信息 Err() error // 只用于valueCtx Value(key interface{}) interface{} }  几种主要Context的实现
-// cancelCtx type cancelCtx struct { Context mu sync.Mutex done chan struct{} // 主要用于存储子cancelCtx和timerCtx // 当此ctx被cancel时，会自动cancel其所有children中的ctx children map[canceler]struct{} err error } // timeCtx type timerCtx struct { cancelCtx // 借助计时器触发timeout事件 timer *time.</description>
+ 1. 基本设计  context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。 cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。 emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数 timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。 cancelCtx的cancel有几种方式  主动调用cancel 其父ctx被cancel，触发子ctx的cancel time.Timer事件触发timerCtx的cancel回调   当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理   2. 具体实现  Context接口  type Context interface { // 只用于timerCtx，即WithDeadline和WithTimeout Deadline() (deadline time.Time, ok bool) // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan Done() &amp;lt;-chan struct{} // 错误信息 Err() error // 只用于valueCtx Value(key interface{}) interface{} }  几种主要Context的实现  // cancelCtx type cancelCtx struct { Context mu sync.Mutex done chan struct{} // 主要用于存储子cancelCtx和timerCtx // 当此ctx被cancel时，会自动cancel其所有children中的ctx children map[canceler]struct{} err error } // timeCtx type timerCtx struct { cancelCtx // 借助计时器触发timeout事件 timer *time.</description>
     </item>
     
   </channel>

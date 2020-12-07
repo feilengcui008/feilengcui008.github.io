@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Posts on 靠谱</title>
@@ -6,11 +6,7 @@
     <description>Recent content in Posts on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/post/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/post/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>有状态服务托管的两种模式</title>
       <link>https://feilengcui008.github.io/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/</link>
@@ -42,13 +38,12 @@ Operator 基于K8S的CRD，工作负载的策略以一个Operator的形式实现
       <pubDate>Thu, 08 Mar 2018 19:52:51 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</guid>
-      <description> Raft保证读请求Linearizability的方法  1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
- 2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex 后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
- 3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
- 4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
-  Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）  Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
-Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.
-  举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。  </description>
+      <description>Raft保证读请求Linearizability的方法   1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
+  2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex 后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
+  3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
+  4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
+   Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）   Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
+  Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.</description>
     </item>
     
     <item>
@@ -59,7 +54,7 @@ Sequential - All processes see all shared accesses in the same order. Accesses a
       <guid>https://feilengcui008.github.io/post/%E8%AF%BB%E5%9C%A82017/</guid>
       <description>由于一些原因，这一年比往年多读了不少书，而且基本是集中在岁末三个月。除了基本的知识摄取和休闲娱乐外，另一个目的是想从中寻找一些问题的答案，而这些问题让我很是恼火。虽最终未能如愿，但或多或少影响了认知，“不求甚解”的一个好处可能就在于潜移默化吧。
 总体来说，这一年读书比较杂。究其原因，一方面是由于自身所处困境的实际需求，另一方面是由于上大学以后阅读量急剧减少(惭愧&amp;hellip;)，欠的阅读债比较多，再者便是专业上的需求。按学科划分来讲，社会科学方面主要集中在心理学，人文方面主要是文学和文学史，自然科学方面则是本行计算机（就不放在这里了）。这里主要挑出一些对我有些影响的书。
-心理学 心理学方面，主要是从入门读物、基础教材、细分流派和研究领域几个方面来阅读的。整理了一个豆列。这里挑了我看过的和比较感兴趣的方向。
+ 心理学 心理学方面，主要是从入门读物、基础教材、细分流派和研究领域几个方面来阅读的。整理了一个豆列。这里挑了我看过的和比较感兴趣的方向。
  少有人走的路 ★★★★☆8.4 心智成熟的旅程 / [美] M·斯科特·派克 / 吉林文史出版社
  第一本，非它莫属。开篇第一句便透露了生活的真相。后面自律、爱、成长和信仰等几部分更是颇有同感。
  我们时代的神经症人格 ★★★★★9.0 卡伦·霍尼 / 译林出版社
@@ -83,7 +78,7 @@ Sequential - All processes see all shared accesses in the same order. Accesses a
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E6%A0%88/</guid>
       <description>内核栈与thread_info Linux内核在x86平台下，PAGE_SIZE为4KB(32位和64位相同)，THREAD_SIZE为8KB(32位)或者16KB(64位)。THREAD_SIZE表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:
  thread_info结构体 溢出标志 从溢出标志开始到kernel_stack之间的实际可用栈内存空间，kernel_stack为percpu变量，通过它可间接找到内核栈的起始地址 从kernel_stack到栈底的长度为KERNEL_STACK_OFFSET的保留空间  内核引入thread_info的一大原因是方便通过它直接找到进(线)程的task_struct指针，x86 平台的thread_info结构体定义在arch/x86/include/asm/thread_info.h。
-// Linux 3.19.3 x86平台的thread_info struct thread_info { struct task_struct	*task;	/* main task structure */ struct exec_domain	*exec_domain;	/* execution domain */ __u32	flags;	/* low level flags */ __u32	status;	/* thread synchronous flags */ __u32	cpu;	/* current CPU */ int	saved_preempt_count; mm_segment_t	addr_limit; void __user	*sysenter_return; unsigned int	sig_on_uaccess_error:1; unsigned int	uaccess_err:1;	/* uaccess failed */ };  由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</description>
+// Linux 3.19.3 x86平台的thread_info struct thread_info { struct task_struct	*task;	/* main task structure */ struct exec_domain	*exec_domain;	/* execution domain */ __u32	flags;	/* low level flags */ __u32	status;	/* thread synchronous flags */ __u32	cpu;	/* current CPU */ int	saved_preempt_count; mm_segment_t	addr_limit; void __user	*sysenter_return; unsigned int	sig_on_uaccess_error:1; unsigned int	uaccess_err:1;	/* uaccess failed */ }; 由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</description>
     </item>
     
     <item>
@@ -115,13 +110,13 @@ Linux在x86_64和i386下的ABI:
       
       <guid>https://feilengcui008.github.io/post/tcplayer%E4%BB%8B%E7%BB%8D/</guid>
       <description>Tcplayer是最近写的一个流量抓取、解析、放大、重放工具。
-背景 通常真实流量相比手工构造的请求来说，更有利于测试。真实流量的回放大体上有以下三种方式：
+ 背景 通常真实流量相比手工构造的请求来说，更有利于测试。真实流量的回放大体上有以下三种方式：
  应用层  这种方式通常是在服务中耦合拷贝请求的代码。由于直接工作在应用层，截下来的流量是一个个完整的请求，所以其支持场景最多，实现也相对简单，但是需要耦合其他代码，也会给服务程序带来资源消耗。
  网络层  这种方式通常是抓取原始网络包，解析出IP报文，修改报文的目的IP和端口，伪造与测试机的TCP会话，回放到测试机。其优点是不需要处理传输层的TCP包排序，也不需要理解上层应用层的请求格式，但其缺点是配置相对复杂，且难以支持长连接。如果在长连接已经建立的情况下抓包回放，由于测试机并未经过任何SYN-SYN/ACK-ACK的请求建立过程，所以所有请求的TCP PUSH包都会被测试机RST丢掉。通常后端RPC服务都是长连接，所以这是一个比较大的问题。这里有一个工作在这一层的开源工具tcpcopy
  传输层  为了解决外部代码依赖以及长连接的问题，tcplayer基于TCP传输层，按照应用层请求格式解析出请求并重放。这种方式可以抓取到已经建立的长连接的请求，并且服务不需要耦合其他代码，但同时引入了解析和匹配应用层协议的复杂性。
-Tcplayer Tcplayer主要包含以下几个步骤:
+ Tcplayer Tcplayer主要包含以下几个步骤:
  libpcap抓取实时流量 tcp包重排序 对于每一个tcp会话(flow)，解析tcp包，尽量匹配应用层协议 放大应用层请求，并与测试服务建立连接回放  目前支持的协议:
- HTTP 1.x 短连接 Thrift strict mode binary protocol GRPC部分支持  这里由于GRPC基于HTTP2，而HTTP2的基本单元Frame没有固定的协议字段，所以无法匹配，导致无法解析到正确的HTTP2请求&amp;hellip;   要给tcplayer添加其他自己定义的应用层协议很容易，可以参考代码factory/thrift</description>
+ HTTP 1.x 短连接 Thrift strict mode binary protocol GRPC部分支持  这里由于GRPC基于HTTP2，而HTTP2的基本单元Frame没有固定的协议字段，所以无法匹配，导致无法解析到正确的HTTP2请求&amp;hellip;    要给tcplayer添加其他自己定义的应用层协议很容易，可以参考代码factory/thrift</description>
     </item>
     
     <item>
@@ -139,17 +134,17 @@ Tcplayer Tcplayer主要包含以下几个步骤:
       <pubDate>Tue, 09 May 2017 19:40:07 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/go%E8%B0%83%E5%BA%A6%E8%AF%A6%E8%A7%A3/</guid>
-      <description> 1. 基本单元 Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是&amp;rdquo;某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程&amp;rdquo;，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。
-2. 调度的整体流程 (1) 关于g0栈和g栈
+      <description>1. 基本单元 Go调度相关的四个基本单元是g、m、p、schedt。g是协程任务信息单元，m实际执行体，p是本地资源池和g任务池，schedt是全局资源池和g任务池。这里的m对应一个os线程，所以整个执行逻辑简单来说就是&amp;quot;某个os线程m不断尝试拿资源p并找任务g执行，没有可执行g则睡眠，等待唤醒并重复此过程&amp;quot;，这个执行逻辑加上sysmon系统线程的定时抢占逻辑实际上就是整个宏观的调度逻辑了(其中穿插了很多唤醒m、system goroutine等等复杂的细节)，而找协程任务g的过程占据了其中大部分。g的主要来源有本地队列、全局队列、其他p的本地队列、poller(net和file)，以及一些system goroutine比如timerproc、bgsweeper、gcMarkWorker、runfinq、forcegchelper等。
+ 2. 调度的整体流程 (1) 关于g0栈和g栈
 由于m是实际执行体，m的整个代码逻辑基本上就是整个调度逻辑。类似于Linux的内核栈和用户栈，Go的m也有两类栈：一类是系统栈(或者叫调度栈)，主要用于运行runtime的程序逻辑；另一类是g栈，用于运行g的程序逻辑。每个m在创建时会分配一个默认的g叫g0，g0不执行任何代码逻辑，只是用来存放m的调度栈等信息。当要执行Go runtime的一些逻辑比如创建g、新建m等，都会首先切换到g0栈然后执行，而执行g任务时，会切换到g的栈上。在调度栈和g栈上不断切换使整个调度过程复杂了不少。
 (2) 关于m的spinning自旋
 在Go的调度中，m一旦被创建则不会退出。在syscall、cgocall、lockOSThread时，为了防止阻塞其他g的执行，Go会新建或者唤醒m(os线程)执行其他的g，所以可能导致m的增加。如何保证m数量不会太多，同时有足够的线程使p(cpu)不会空闲？主要的手段是通过多路复用和m的spinning。多路复用解决网络和文件io时的阻塞(与net poll类似，Go1.8.1的代码中为os.File加了poll接口)，避免每次读写的系统调用消耗线程。而m的spinning的作用是尽量保证始终有m处于spinning寻找g(并不是执行g，充分利用多cpu)的同时，不会有太多m同时处于spinning(浪费cpu)。不同于一般意义的自旋，m处于自旋是指m的本地队列、全局队列、poller都没有g可运行时，m进入自旋并尝试从其他p偷取(steal)g，每当一个spinning的m获取到g后，会退出spinning并尝试唤醒新的m去spinning。所以，一旦总的spinning的m数量大于0时，就不用唤醒新的m了去spinning浪费cpu了。
 (3) 整个调度的流程图
- schedule   findrunnable  3. m的视角看调度 (1) Go中的m大概可分为以下几种
+ schedule   findrunnable   3. m的视角看调度 (1) Go中的m大概可分为以下几种
  系统线程，比如sysmon，其运行不需要p lockedm，与某个g绑定，未拿到对应的lockedg时睡眠，等待被唤醒，无法被调度 陷入syscall的m，执行系统调用中，返回时进入调度逻辑 cgo的m，cgo的调用实际上使用了lockedm和syscall 正在执行goroutine的m 正在执行调度逻辑的m  (2) 什么时候可能需要新建或者唤醒m
- 有新的可运行g或者拿到可运行的g  goready，将g入队列 newproc，新建g并入队列 m从schedule拿到g，自身退出spinning  有p资源被释放handoff(p)  (3) m何时交出资源p，并进入睡眠
- lockedm主动交出p 处于syscall中，并被sysmon抢占(超过10ms)交出p cgocall被sysmon抢占交出p，或由于lockedm主动交出p findrunnable没找到可运行的g，主动交出p，进入睡眠  4. g的视角看调度 (1) 与goroutine相关的调度逻辑
- go(runtime.newproc)产生新的g，放到本地队列或全局队列 gopark，g置为waiting状态，等待显示goready唤醒，在poller中用得较多 goready，g置为runnable状态，放入全局队列 gosched，g显示调用runtime.Gosched或被抢占，置为runnable状态，放入全局队列 goexit，g执行完退出，g所属m切换到g0栈，重新进入schedule g陷入syscall  net io和部分file io，没有事件则gopark 普通的阻塞系统调用，返回时m重新进入schedule  g陷入cgocall  lockedm加上syscall的处理逻辑  g执行超过10ms被sysmon抢占  </description>
+ 有新的可运行g或者拿到可运行的g  goready，将g入队列 newproc，新建g并入队列 m从schedule拿到g，自身退出spinning   有p资源被释放handoff(p)  (3) m何时交出资源p，并进入睡眠
+ lockedm主动交出p 处于syscall中，并被sysmon抢占(超过10ms)交出p cgocall被sysmon抢占交出p，或由于lockedm主动交出p findrunnable没找到可运行的g，主动交出p，进入睡眠   4. g的视角看调度 (1) 与goroutine相关的调度逻辑
+ go(runtime.newproc)产生新的g，放到本地队列或全局队列 gopark，g置为waiting状态，等待显示goready唤醒，在poller中用得较多 goready，g置为runnable状态，放入全局队列 gosched，g显示调用runtime.Gosched或被抢占，置为runnable状态，放入全局队列 goexit，g执行完退出，g所属m切换到g0栈，重新进入schedule g陷入syscall  net io和部分file io，没有事件则gopark 普通的阻塞系统调用，返回时m重新进入schedule   g陷入cgocall  lockedm加上syscall的处理逻辑   g执行超过10ms被sysmon抢占  </description>
     </item>
     
     <item>
@@ -158,11 +153,9 @@ Tcplayer Tcplayer主要包含以下几个步骤:
       <pubDate>Sun, 30 Apr 2017 14:45:23 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/go%E6%8E%A5%E5%8F%A3%E8%AF%A6%E8%A7%A3/</guid>
-      <description>Go接口的设计和实现是Go整个类型系统的一大特点。接口嵌入和组合、duck typing等实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解&amp;rdquo;著名&amp;rdquo;的nil返回值问题以及反射、type switch、type assertion等原理。本文主要基于Go1.8.1的源码介绍接口的内部实现及其使用相关的问题。
-1. 接口的实现  下面是接口在runtime中的实现，注意其中包含了接口本身和实际数据类型的类型信息:
-// src/runtime/runtime2.go type iface struct { // 包含接口的静态类型信息、数据的动态类型信息、函数表 tab *itab // 指向具体数据的内存地址比如slice、map等，或者在接口 // 转换时直接存放小数据(一个指针的长度) data unsafe.Pointer } type itab struct { // 接口的类型信息 inter *interfacetype // 具体数据的类型信息 _type *_type link *itab hash uint32 bad bool inhash bool unused [2]byte // 函数地址表，这里放置和接口方法对应的具体数据类型的方法地址 // 实现接口调用方法的动态分派，一般在给接口赋值发生转换时候会 // 更新此表，或者从直接拿缓存的itab fun [1]uintptr // variable sized }  另外，需要注意与接口相关的两点优化，会影响到反射等的实现:
- (1) 空接口(interface{})的itab优化。当将某个类型的值赋给空接口时，由于空接口没有方法，所以空接口的tab会直接指向数据的具体类型。在Go的reflect包中，reflect.TypeOf和reflect.ValueOf的参数都是空接口，因此所有参数都会先转换为空接口类型。这样，反射就实现了对所有参数类型获取实际数据类型的统一。这在后面反射的基本实现中会分析到。 (2) 发生接口转换时data字段相关的优化。当被转换为接口的数据的类型长度不超过一个指针的长度时(比如pointer、map、func、chan、[1]int等类型)，接口转换时会将数据直接拷贝存放到接口的data字段中(DirectIface)，而不再额外分配内存并拷贝。另外，从go1.8+的源码来看除了DirectIface的优化以外，还对长度较小(不超过64字节，未初始化数据内存的array，空字符串等)的零值做了优化，也不会重新分配内存，而是直接指向一个包级全局数组变量zeroVal的首地址。注意第2点优化发生在接口转换时生成的临时接口上，而不是被赋值的接口左值上。  再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9种非基础类型中:
- array传递会拷贝整块数据内存，传递长度为len(arr) * Sizeof(elem) string、slice、interface传递的是其runtime的实现，所以长度是固定的，分别为16、24、16字节(amd64) map、func、chan、pointer传递的是指针，所以长度固定为8字节(amd64) struct传递的是所有字段的内存拷贝，所以长度是所有字段的长度和 详细的测试可以参考这段程序   2.</description>
+      <description>Go接口的设计和实现是Go整个类型系统的一大特点。接口嵌入和组合、duck typing等实现了优雅的代码复用、解耦、模块化的特性，而且接口是方法动态分派、反射的实现基础(当然更基础的是编译为运行时提供的类型信息)。理解了接口的实现之后，就不难理解&amp;quot;著名&amp;quot;的nil返回值问题以及反射、type switch、type assertion等原理。本文主要基于Go1.8.1的源码介绍接口的内部实现及其使用相关的问题。
+ 1. 接口的实现  下面是接口在runtime中的实现，注意其中包含了接口本身和实际数据类型的类型信息:  // src/runtime/runtime2.go type iface struct { // 包含接口的静态类型信息、数据的动态类型信息、函数表 tab *itab // 指向具体数据的内存地址比如slice、map等，或者在接口 // 转换时直接存放小数据(一个指针的长度) data unsafe.Pointer } type itab struct { // 接口的类型信息 inter *interfacetype // 具体数据的类型信息 _type *_type link *itab hash uint32 bad bool inhash bool unused [2]byte // 函数地址表，这里放置和接口方法对应的具体数据类型的方法地址 // 实现接口调用方法的动态分派，一般在给接口赋值发生转换时候会 // 更新此表，或者从直接拿缓存的itab fun [1]uintptr // variable sized }   另外，需要注意与接口相关的两点优化，会影响到反射等的实现:
+ (1) 空接口(interface{})的itab优化。当将某个类型的值赋给空接口时，由于空接口没有方法，所以空接口的tab会直接指向数据的具体类型。在Go的reflect包中，reflect.TypeOf和reflect.ValueOf的参数都是空接口，因此所有参数都会先转换为空接口类型。这样，反射就实现了对所有参数类型获取实际数据类型的统一。这在后面反射的基本实现中会分析到。 (2) 发生接口转换时data字段相关的优化。当被转换为接口的数据的类型长度不超过一个指针的长度时(比如pointer、map、func、chan、[1]int等类型)，接口转换时会将数据直接拷贝存放到接口的data字段中(DirectIface)，而不再额外分配内存并拷贝。另外，从go1.8+的源码来看除了DirectIface的优化以外，还对长度较小(不超过64字节，未初始化数据内存的array，空字符串等)的零值做了优化，也不会重新分配内存，而是直接指向一个包级全局数组变量zeroVal的首地址。注意第2点优化发生在接口转换时生成的临时接口上，而不是被赋值的接口左值上。    再者，在Go中只有值传递，与具体的类型实现无关，但是某些类型具有引用的属性。典型的9种非基础类型中:</description>
     </item>
     
     <item>
@@ -172,14 +165,12 @@ Tcplayer Tcplayer主要包含以下几个步骤:
       
       <guid>https://feilengcui008.github.io/post/go%E7%9A%84%E8%87%AA%E4%B8%BE/</guid>
       <description>Go从1.5开始就基本全部由.go和.s文件写成了，.c文件被全部重写。了解Go语言的自举是很有意思的事情，能帮助理解Go的编译链接流程、Go的标准库和二进制工具等。本文基于go1.8的源码分析了编译时的自举流程。
-1. 基本流程 Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
+ 1. 基本流程 Go的编译自举流程分为以下几步(假设这里老版本的Go为go_old):
  go_old -&amp;gt; dist: 用老版本的Go编译出新代码的dist工具 go_old + dist -&amp;gt; asm, compile, link: 用老版本的Go和dist工具编译出bootstrap工具，asm用于汇编源码中的.s文件，输出.o对象文件；compile用于编译源码中的.go文件，输出归档打包后的.a文件；link用于链接二进制文件。这里还要依赖外部的pack程序，负责归档打包编译的库。  到这里，dist/asm/compile/link都是链接的老的runtime，所以其运行依赖于go_old。
- asm, compile, link -&amp;gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。
- go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。
+  asm, compile, link -&amp;gt; go_bootstrap: 这里用新代码的asm/compile/link的逻辑编译出新的go二进制文件及其依赖的所有包，包括新的runtime。
+  go_bootstrap install std cmd: 重新编译所有的标准库和二进制文件，替换之前编译的所有标准库和二进制工具(包括之前编译的dist,asm,link,compile等)，这样标准库和二进制工具依赖的都是新的代码编译生成的runtime，而且是用新的代码本身的编译链接逻辑。(这里go_bootstrap install会使用上一步的asm,compile,link工具实现编译链接，虽然其用的是go_old的runtime，但是这几个工具已经是新代码的编译链接逻辑)。
   一句话总结，借用老的runtime编译新的代码逻辑(编译器、链接器、新的runtime)生成新代码的编译、链接工具，并用这些工具重新编译新代码和工具本身。
-2. 具体实现  生成dist
-// make.bash # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!! GOROOT=&amp;quot;$GOROOT_BOOTSTRAP&amp;quot; GOOS=&amp;quot;&amp;quot; GOARCH=&amp;quot;&amp;quot; &amp;quot;$GOROOT_BOOTSTRAP/bin/go&amp;quot; build -o cmd/dist/dist ./cmd/dist  生成bootstrap二进制文件和库
-// make.bash # 设置环境变量 eval $(./cmd/dist/dist env -p || echo FAIL=true) # 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量 # 这里可提供GOARCH和GOOS环境变量交叉编译 .</description>
+ 2. 具体实现  生成dist  // make.bash # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!! GOROOT=&amp;quot;$GOROOT_BOOTSTRAP&amp;quot; GOOS=&amp;quot;&amp;quot; GOARCH=&amp;quot;&amp;quot; &amp;quot;$GOROOT_BOOTSTRAP/bin/go&amp;quot; build -o cmd/dist/dist ./cmd/dist  生成bootstrap二进制文件和库  // make.bash # 设置环境变量 eval $(./cmd/dist/dist env -p || echo FAIL=true) # 编译cmd/compile, cmd/asm, cmd/link, cmd/go bootstrap工具，注意外部传进来的GOOS和GOARCH目标平台的环境变量 # 这里可提供GOARCH和GOOS环境变量交叉编译 .</description>
     </item>
     
     <item>
@@ -189,9 +180,7 @@ Tcplayer Tcplayer主要包含以下几个步骤:
       
       <guid>https://feilengcui008.github.io/post/go%E7%9A%84context%E5%8C%85%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90/</guid>
       <description>Go1.7引入了context包，并在之后版本的标准库中广泛使用，尤其是net/http包。context包实现了一种优雅的并发安全的链式或树状通知机制，并且带取消、超时、值传递的特性，其底层还是基于channel、goroutine和time.Timer。通常一段应用程序会涉及多个树状的处理逻辑，树的节点之间存在一定依赖关系，比如子节点依赖父节点的完成，如果父节点退出，则子节点需要立即退出，所以这种模型可以比较优雅地处理程序的多个逻辑部分，而context很好地实现了这个模型。对于请求响应的形式(比如http)尤其适合这种模型。下面分析下context包的具体实现。
-1. 基本设计  context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。 cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。 emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数 timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。 cancelCtx的cancel有几种方式  主动调用cancel 其父ctx被cancel，触发子ctx的cancel time.Timer事件触发timerCtx的cancel回调  当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理  2. 具体实现  Context接口
-type Context interface { // 只用于timerCtx，即WithDeadline和WithTimeout Deadline() (deadline time.Time, ok bool) // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan Done() &amp;lt;-chan struct{} // 错误信息 Err() error // 只用于valueCtx Value(key interface{}) interface{} }  几种主要Context的实现
-// cancelCtx type cancelCtx struct { Context mu sync.Mutex done chan struct{} // 主要用于存储子cancelCtx和timerCtx // 当此ctx被cancel时，会自动cancel其所有children中的ctx children map[canceler]struct{} err error } // timeCtx type timerCtx struct { cancelCtx // 借助计时器触发timeout事件 timer *time.</description>
+ 1. 基本设计  context的类型主要有emptyCtx(用于默认Context)、cancelCtx(带cancel的Context)、timerCtx(计时并带cancel的Context)、valueCtx(携带kv键值对)，多种类型可以以父子节点形式相互组合其功能形成新的Context。 cancelCtx是最核心的，是WithCancel的底层实现，且可包含多个cancelCtx子节点，从而构成一棵树。 emptyCtx目前有两个实例化的ctx: background和TODO，background作为整个运行时的默认ctx，而TODO主要用来临时填充未确定具体Context类型的ctx参数 timerCtx借助cancelCtx实现，只是其cancel的调用可由time.Timer的事件回调触发，WithDeadline和WithTimeout的底层实现。 cancelCtx的cancel有几种方式  主动调用cancel 其父ctx被cancel，触发子ctx的cancel time.Timer事件触发timerCtx的cancel回调   当一个ctx被cancel后，ctx内部的负责通知的channel被关闭，从而触发select此channel的goroutine获得通知，完成相应逻辑的处理   2. 具体实现  Context接口  type Context interface { // 只用于timerCtx，即WithDeadline和WithTimeout Deadline() (deadline time.Time, ok bool) // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan Done() &amp;lt;-chan struct{} // 错误信息 Err() error // 只用于valueCtx Value(key interface{}) interface{} }  几种主要Context的实现  // cancelCtx type cancelCtx struct { Context mu sync.Mutex done chan struct{} // 主要用于存储子cancelCtx和timerCtx // 当此ctx被cancel时，会自动cancel其所有children中的ctx children map[canceler]struct{} err error } // timeCtx type timerCtx struct { cancelCtx // 借助计时器触发timeout事件 timer *time.</description>
     </item>
     
     <item>
@@ -202,10 +191,8 @@ type Context interface { // 只用于timerCtx，即WithDeadline和WithTimeout De
       <guid>https://feilengcui008.github.io/post/grpc-go%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
       <description>基本设计 gRPC-Go客户端的逻辑相对比较简单，从前面服务端的逻辑我们知道，客户端会通过http2复用tcp连接，每一次请求的调用基本上就是在已经建立好的tcp连接(并用ClientTransport抽象)上发送http请求，通过帧和流与服务端交互数据。
 另外，一个服务对应的具体地址可能有多个，grpc在这里抽象了负载均衡的接口和部分实现。grpc提供两种负载均衡方式，一种是客户端内部自带的策略实现(目前只实现了轮询方式)，另一种方式是外部的load balancer。
- 内部自带的策略实现: 这种方式主要针对一些简单的负载均衡策略比如轮询。轮询的实现逻辑是建立连接时通过定义的服务地址解析接口Resolver得到服务的地址列表，并单独用goroutine负责更新保持可用的连接，Watcher定义了具体更新实现的接口(比如多长时间解析更新一次)，最终在请求调用时会从可用连接列表中轮询选择其中一个连接发送请求。所以，grpc的负载均衡策略是请求级别的而不是连接级别的。 外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。gRPC-Go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。  客户端主要流程 客户端的逻辑主要可分为下面两部分:
- 建立连接 请求调用、发送与响应  1. 建立连接  典型的步骤
-func main() { // 建立连接 conn, err := grpc.Dial(address, grpc.WithInsecure()) c := pb.NewGreeterClient(conn) // 请求调用 r, err := c.SayHello(context.Background(), &amp;amp;pb.HelloRequest{Name: name}) // 处理返回r // 对于单次请求，grpc直接负责返回响应数据 // 对于流式请求，grpc会返回一个流的封装，由开发者负责流中数据的读写 }  建立tcp(http2)连接
-func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialContext(context.Background(), target, opts...) } func DialContext(ctx context.</description>
+ 内部自带的策略实现: 这种方式主要针对一些简单的负载均衡策略比如轮询。轮询的实现逻辑是建立连接时通过定义的服务地址解析接口Resolver得到服务的地址列表，并单独用goroutine负责更新保持可用的连接，Watcher定义了具体更新实现的接口(比如多长时间解析更新一次)，最终在请求调用时会从可用连接列表中轮询选择其中一个连接发送请求。所以，grpc的负载均衡策略是请求级别的而不是连接级别的。 外部load balancer：这种方式主要针对 较复杂的负载均衡策略。grpclb实现了grpc这边的逻辑，并用protobuf定义了与load balancer交互的接口。gRPC-Go客户端建立连接时，会先与load balancer建立连接，并使用和轮询方式类似的Resolver、Watcher接口来更新load balancer的可用连接列表，不同的是每次load balancer连接变化时，会像load balancer地址发送rpc请求得到服务的地址列表。   客户端主要流程 客户端的逻辑主要可分为下面两部分:
+ 建立连接 请求调用、发送与响应  1. 建立连接  典型的步骤  func main() { // 建立连接 conn, err := grpc.Dial(address, grpc.WithInsecure()) c := pb.NewGreeterClient(conn) // 请求调用 r, err := c.SayHello(context.Background(), &amp;amp;pb.HelloRequest{Name: name}) // 处理返回r // 对于单次请求，grpc直接负责返回响应数据 // 对于流式请求，grpc会返回一个流的封装，由开发者负责流中数据的读写 }  建立tcp(http2)连接  func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialContext(context.Background(), target, opts.</description>
     </item>
     
     <item>
@@ -214,11 +201,10 @@ func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialC
       <pubDate>Sun, 23 Apr 2017 15:47:59 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/grpc-go%E6%9C%8D%E5%8A%A1%E7%AB%AF%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/</guid>
-      <description>基本设计  服务抽象
- 一个Server可包含多个Service，每个Service包含多个业务逻辑方法，应用开发者需要:  不使用protobuf  规定Service需要实现的接口 实现此Service对应的ServiceDesc，ServiceDesc描述了服务名、处理此服务的接口类型、单次调用的方法数组、流式方法数组、其他元数据。 实现Service接口具体业务逻辑的结构体 实例化Server，并讲ServiceDesc和Service具体实现注册到Server 监听并启动Server服务  使用protobuf  实现protobuf grpc插件生成的Service接口 实例化Server，并注册Service接口的具体实现 监听并启动Server  可见，protobuf的gRPC-Go插件帮助我们生成了Service的接口和ServiceDesc。   底层传输协议
- gRPC-Go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，gRPC-Go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考http2的规范  http2帧分为几大类，gRPC-Go使用中比较重要的是HEADERS和DATA帧类型。  HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，gRPC-Go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。 数据帧从属于某个stream，按照stream id查找，并写入对应的stream中。  Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。 客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。 客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。 gRPC-Go中的单次方法和流式方法  无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此&amp;rdquo;复用&amp;rdquo;这个流。 客户端如果是流式方法，需要显示调用CloseSend，表示数据发送的结束     服务端主要流程 由于比较多，所以分以下几个部分解读主要逻辑:
- 实例化Server 注册Service 监听并接收连接请求 连接与请求处理 连接的处理细节(http2连接的建立) 新请求的处理细节(新流的打开和帧数据的处理)   实例化Server
-// 工厂方法 func NewServer(opt ...ServerOption) *Server { var opts options // 默认最大消息长度: 4M opts.</description>
+      <description>基本设计   服务抽象
+ 一个Server可包含多个Service，每个Service包含多个业务逻辑方法，应用开发者需要:  不使用protobuf  规定Service需要实现的接口 实现此Service对应的ServiceDesc，ServiceDesc描述了服务名、处理此服务的接口类型、单次调用的方法数组、流式方法数组、其他元数据。 实现Service接口具体业务逻辑的结构体 实例化Server，并讲ServiceDesc和Service具体实现注册到Server 监听并启动Server服务   使用protobuf  实现protobuf grpc插件生成的Service接口 实例化Server，并注册Service接口的具体实现 监听并启动Server   可见，protobuf的gRPC-Go插件帮助我们生成了Service的接口和ServiceDesc。      底层传输协议
+ gRPC-Go使用http2作为应用层的传输协议，http2会复用底层tcp连接，以流和数据帧的形式处理上层协议，gRPC-Go使用http2的主要逻辑有下面几点，关于http2详细的细节可参考http2的规范  http2帧分为几大类，gRPC-Go使用中比较重要的是HEADERS和DATA帧类型。  HEADERS帧在打开一个新的流时使用，通常是客户端的一个http请求，gRPC-Go通过底层的go的http2实现帧的读写，并解析出客户端的请求头(大多是grpc内部自己定义的)，读取请求体的数据，grpc规定请求体的数据由两部分构成(5 byte + len(msg)), 其中第1字节表明是否压缩，第2-5个字节消息体的长度(最大2^32即4G)，msg为客户端请求序列化后的原始数据。 数据帧从属于某个stream，按照stream id查找，并写入对应的stream中。   Server端接收到客户端建立的连接后，使用一个goroutine专门处理此客户端的连接(即一个tcp连接或者说一个http2连接)，所以同一个grpc客户端连接上服务端后，后续的请求都是通过同一个tcp连接。 客户端和服务端的连接在应用层由Transport抽象(类似通常多路复用实现中的封装的channel)，在客户端是ClientTransport，在服务端是ServerTransport。Server端接收到一个客户端的http2请求后即打开一个新的流，ClientTransport和ServerTransport之间使用这个新打开的流以http2帧的形式交换数据。 客户端的每个http2请求会打开一个新的流。流可以从两边关闭，对于单次请求来说，客户端会主动关闭流，对于流式请求客户端不会主动关闭(即使使用了CloseSend也只是发送了数据发送结束的标识，还是由服务端关闭)。 gRPC-Go中的单次方法和流式方法  无论是单次方法还是流式方法，服务端在调用完用户的处理逻辑函数返回后，都会关闭流(这也是为什么ServerStream不需要实现CloseSend的原因)。区别只是对于服务端的流式方法来说，可循环多次读取这个流中的帧数据并处理，以此&amp;quot;复用&amp;quot;这个流。 客户端如果是流式方法，需要显示调用CloseSend，表示数据发送的结束         服务端主要流程 由于比较多，所以分以下几个部分解读主要逻辑:
+ 实例化Server 注册Service 监听并接收连接请求 连接与请求处理 连接的处理细节(http2连接的建立) 新请求的处理细节(新流的打开和帧数据的处理)   实例化Server  // 工厂方法 func NewServer(opt .</description>
     </item>
     
     <item>
@@ -228,11 +214,10 @@ func Dial(target string, opts ...DialOption) (*ClientConn, error) { return DialC
       
       <guid>https://feilengcui008.github.io/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/</guid>
       <description>上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。
-Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。
- 宏观
- 合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化  Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)  Log Replication
- 发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)    细节
- Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data  Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致    测试和其他一些问题</description>
+ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。
+  宏观
+ 合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化   Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)   Log Replication  发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)        细节
+ Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data   Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致        测试和其他一些问题</description>
     </item>
     
     <item>
@@ -241,8 +226,8 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
       <pubDate>Wed, 30 Nov 2016 17:48:20 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/runc%E5%AE%B9%E5%99%A8%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F/</guid>
-      <description> 容器的生命周期涉及到内部的程序实现和面向用户的命令行界面，runc内部容器状态转换操作、runc命令的参数定义的操作、docker client定义的容器操作是不同的，比如对于docker client的create来说， 语义和runc就完全不同，这一篇文章分析runc的容器生命周期的抽象、内部实现以及状态转换图。理解了runc的容器状态转换再对比理解docker client提供的容器操作命令的语义会更容易些。
-容器生命周期相关接口  最基本的required的接口  Start: 初始化容器环境并启动一个init进程，或者加入已有容器的namespace并启动一个setns进程；执行postStart hook; 阻塞在init管道的写端，用户发信号替换执行真正的命令 Exec: 读init管道，通知init进程或者setns进程继续往下执行 Run: Start + Exec的组合 Signal: 向容器内init进程发信号 Destroy: 杀掉cgroups中的进程，删除cgroups对应的path，运行postStop的hook 其他  Set: 更新容器的配置信息，比如修改cgroups resize等 Config: 获取容器的配置信息 State: 获取容器的状态信息 Status: 获取容器的当前运行状态: created、running、pausing、paused、stopped Processes: 返回容器内所有进程的列表 Stats: 容器内的cgroups统计信息  对于linux容器定义并实现了特有的功能接口  Pause: free容器中的所有进程 Resume: thaw容器内的所有进程 Checkpoint: criu checkpoint Restore: criu restore    接口在内部的实现  对于Start/Run/Exec的接口是作为不同os环境下的标准接口对开发者暴露，接口在内部的实现有很多重复的部分可以统一，因此内部的接口实际上更简洁，这里以linux容器为例说明  对于Start/Run/Exec在内部实现实际上只用到下面两个函数，通过传入flag(容器是否处于stopped状态)区分是创建容器的init进程还是创建进程的init进程  start: 创建init进程，如果status == stopped，则创建并执行newInitProcess，否则创建并执行newSetnsProcess，等待用户发送执行信号(等在管道写端上)，用用户的命令替换掉 exec: 读管道，发送执行信号  Start直接使用start Run实际先使用start(doInit = true)，然后exec Exec实际先使用start(doInit = false), 然后exec   对用户暴露的命令行参数与容器接口的对应关系，以linux容器为例  create -&amp;gt; Start(doInit = true) start -&amp;gt; Exec run -&amp;gt; Run(doInit = true) exec -&amp;gt; Run(doInit = false) kill -&amp;gt; Signal delete -&amp;gt; Signal and Destroy update -&amp;gt; Set state -&amp;gt; State events -&amp;gt; Stats ps -&amp;gt; Processes list linux specific  pause -&amp;gt; Pause resume -&amp;gt; Resume checkpoint -&amp;gt; Checkpoint restore -&amp;gt; Restore   runc命令行的动作序列对容器状态机的影响  对于一个容器的生命周期来说，稳定状态有4个: stopped、created、running、paused 注意下面状态转换图中的动作是runc命令行参数动作，不是容器的接口动作，这里没考虑checkpoint相关的restore状态     </description>
+      <description>容器的生命周期涉及到内部的程序实现和面向用户的命令行界面，runc内部容器状态转换操作、runc命令的参数定义的操作、docker client定义的容器操作是不同的，比如对于docker client的create来说， 语义和runc就完全不同，这一篇文章分析runc的容器生命周期的抽象、内部实现以及状态转换图。理解了runc的容器状态转换再对比理解docker client提供的容器操作命令的语义会更容易些。
+ 容器生命周期相关接口  最基本的required的接口  Start: 初始化容器环境并启动一个init进程，或者加入已有容器的namespace并启动一个setns进程；执行postStart hook; 阻塞在init管道的写端，用户发信号替换执行真正的命令 Exec: 读init管道，通知init进程或者setns进程继续往下执行 Run: Start + Exec的组合 Signal: 向容器内init进程发信号 Destroy: 杀掉cgroups中的进程，删除cgroups对应的path，运行postStop的hook 其他  Set: 更新容器的配置信息，比如修改cgroups resize等 Config: 获取容器的配置信息 State: 获取容器的状态信息 Status: 获取容器的当前运行状态: created、running、pausing、paused、stopped Processes: 返回容器内所有进程的列表 Stats: 容器内的cgroups统计信息   对于linux容器定义并实现了特有的功能接口  Pause: free容器中的所有进程 Resume: thaw容器内的所有进程 Checkpoint: criu checkpoint Restore: criu restore       接口在内部的实现  对于Start/Run/Exec的接口是作为不同os环境下的标准接口对开发者暴露，接口在内部的实现有很多重复的部分可以统一，因此内部的接口实际上更简洁，这里以linux容器为例说明  对于Start/Run/Exec在内部实现实际上只用到下面两个函数，通过传入flag(容器是否处于stopped状态)区分是创建容器的init进程还是创建进程的init进程  start: 创建init进程，如果status == stopped，则创建并执行newInitProcess，否则创建并执行newSetnsProcess，等待用户发送执行信号(等在管道写端上)，用用户的命令替换掉 exec: 读管道，发送执行信号   Start直接使用start Run实际先使用start(doInit = true)，然后exec Exec实际先使用start(doInit = false), 然后exec     对用户暴露的命令行参数与容器接口的对应关系，以linux容器为例  create -&amp;gt; Start(doInit = true) start -&amp;gt; Exec run -&amp;gt; Run(doInit = true) exec -&amp;gt; Run(doInit = false) kill -&amp;gt; Signal delete -&amp;gt; Signal and Destroy update -&amp;gt; Set state -&amp;gt; State events -&amp;gt; Stats ps -&amp;gt; Processes list linux specific  pause -&amp;gt; Pause resume -&amp;gt; Resume checkpoint -&amp;gt; Checkpoint restore -&amp;gt; Restore     runc命令行的动作序列对容器状态机的影响  对于一个容器的生命周期来说，稳定状态有4个: stopped、created、running、paused 注意下面状态转换图中的动作是runc命令行参数动作，不是容器的接口动作，这里没考虑checkpoint相关的restore状态      </description>
     </item>
     
     <item>
@@ -252,7 +237,7 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
       
       <guid>https://feilengcui008.github.io/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/</guid>
       <description>最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
-subprocess模块使用不当的问题 Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。
+ subprocess模块使用不当的问题 Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。
 # main.py #!/usr/bin/env python # encoding: utf-8 import subprocess import os import tempfile import sys import traceback import commands # both parent and child process will hang # if run.py stdout/stderr exceed 64K, since # parent process is waiting child process exit # but child process is blocked by writing pipe def testSubprocessCallPipe(): # call: just Popen().wait() p = subprocess.Popen([&amp;quot;python&amp;quot;, &amp;quot;run.py&amp;quot;], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) ret = p.</description>
     </item>
     
@@ -263,8 +248,8 @@ subprocess模块使用不当的问题 Python的subprocess比较强大，基本�
       
       <guid>https://feilengcui008.github.io/post/docker%E7%AE%80%E4%BB%8B/</guid>
       <description>本文主要介绍Docker的一些基本概念、Docker的源码分析、Docker相关的一些issue、Docker周边生态等等。
-基本概念 Basics docker大体包括三大部分，runtime(container)、image(graphdriver)、registry，runtime提供环境的隔离与资源的隔离和限制，image提供layer、image、rootfs的管理、registry负责镜像存储与分发。当然，还有其他一些比如data volume, network等等，总体来说还是分为计算、存储与网络。
-computing  接口规范 命名空间隔离、资源隔离与限制的实现 造坑与入坑  network  接口规范与实现  bridge  veth pair for two namespace communication bridge and veth pair for multi-namespace communication do not support multi-host  overlay  docker overlay network: with swarm mode or with kv etcd/zookeeper/consul -&amp;gt; vxlan coreos flannel -&amp;gt; 多种backend，udp/vxlan&amp;hellip; ovs weave -&amp;gt; udp and vxlan，与flannel udp不同的是会将多container的packet一块打包 calico  pure layer 3  一篇对比  null  与世隔绝  host  共享主机net namespace    storage  graphdriver(layers,image and rootfs)  graph:独立于各个driver，记录image的各层依赖关系(DAG)，注意是image不包括运行中的container的layer，当container commit生成image后，会将新layer的依赖关系写入 device mapper  snapshot基于block，allocation-on-demand 默认基于空洞文件(data and metadata)挂载到回环设备  aufs  diff:实际存储各个layer的变更数据 layers:每个layer依赖的layers，包括正在运行中的container mnt:container的实际挂载根目录  overlayfs vfs btrfs &amp;hellip;  volume  driver接口  local driver flocker: container和volume管理与迁移 rancher的convoy:多重volume存储后端的支持device mapper, NFS, EBS&amp;hellip;,提供快照、备份、恢复等功能  数据卷容器  registry:与docker registry交互  支持basic/token等认证方式 token可以基于basic/oauth等方式从第三方auth server获取bearer token tls通信的支持  libkv  支持consul/etcd/zookeeper  分布式存储的支持  security  docker  libseccomp限制系统调用(内部使用bpf) linux capabilities限制root用户权限范围scope user namespace用户和组的映射 selinux apparmor &amp;hellip;  image and registry  Other Stuffs  迁移</description>
+ 基本概念 Basics docker大体包括三大部分，runtime(container)、image(graphdriver)、registry，runtime提供环境的隔离与资源的隔离和限制，image提供layer、image、rootfs的管理、registry负责镜像存储与分发。当然，还有其他一些比如data volume, network等等，总体来说还是分为计算、存储与网络。
+computing  接口规范 命名空间隔离、资源隔离与限制的实现 造坑与入坑  network  接口规范与实现  bridge  veth pair for two namespace communication bridge and veth pair for multi-namespace communication do not support multi-host   overlay  docker overlay network: with swarm mode or with kv etcd/zookeeper/consul -&amp;gt; vxlan coreos flannel -&amp;gt; 多种backend，udp/vxlan&amp;hellip; ovs weave -&amp;gt; udp and vxlan，与flannel udp不同的是会将多container的packet一块打包 calico  pure layer 3   一篇对比   null  与世隔绝   host  共享主机net namespace      storage  graphdriver(layers,image and rootfs)  graph:独立于各个driver，记录image的各层依赖关系(DAG)，注意是image不包括运行中的container的layer，当container commit生成image后，会将新layer的依赖关系写入 device mapper  snapshot基于block，allocation-on-demand 默认基于空洞文件(data and metadata)挂载到回环设备   aufs  diff:实际存储各个layer的变更数据 layers:每个layer依赖的layers，包括正在运行中的container mnt:container的实际挂载根目录   overlayfs vfs btrfs &amp;hellip;   volume  driver接口  local driver flocker: container和volume管理与迁移 rancher的convoy:多重volume存储后端的支持device mapper, NFS, EBS&amp;hellip;,提供快照、备份、恢复等功能   数据卷容器   registry:与docker registry交互  支持basic/token等认证方式 token可以基于basic/oauth等方式从第三方auth server获取bearer token tls通信的支持   libkv  支持consul/etcd/zookeeper   分布式存储的支持  security  docker  libseccomp限制系统调用(内部使用bpf) linux capabilities限制root用户权限范围scope user namespace用户和组的映射 selinux apparmor &amp;hellip;   image and registry  Other Stuffs   迁移</description>
     </item>
     
     <item>
@@ -274,11 +259,9 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E6%8A%A2%E5%8D%A0/</guid>
       <description>本文主要介绍内核抢占的相关概念和具体实现，以及抢占对内核调度、内核竞态和同步的一些影响。(所用内核版本3.19.3)
-1. 基本概念  用户抢占和内核抢占  用户抢占发生点  当从系统调用或者中断上下文返回用户态的时候，会检查need_resched标志，如果被设置则会重新选择用户态task执行  内核抢占发生点  当从中断上下文返回内核态的时候，检查need_resched标识以及__preemp_count计数，如果标识被设置，并且可抢占，则会触发调度程序preempt_schedule_irq() 内核代码由于阻塞等原因直接或间接显示调用schedule，比如preemp_disable时可能会触发preempt_schedule()  本质上内核态中的task是共享一个内核地址空间，在同一个core上，从中断返回的task很可能执行和被抢占的task相同的代码，并且两者同时等待各自的资源释放，也可能两者修改同一共享变量，所以会造成死锁或者竞态等；而对于用户态抢占来说，由于每个用户态进程都有独立的地址空间，所以在从内核代码(系统调用或者中断)返回用户态时，由于是不同地址空间的锁或者共享变量，所以不会出现不同地址空间之间的死锁或者竞态，也就没必要检查preempt_count，是安全的。preempt_count主要负责内核抢占计数。   2. 内核抢占的实现  percpu变量__preempt_count
-抢占计数8位, PREEMPT_MASK =&amp;gt; 0x000000ff 软中断计数8位, SOFTIRQ_MASK =&amp;gt; 0x0000ff00 硬中断计数4位, HARDIRQ_MASK =&amp;gt; 0x000f0000 不可屏蔽中断1位, NMI_MASK =&amp;gt; 0x00100000 PREEMPTIVE_ACTIVE(标识内核抢占触发的schedule) =&amp;gt; 0x00200000 调度标识1位, PREEMPT_NEED_RESCHED =&amp;gt; 0x80000000  __preempt_count的作用
- 抢占计数 判断当前所在上下文 重新调度标识  thread_info的flags
- thread_info的flags中有一个是TIF_NEED_RESCHED，在系统调用返回，中断返回，以及preempt_disable的时候会检查是否设置，如果设置并且抢占计数为0(可抢占)，则会触发重新调度schedule()或者preempt_schedule()或者preempt_schedule_irq()。通常在scheduler_tick中会检查是否设置此标识(每个HZ触发一次)，然后在下一次中断返回时检查，如果设置将触发重新调度，而在schedule()中会清除此标识。
-// kernel/sched/core.c // 设置thread_info flags和__preempt_count的need_resched标识 void resched_curr(struct rq *rq) { /*省略*/ if (cpu == smp_processor_id()) { // 设置thread_info的need_resched标识 set_tsk_need_resched(curr); // 设置抢占计数__preempt_count里的need_resched标识 set_preempt_need_resched(); return; } /*省略*/ } //在schedule()中清除thread_info和__preempt_count中的need_resched标识 static void __sched __schedule(void) { /*省略*/ need_resched: // 关抢占读取percpu变量中当前cpu id，运行队列 preempt_disable(); cpu = smp_processor_id(); rq = cpu_rq(cpu); rcu_note_context_switch(); prev = rq-&amp;gt;curr; /*省略*/ //关闭本地中断，关闭抢占，获取rq自旋锁 raw_spin_lock_irq(&amp;amp;rq-&amp;gt;lock); switch_count = &amp;amp;prev-&amp;gt;nivcsw; // PREEMPT_ACTIVE 0x00200000 // preempt_count = __preempt_count &amp;amp; (~(0x80000000)) // 如果进程没有处于running的状态或者设置了PREEMPT_ACTIVE标识 //(即本次schedule是由于内核抢占导致)，则不会将当前进程移出队列 // 此处PREEMPT_ACTIVE的标识是由中断返回内核空间时调用 // preempt_schdule_irq或者内核空间调用preempt_schedule // 而设置的，表明是由于内核抢占导致的schedule，此时不会将当前 // 进程从运行队列取出，因为有可能其再也无法重新运行。 if (prev-&amp;gt;state &amp;amp;&amp;amp; !</description>
+ 1. 基本概念  用户抢占和内核抢占  用户抢占发生点  当从系统调用或者中断上下文返回用户态的时候，会检查need_resched标志，如果被设置则会重新选择用户态task执行   内核抢占发生点  当从中断上下文返回内核态的时候，检查need_resched标识以及__preemp_count计数，如果标识被设置，并且可抢占，则会触发调度程序preempt_schedule_irq() 内核代码由于阻塞等原因直接或间接显示调用schedule，比如preemp_disable时可能会触发preempt_schedule()   本质上内核态中的task是共享一个内核地址空间，在同一个core上，从中断返回的task很可能执行和被抢占的task相同的代码，并且两者同时等待各自的资源释放，也可能两者修改同一共享变量，所以会造成死锁或者竞态等；而对于用户态抢占来说，由于每个用户态进程都有独立的地址空间，所以在从内核代码(系统调用或者中断)返回用户态时，由于是不同地址空间的锁或者共享变量，所以不会出现不同地址空间之间的死锁或者竞态，也就没必要检查__preempt_count，是安全的。__preempt_count主要负责内核抢占计数。     2. 内核抢占的实现  percpu变量__preempt_count  抢占计数8位, PREEMPT_MASK =&amp;gt; 0x000000ff 软中断计数8位, SOFTIRQ_MASK =&amp;gt; 0x0000ff00 硬中断计数4位, HARDIRQ_MASK =&amp;gt; 0x000f0000 不可屏蔽中断1位, NMI_MASK =&amp;gt; 0x00100000 PREEMPTIVE_ACTIVE(标识内核抢占触发的schedule) =&amp;gt; 0x00200000 调度标识1位, PREEMPT_NEED_RESCHED =&amp;gt; 0x80000000   __preempt_count的作用
+ 抢占计数 判断当前所在上下文 重新调度标识    thread_info的flags
+ thread_info的flags中有一个是TIF_NEED_RESCHED，在系统调用返回，中断返回，以及preempt_disable的时候会检查是否设置，如果设置并且抢占计数为0(可抢占)，则会触发重新调度schedule()或者preempt_schedule()或者preempt_schedule_irq()。通常在scheduler_tick中会检查是否设置此标识(每个HZ触发一次)，然后在下一次中断返回时检查，如果设置将触发重新调度，而在schedule()中会清除此标识。    // kernel/sched/core.c // 设置thread_info flags和__preempt_count的need_resched标识 void resched_curr(struct rq *rq) { /*省略*/ if (cpu == smp_processor_id()) { // 设置thread_info的need_resched标识 set_tsk_need_resched(curr); // 设置抢占计数__preempt_count里的need_resched标识 set_preempt_need_resched(); return; } /*省略*/ } //在schedule()中清除thread_info和__preempt_count中的need_resched标识 static void __sched __schedule(void) { /*省略*/ need_resched: // 关抢占读取percpu变量中当前cpu id，运行队列 preempt_disable(); cpu = smp_processor_id(); rq = cpu_rq(cpu); rcu_note_context_switch(); prev = rq-&amp;gt;curr; /*省略*/ //关闭本地中断，关闭抢占，获取rq自旋锁 raw_spin_lock_irq(&amp;amp;rq-&amp;gt;lock); switch_count = &amp;amp;prev-&amp;gt;nivcsw; // PREEMPT_ACTIVE 0x00200000 // preempt_count = __preempt_count &amp;amp; (~(0x80000000)) // 如果进程没有处于running的状态或者设置了PREEMPT_ACTIVE标识 //(即本次schedule是由于内核抢占导致)，则不会将当前进程移出队列 // 此处PREEMPT_ACTIVE的标识是由中断返回内核空间时调用 // preempt_schdule_irq或者内核空间调用preempt_schedule // 而设置的，表明是由于内核抢占导致的schedule，此时不会将当前 // 进程从运行队列取出，因为有可能其再也无法重新运行。 if (prev-&amp;gt;state &amp;amp;&amp;amp; !</description>
     </item>
     
     <item>
@@ -289,9 +272,8 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8namespace/</guid>
       <description>1. 介绍 Namespace是Linux内核为容器技术提供的基础设施之一(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核)，主要用来做资源的隔离，本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的接口是:
  clone setns unshare /proc/pid/ns, /proc/pid/uid_map, /proc/pid/gid_map等  后面会简单分析一下内核源码里面是怎么实现这几个namespace的，并以几个简单系统调用为例，看看namespace是怎么产生影响的，最后简单分析下setns和unshare的实现。
-2. 测试流程及代码 下面是一些简单的例子，主要测试uts/pid/user/mnt四个namespace的效果，测试代码主要用到三个进程，一个是clone系统调用执行/bin/bash后的进程，也是生成新的子namespace的初始进程，然后是打开/proc/pid/ns下的namespace链接文件，用setns将第二个可执行文件的进程加入/bin/bash的进程的namespace(容器)，并让其fork出一个子进程，测试pid namespace的差异。值得注意的几个点:
- 不同版本的内核setns和unshare对namespace的支持不一样，较老的内核可能只支持ipc/net/uts三个namespace 某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&amp;gt;pid_namespace_for_children) 用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/&amp;hellip;的错误
-// 代码1: 开一些新的namespace(启动新容器) #define _GNU_SOURCE #include &amp;lt;sys/wait.h&amp;gt; #include &amp;lt;sched.h&amp;gt; #include &amp;lt;string.h&amp;gt; #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;unistd.h&amp;gt; #define errExit(msg) do { perror(msg); exit(EXIT_FAILURE); \ } while (0) /* Start function for cloned child */ static int childFunc(void *arg) { const char *binary = &amp;quot;/bin/bash&amp;quot;; char *const argv[] = { &amp;quot;/bin/bash&amp;quot;, NULL }; char *const envp[] = { NULL }; /* wrappers for execve */ // has const char * as argument list // execl // execle =&amp;gt; has envp // execlp =&amp;gt; need search PATH // has char *const arr[] as argument list // execv // execvpe =&amp;gt; need search PATH and has envp // execvp =&amp;gt; need search PATH //int ret = execve(binary, argv, envp); int ret = execv(binary, argv); if (ret &amp;lt; 0) { errExit(&amp;quot;execve error&amp;quot;); } return ret; } #define STACK_SIZE (1024 * 1024) /* Stack size for cloned child */ int main(int argc, char *argv[]) { char *stack; char *stackTop; pid_t pid; stack = malloc(STACK_SIZE); if (stack == NULL) errExit(&amp;quot;malloc&amp;quot;); stackTop = stack + STACK_SIZE; /* Assume stack grows downward */ //pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL); pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, NULL); //pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL); if (pid == -1) errExit(&amp;quot;clone&amp;quot;); printf(&amp;quot;clone() returned %ld\n&amp;quot;, (long) pid); if (waitpid(pid, NULL, 0) == -1) errExit(&amp;quot;waitpid&amp;quot;); printf(&amp;quot;child has terminated\n&amp;quot;); exit(EXIT_SUCCESS); }  // 代码2: 使用setns加入新进程 #define _GNU_SOURCE // ?</description>
+ 2. 测试流程及代码 下面是一些简单的例子，主要测试uts/pid/user/mnt四个namespace的效果，测试代码主要用到三个进程，一个是clone系统调用执行/bin/bash后的进程，也是生成新的子namespace的初始进程，然后是打开/proc/pid/ns下的namespace链接文件，用setns将第二个可执行文件的进程加入/bin/bash的进程的namespace(容器)，并让其fork出一个子进程，测试pid namespace的差异。值得注意的几个点:
+ 不同版本的内核setns和unshare对namespace的支持不一样，较老的内核可能只支持ipc/net/uts三个namespace 某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&amp;gt;pid_namespace_for_children) 用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/&amp;hellip;的错误  // 代码1: 开一些新的namespace(启动新容器) #define _GNU_SOURCE #include &amp;lt;sys/wait.h&amp;gt; #include &amp;lt;sched.h&amp;gt; #include &amp;lt;string.h&amp;gt; #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;unistd.h&amp;gt; #define errExit(msg) do { perror(msg); exit(EXIT_FAILURE); \ } while (0) /* Start function for cloned child */ static int childFunc(void *arg) { const char *binary = &amp;quot;/bin/bash&amp;quot;; char *const argv[] = { &amp;quot;/bin/bash&amp;quot;, NULL }; char *const envp[] = { NULL }; /* wrappers for execve */ // has const char * as argument list // execl // execle =&amp;gt; has envp // execlp =&amp;gt; need search PATH // has char *const arr[] as argument list // execv // execvpe =&amp;gt; need search PATH and has envp // execvp =&amp;gt; need search PATH //int ret = execve(binary, argv, envp); int ret = execv(binary, argv); if (ret &amp;lt; 0) { errExit(&amp;quot;execve error&amp;quot;); } return ret; } #define STACK_SIZE (1024 * 1024) /* Stack size for cloned child */ int main(int argc, char *argv[]) { char *stack; char *stackTop; pid_t pid; stack = malloc(STACK_SIZE); if (stack == NULL) errExit(&amp;quot;malloc&amp;quot;); stackTop = stack + STACK_SIZE; /* Assume stack grows downward */ //pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL); pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, NULL); //pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL); if (pid == -1) errExit(&amp;quot;clone&amp;quot;); printf(&amp;quot;clone() returned %ld\n&amp;quot;, (long) pid); if (waitpid(pid, NULL, 0) == -1) errExit(&amp;quot;waitpid&amp;quot;); printf(&amp;quot;child has terminated\n&amp;quot;); exit(EXIT_SUCCESS); } // 代码2: 使用setns加入新进程 #define _GNU_SOURCE // ?</description>
     </item>
     
     <item>
@@ -300,15 +282,11 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       <pubDate>Mon, 16 May 2016 17:03:34 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</guid>
-      <description>时钟  硬件时钟
- RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式
- 通过ioctl
-#include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令
-  通常内核在boot以及从低电量中恢复时，会读取RTC更新system time
-  软件时钟
- HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。  外部时钟
- 从网络ntp，原子钟等同步   时间  时间类别
- wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间  时间的表示</description>
+      <description>时钟   硬件时钟
+ RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式  通过ioctl #include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令   通常内核在boot以及从低电量中恢复时，会读取RTC更新system time    软件时钟
+ HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。    外部时钟
+ 从网络ntp，原子钟等同步     时间   时间类别
+ wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间    时间的表示</description>
     </item>
     
     <item>
@@ -318,18 +296,18 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       
       <guid>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%89/</guid>
       <description>在上一篇文章中讨论了leader选举对于基本Paxos算法在实际工程应用中的必要性，这一篇文章首先结合raft的选举算法谈谈leader选举的实质和常用方法，然后结合raft算法选举后的日志恢复以及《Paxos Made Simple》里lamport勾勒的multi-paxos的日志恢复来详细分析一下选主后要做的两件重要事情以及俩算法在这块的差异。
-1.raft的选主算法以及选主算法的实质 前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。
+ 1.raft的选主算法以及选主算法的实质 前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。
 关于raft选主的详细描述可以参考原论文
  raft选主时的term实际上对应基本Paxos中的proposal id raft选主时的要求即每个term期间只能最多有一个leader实际上对应于基本Paxos的每个proposal要么达成决议要么没达成决议 raft选主时的随机timeout实际上是为了防止基本Paxos livelock的问题，这也是FLP定理所决定的 raft选举时与基本Paxos的区别在于，raft选举不要求在某个term(proposal id)选出一个leader(达成决议后)不需要后续的某个term(proposal id)选出同一台机器作为leader(使用同一个值达成决议)，而是可以每次重新选一个机器(proposal选不同值)，当然我们可以使用一定方法，增大选某台机器的概率，比如为每台机器设置rank值。 raft选举时，当candidate和leader接受到更大的term时立即更新term转为follower，在下一次超时前自然不能再提proposal，实际上对应于基本Paxos第一阶段acceptor接收到proposal id更大的proposal时更新proposal id放弃当前的proposal(在选主中实际上就对应放弃我candidate和leader的身份，本质上就是proposer的身份)  所以选主本质上是可以通过基本Paxos算法来保证的，选主没有完全使用Paxos算法，可以看作使用了Paxos算法的某个子算法解决了比容错分布式一致问题限制稍微小的问题。当然，我们可以在选主时加上额外的限制条件，只要能保证可能选出一个主。
-2.选主后日志的同步 选出新的leader后，它至少要负责做两件事情，一件是确定下一次客户请求应该用哪个日志槽位或者说项，另一件是确定整个集群的机器过去已经提交过的最近的项(或者说日志)，确定这两个值的过程实际上就是日志恢复的过程，下面对两种算法具体分析。这里补充一点之前文章漏掉的东西，基本Paxos算法实际上有三个阶段，最后一个阶段是提交阶段，只是通常leader-based算法为了优化网络开销，将第三阶段和第二阶段合并了，而在每次执行第二阶段是带上leader已经提交过的日志号，所以新leader还需要确定最近被提交过的日志，而这种优化也引入了另外的复杂性。
- 对于raft来说
- 由于选主时额外的限制条件以及log replication时的consistency check保证(关于这两者是什么东西，不细说，基本上这就是raft简化了multi-paxos最核心的东西吧)，所以每个新leader一定有最新的日志，所以对于下一条日志槽位的选取，只需要读取最后一条日志来判断就行了。关于raft的log replication，后面有机会再说。
- 而对于已提交日志的判断，由于存在可能已经形成多数派，也就是在内存中形成了多数派，但是还没有机器commited到磁盘，这时，新的leader无法判断这条日志是已经提交还是没有提交(参见原论文5.4.2节)，raft的做法是不管这条可能被新leader覆盖掉的日志，只需要保证在新的term期间，提交一条日志，那么由于consistency check，自然会提交之前的日志。
-  对于multi-paxos来说
- 由于在log replication说，不像raft那样保证一个顺序应答(不能保证线性一致性，能保证顺序一致性)，也就是保证一个日志槽位达成多数派后才接受下一个请求，multi-paxos可以在一个日志槽位还没有达成多数派时并发处理另外一个日志槽位，所以新leader在恢复确认下一个可用日志槽位以及已提交日志时更麻烦。
- lamport原论文描述的方法是，对于明确知道已提交的日志(这一点我们可以通过给每一条已提交日志加一个标示，这样可以减少日志恢复的时间)，不用再次进行基本Paxos的决议，而对于未明确知道已提交的日志，则进行基本Paxos的二个阶段来确认已达成多数派的值，对于中间空洞且之前没有达成过多数派的，直接写一条空操作的日志，至于为什么会产生这种情况，可以参考原论文。一旦所有日志都经过这种方法恢复后，下一个可用日志槽位和最近已提交日志号也就能确定了。
-   对比上面两者恢复的过程，我们可以看到raft是怎么简化multi-paxos的。一旦新的leader确定了上面那两件事情，就可以进入正常的log replication阶段了，也就仅仅是多数派的事情了。
-3.log replication，客户端交互，membership管理，leader lease等 这一节为后面的文章做个铺垫，对于log replication实际上不会涉及太多状态的reason，所以也就比较容易理解，基本上是类似简化的两阶段提交，后面会介绍下raft的log replication。对于客户端交互，leader什么时候返回结果，客户端怎么超时重试，以及怎么保证请求的幂等，membership management，以及leader lease等一些优化手段。</description>
+ 2.选主后日志的同步 选出新的leader后，它至少要负责做两件事情，一件是确定下一次客户请求应该用哪个日志槽位或者说项，另一件是确定整个集群的机器过去已经提交过的最近的项(或者说日志)，确定这两个值的过程实际上就是日志恢复的过程，下面对两种算法具体分析。这里补充一点之前文章漏掉的东西，基本Paxos算法实际上有三个阶段，最后一个阶段是提交阶段，只是通常leader-based算法为了优化网络开销，将第三阶段和第二阶段合并了，而在每次执行第二阶段是带上leader已经提交过的日志号，所以新leader还需要确定最近被提交过的日志，而这种优化也引入了另外的复杂性。
+  对于raft来说
+  由于选主时额外的限制条件以及log replication时的consistency check保证(关于这两者是什么东西，不细说，基本上这就是raft简化了multi-paxos最核心的东西吧)，所以每个新leader一定有最新的日志，所以对于下一条日志槽位的选取，只需要读取最后一条日志来判断就行了。关于raft的log replication，后面有机会再说。
+  而对于已提交日志的判断，由于存在可能已经形成多数派，也就是在内存中形成了多数派，但是还没有机器commited到磁盘，这时，新的leader无法判断这条日志是已经提交还是没有提交(参见原论文5.4.2节)，raft的做法是不管这条可能被新leader覆盖掉的日志，只需要保证在新的term期间，提交一条日志，那么由于consistency check，自然会提交之前的日志。
+    对于multi-paxos来说
+  由于在log replication说，不像raft那样保证一个顺序应答(不能保证线性一致性，能保证顺序一致性)，也就是保证一个日志槽位达成多数派后才接受下一个请求，multi-paxos可以在一个日志槽位还没有达成多数派时并发处理另外一个日志槽位，所以新leader在恢复确认下一个可用日志槽位以及已提交日志时更麻烦。
+  lamport原论文描述的方法是，对于明确知道已提交的日志(这一点我们可以通过给每一条已提交日志加一个标示，这样可以减少日志恢复的时间)，不用再次进行基本Paxos的决议，而对于未明确知道已提交的日志，则进行基本Paxos的二个阶段来确认已达成多数派的值，对于中间空洞且之前没有达成过多数派的，直接写一条空操作的日志，至于为什么会产生这种情况，可以参考原论文。一旦所有日志都经过这种方法恢复后，下一个可用日志槽位和最近已提交日志号也就能确定了。
+    对比上面两者恢复的过程，我们可以看到raft是怎么简化multi-paxos的。一旦新的leader确定了上面那两件事情，就可以进入正常的log replication阶段了，也就仅仅是多数派的事情了。
+ 3.log replication，客户端交互，membership管理，leader lease等 这一节为后面的文章做个铺垫，对于log replication实际上不会涉及太多状态的reason，所以也就比较容易理解，基本上是类似简化的两阶段提交，后面会介绍下raft的log replication。对于客户端交互，leader什么时候返回结果，客户端怎么超时重试，以及怎么保证请求的幂等，membership management，以及leader lease等一些优化手段。</description>
     </item>
     
     <item>
@@ -341,7 +319,7 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       <description>上一篇文章推导了基本Paxos算法，并引出了在实际使用中其存在的问题，然后说明了leader-based分布式一致性协议的优势。这篇文章分析一下选主的本质，选出一个主对整个算法的影响，采用选主会存在的问题以及基本Paxos协议是怎么样保证这些问题不会影响一致性的。
 1.为什么选主 至于为什么选主？个人认为有如下原因：
  避免并发决议导致的livelock和新丢失的问题 可以采用一定方法在选主时(raft)，选主中或者选主后保证leader上有最新的达成多数派(达成多数派应该用多数派已经将值写入持久化日志来判定)，这样可以优化针对同一个项的读请求，不然每次客户端读请求也需要走一遍基本Paxos 选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议(至于脑裂的问题，后面会分析)，  2.不同的选主算法，其本质是什么？ 前面说了在一个leader统治期间内，不可能存在多个leader同时对一个项达成多数派(如果一个leader也没有自然满足，包括脑裂后面会分析到也是满足的)，但是对于选主本身来说，实际上其本质上就是一个分布式一致性问题，并且可能有多个proposer并发提出选主决议，所以可以使用基本Paxos来解决，这就回到了基本的Paxos算法了！所以我们需要为每次选主决议编号，比如raft算法的term，这个实际上就对应基本Paxos算法的proposal id。
-3.选主后对整个算法造成什么影响？ 前面提到了&amp;rdquo;选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议&amp;rdquo;。这样实际上基本Paxos的第一阶段prepare就没有必要了，因为对于下一个项来说，在这个leader统治期内，在达成多数派之前，不可能有其他人提出决议并达成多数派，所以可以直接使用客户端的值进入第二阶段accept。
+3.选主后对整个算法造成什么影响？ 前面提到了&amp;quot;选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议&amp;quot;。这样实际上基本Paxos的第一阶段prepare就没有必要了，因为对于下一个项来说，在这个leader统治期内，在达成多数派之前，不可能有其他人提出决议并达成多数派，所以可以直接使用客户端的值进入第二阶段accept。
 4.选主可能会导致的问题？ 最大的问题应该是脑裂了，也就是说可能存在多个分区多个leader接收客户端响应，但是由于多数派的限制，只能最多有一个分区能达成多数派。我们假设最简单的情况，A/B/C/D/E五台机器，两个分区P1有三台A/B/C和P2有两台D/E，那么可能的情况是：
  (1).P1有leader；P2没有leader (2).P1有leader；P2也有leader  显然由于多数派的限制，只有P1可能达成决议
 5.新的leader选出来后的操作 一般来说，新的leader选出来后，我们需要对leader进行日志恢复，以便leader决定下一次客户端请求的时候该用哪个日志槽位或者说哪个项吧，这里也是不同的算法差异较大的地方，比如raft，viewstamped replication，zab以及lamport 《Paxos Made Simple》里面第三节描述的方法。在lamport论文的描述中，还是采用基本的Paxos，对未明确知道达成多数派的项重新走一遍基本Paxos算法，具体可以参照原论文，细节还是挺多。对于raft来说，由于其保证日志是连续的，且保证在选主的时候只选择具有最新的日志的机器，所以选主之后，新的leader上的日志本身就是最新的。
@@ -355,10 +333,10 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       
       <guid>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/</guid>
       <description>这一篇文章主要介绍一下分布式共识、分布式容错一致性协议的背景以及Paxos算法。
-1. 分布式系统基本概念  分布式系统的基本特点
- 部分故障  容错  没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致  通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等   系统模型
- 同步和异步  同步 异步(执行时间和消息传递时间没有上限)  网络模型  可靠 消息丢失，重复传递，消息乱序  故障模型  crash-failure fault byzantine fault   一致性
- data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)  client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)  其他   2.</description>
+ 1. 分布式系统基本概念   分布式系统的基本特点
+ 部分故障  容错   没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致   通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等      系统模型
+ 同步和异步  同步 异步(执行时间和消息传递时间没有上限)   网络模型  可靠 消息丢失，重复传递，消息乱序   故障模型  crash-failure fault byzantine fault      一致性
+ data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)   client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)   其他     2.</description>
     </item>
     
     <item>
@@ -368,9 +346,8 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%8D%8F%E8%AE%AE%E6%A0%88socket%E6%8E%A5%E5%8F%A3%E5%B1%82/</guid>
       <description>本文接上一篇Linux内核协议栈-初始化流程分析，在上一篇中主要分析了了Linux内核协议栈涉及到的关键初始化函数，在这一篇文章中将分析协议栈的BSD socket和到传输层的流程。
-1.准备 协议的基本分层： (A代表socket的某个系统调用) BSD socket system calls A =&amp;gt; proto_ops-&amp;gt;A =&amp;gt; sock-&amp;gt;A =&amp;gt; tcp_prot =&amp;gt; A
- BSD socket层和具体协议族某个类型的联系是通过struct proto_ops，在include/linux/net.h中定义了不同协议族如af_inet，af_unix等的通用操作函数指针的结构体struct proto_ops，具体的定义有各个协议族的某个类型的子模块自己完成。比如ipv4/af_inet.c中定义的af_inet family的tcp/udp等相应的struct proto_ops。 由于对于每个family的不同类型，其针对socket的某些需求可能不同，所以抽了一层struct sock出来，sock-&amp;gt;sk_prot挂接到具体tcp/udp等传输层的struct proto上(具体定义在ipv4/tcp_ipv4.c,ipv4/udp.c) 另外，由于内容比较多，这一篇主要分析socket，bind，listen，accept几个系统调用，下一篇会涉及connect，send，recv等的分析
-//不同协议族的通用函数hooks //比如af_inet相关的定义在ipv4/af_inet.c中 //除了创建socket为系统调用外，基本针对socket层的操作函数都在这里面 struct proto_ops { int family; struct module *owner; int (*release) (struct socket *sock); int (*bind) (struct socket *sock, struct sockaddr *myaddr, int sockaddr_len); int (*connect) (struct socket *sock, struct sockaddr *vaddr, int sockaddr_len, int flags); int (*socketpair)(struct socket *sock1, struct socket *sock2); int (*accept) (struct socket *sock, struct socket *newsock, int flags); int (*getname) (struct socket *sock, struct sockaddr *addr, int *sockaddr_len, int peer); unsigned int (*poll) (struct file *file, struct socket *sock, struct poll_table_struct *wait); int (*ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #ifdef CONFIG_COMPAT int (*compat_ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #endif int (*listen) (struct socket *sock, int len); int (*shutdown) (struct socket *sock, int flags); int (*setsockopt)(struct socket *sock, int level, int optname, char __user *optval, unsigned int optlen); /*省略部分*/ };  //传输层的proto //作为sock-&amp;gt;sk_prot与具体传输层的hooks struct proto { void (*close)(struct sock *sk, long timeout); int (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len); int (*disconnect)(struct sock *sk, int flags); struct sock * (*accept)(struct sock *sk, int flags, int *err); int (*ioctl)(struct sock *sk, int cmd, unsigned long arg); int (*init)(struct sock *sk); void (*destroy)(struct sock *sk); void (*shutdown)(struct sock *sk, int how); int (*setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); #ifdef CONFIG_COMPAT int (*compat_setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*compat_getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); int (*compat_ioctl)(struct sock *sk, unsigned int cmd, unsigned long arg); #endif int (*sendmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len); int (*recvmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len, int noblock, int flags, int *addr_len); int (*sendpage)(struct sock *sk, struct page *page, int offset, size_t size, int flags); int (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len); /*省略部分*/ };   同时附上其他几个关键结构体：</description>
+ 1.准备 协议的基本分层： (A代表socket的某个系统调用) BSD socket system calls A =&amp;gt; proto_ops-&amp;gt;A =&amp;gt; sock-&amp;gt;A =&amp;gt; tcp_prot =&amp;gt; A
+ BSD socket层和具体协议族某个类型的联系是通过struct proto_ops，在include/linux/net.h中定义了不同协议族如af_inet，af_unix等的通用操作函数指针的结构体struct proto_ops，具体的定义有各个协议族的某个类型的子模块自己完成。比如ipv4/af_inet.c中定义的af_inet family的tcp/udp等相应的struct proto_ops。 由于对于每个family的不同类型，其针对socket的某些需求可能不同，所以抽了一层struct sock出来，sock-&amp;gt;sk_prot挂接到具体tcp/udp等传输层的struct proto上(具体定义在ipv4/tcp_ipv4.c,ipv4/udp.c) 另外，由于内容比较多，这一篇主要分析socket，bind，listen，accept几个系统调用，下一篇会涉及connect，send，recv等的分析  //不同协议族的通用函数hooks //比如af_inet相关的定义在ipv4/af_inet.c中 //除了创建socket为系统调用外，基本针对socket层的操作函数都在这里面 struct proto_ops { int family; struct module *owner; int (*release) (struct socket *sock); int (*bind) (struct socket *sock, struct sockaddr *myaddr, int sockaddr_len); int (*connect) (struct socket *sock, struct sockaddr *vaddr, int sockaddr_len, int flags); int (*socketpair)(struct socket *sock1, struct socket *sock2); int (*accept) (struct socket *sock, struct socket *newsock, int flags); int (*getname) (struct socket *sock, struct sockaddr *addr, int *sockaddr_len, int peer); unsigned int (*poll) (struct file *file, struct socket *sock, struct poll_table_struct *wait); int (*ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #ifdef CONFIG_COMPAT int (*compat_ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #endif int (*listen) (struct socket *sock, int len); int (*shutdown) (struct socket *sock, int flags); int (*setsockopt)(struct socket *sock, int level, int optname, char __user *optval, unsigned int optlen); /*省略部分*/ }; //传输层的proto //作为sock-&amp;gt;sk_prot与具体传输层的hooks struct proto { void (*close)(struct sock *sk, long timeout); int (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len); int (*disconnect)(struct sock *sk, int flags); struct sock * (*accept)(struct sock *sk, int flags, int *err); int (*ioctl)(struct sock *sk, int cmd, unsigned long arg); int (*init)(struct sock *sk); void (*destroy)(struct sock *sk); void (*shutdown)(struct sock *sk, int how); int (*setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); #ifdef CONFIG_COMPAT int (*compat_setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*compat_getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); int (*compat_ioctl)(struct sock *sk, unsigned int cmd, unsigned long arg); #endif int (*sendmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len); int (*recvmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len, int noblock, int flags, int *addr_len); int (*sendpage)(struct sock *sk, struct page *page, int offset, size_t size, int flags); int (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len); /*省略部分*/ }; 同时附上其他几个关键结构体：</description>
     </item>
     
     <item>
@@ -380,15 +357,14 @@ computing  接口规范 命名空间隔离、资源隔离与限制的实现 造�
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%8D%8F%E8%AE%AE%E6%A0%88%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%81%E7%A8%8B/</guid>
       <description>本文主要针对Linux-3.19.3版本的内核简单分析内核协议栈初始化涉及到的关键步骤和主要函数。
-1.准备
- Linux内核协议栈本身构建在虚拟文件系统之上，所以对Linux VFS不太了解的可以参考内核源码根目录下Documentation/filesystems/vfs.txt，另外，socket接口层，协议层，设备层的许多数据结构涉及到内存管理，所以对基本虚拟内存管理，slab缓存，页高速缓存不太了解的也可以查阅相关文档。
- 源码涉及的主要文件位于net/socket.c，net/core，include/linux/net*
-  2.开始
+ 1.准备
+  Linux内核协议栈本身构建在虚拟文件系统之上，所以对Linux VFS不太了解的可以参考内核源码根目录下Documentation/filesystems/vfs.txt，另外，socket接口层，协议层，设备层的许多数据结构涉及到内存管理，所以对基本虚拟内存管理，slab缓存，页高速缓存不太了解的也可以查阅相关文档。
+  源码涉及的主要文件位于net/socket.c，net/core，include/linux/net*
+   2.开始
 开始分析前，这里有些小技巧可以快速定位到主要的初始化函数，在分析其他子系统源码时也可以采用这个技巧
-grep _initcall socket.c find ./core/ -name &amp;quot;*.c&amp;quot; |xargs cat | grep _initcall grep net_inuse_init tags  这里*__initcall宏是设置初始化函数位于内核代码段.initcall#id.init的位置其中id代表优先级level，小的一般初始化靠前，定义在include/linux/init.h，使用gcc的attribute扩展。而各个level的初始化函数的调用流程基本如下：
+grep _initcall socket.c find ./core/ -name &amp;quot;*.c&amp;quot; |xargs cat | grep _initcall grep net_inuse_init tags 这里*__initcall宏是设置初始化函数位于内核代码段.initcall#id.init的位置其中id代表优先级level，小的一般初始化靠前，定义在include/linux/init.h，使用gcc的attribute扩展。而各个level的初始化函数的调用流程基本如下：
 start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; kernel_init_freeable -&amp;gt; do_basic_setup -&amp;gt; do_initcalls -&amp;gt; do_initcall_level -&amp;gt; do_one_initcall -&amp;gt; *(initcall_t)  3.详细分析
- 可以看到pure_initcall(net_ns_init)位于0的初始化level，基本不依赖其他的初始化子系统，所以从这个开始
-//core/net_namespace.c //基本上这个函数主要的作用是初始化net结构init_net的一些数据，比如namespace相关，并且调用注册的pernet operations的init钩子针对net进行各自需求的初始化 pure_initcall(net_ns_init);  static int __init net_ns_init(void) { struct net_generic *ng; //net namespace相关 #ifdef CONFIG_NET_NS //分配slab缓存 net_cachep = kmem_cache_create(&amp;quot;net_namespace&amp;quot;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL); /* Create workqueue for cleanup */ netns_wq = create_singlethread_workqueue(&amp;quot;netns&amp;quot;); if (!</description>
+ 可以看到pure_initcall(net_ns_init)位于0的初始化level，基本不依赖其他的初始化子系统，所以从这个开始  //core/net_namespace.c //基本上这个函数主要的作用是初始化net结构init_net的一些数据，比如namespace相关，并且调用注册的pernet operations的init钩子针对net进行各自需求的初始化 pure_initcall(net_ns_init); static int __init net_ns_init(void) { struct net_generic *ng; //net namespace相关 #ifdef CONFIG_NET_NS //分配slab缓存 net_cachep = kmem_cache_create(&amp;quot;net_namespace&amp;quot;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL); /* Create workqueue for cleanup */ netns_wq = create_singlethread_workqueue(&amp;quot;netns&amp;quot;); if (!</description>
     </item>
     
     <item>
@@ -398,9 +374,8 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E9%A1%B5%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</guid>
       <description>Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，不过于追究具体bio请求的底层细节。另外，在写操作的过程中，页高速缓存的处理流程有所不同(回写)，涉及的东西更多，本文主要关注读操作。Linux VFS相关的重要数据结构及概念可以参考Document目录下的vfs.txt。
-1.与页高速缓存相关的重要数据结构 除了前述基本数据结构以外，struct address_space 和 struct address_space_operations也在页高速缓存中起着极其重要的作用。
- address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。 address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。
-//include/linux/fs.h struct address_space { //指向文件的inode，可能为NULL struct inode *host; //存放装有缓存数据的页面 struct radix_tree_root page_tree; spinlock_t tree_lock; atomic_t i_mmap_writable; struct rb_root i_mmap; struct list_head i_mmap_nonlinear; struct rw_semaphore i_mmap_rwsem; //已缓存页的数量 unsigned long nrpages; unsigned long nrshadows; pgoff_t writeback_index; //address_space相关操作，定义了具体读写页面的钩子 const struct address_space_operations *a_ops; unsigned long flags; struct backing_dev_info *backing_dev_info; spinlock_t private_lock; struct list_head private_list; void *private_data; } __attribute__((aligned(sizeof(long))));  //include/linux/fs.</description>
+ 1.与页高速缓存相关的重要数据结构 除了前述基本数据结构以外，struct address_space 和 struct address_space_operations也在页高速缓存中起着极其重要的作用。
+ address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。 address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。  //include/linux/fs.h struct address_space { //指向文件的inode，可能为NULL struct inode *host; //存放装有缓存数据的页面 struct radix_tree_root page_tree; spinlock_t tree_lock; atomic_t i_mmap_writable; struct rb_root i_mmap; struct list_head i_mmap_nonlinear; struct rw_semaphore i_mmap_rwsem; //已缓存页的数量 unsigned long nrpages; unsigned long nrshadows; pgoff_t writeback_index; //address_space相关操作，定义了具体读写页面的钩子 const struct address_space_operations *a_ops; unsigned long flags; struct backing_dev_info *backing_dev_info; spinlock_t private_lock; struct list_head private_list; void *private_data; } __attribute__((aligned(sizeof(long)))); //include/linux/fs.</description>
     </item>
     
     <item>
@@ -410,10 +385,10 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E4%B8%8E%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD/</guid>
       <description>简单描述了x86 32位体系结构下Linux内核的用户进程和内核线程的线性地址空间和物理内存的联系，分析了高端内存的引入与缺页中断的具体处理流程。先介绍了用户态进程的执行流程，然后对比了内核线程，引入高端内存的概念，最后分析了缺页中断的流程。
- 用户进程 fork之后的用户态进程已经建立好了所需的数据结构，比如task struct，thread info，mm struct等，将编译链接好的可执行程序的地址区域与进程结构中内存区域做好映射，等开始执行的时候，访问并未经过映射的用户地址空间，会发生缺页中断，然后内核态的对应中断处理程序负责分配page，并将用户进程空间导致缺页的地址与page关联，然后检查是否有相同程序文件的buffer，因为可能其他进程执行同一个程序文件，已经将程序读到buffer里边了，如果没有，则将磁盘上的程序部分读到buffer，而buffer head通常是与分配的页面相关联的，所以实际上会读到对应页面代表的物理内存之中，返回到用户态导致缺页的地址继续执行，此时经过mmu的翻译，用户态地址成功映射到对应页面和物理地址，然后读取指令执行。在上述过程中，如果由于内存耗尽或者权限的问题，可能会返回-NOMEM或segment fault错误给用户态进程。
- 内核线程 没有独立的mm结构，所有内核线程共享一个内核地址空间与内核页表，由于为了方便系统调用等，在用户态进程规定了内核的地址空间是高1G的线性地址，而低3G线性地址空间供用户态使用。注意这部分是和用户态进程的线性地址是重合的，经过mmu的翻译，会转换到相同的物理地址，即前1G的物理地址（准确来讲后128M某些部分的物理地址可能会变化），内核线程访问内存也是要经过mmu的，所以借助用户态进程的页表，虽然内核有自己的内核页表，但不直接使用（为了减少用户态和内核态页表切换的消耗？），用户进程页表的高1G部分实际上是共享内核页表的映射的，访问高1G的线性地址时能访问到低1G的物理地址。而且，由于从用户进程角度看，内核地址空间只有3G－4G这一段（内核是无法直接访问0－3G的线性地址空间的，因为这一段是用户进程所有，一方面如果内核直接读写0－3G的线性地址可能会毁坏进程数据结构，另一方面，不同用户态进程线性地址空间实际映射到不同的物理内存地址，所以可能此刻内核线程借助这个用户态进程的页表成功映射到某个物理地址，但是到下一刻，借助下一个用户态进程的页表，相同的线性地址就可能映射到不同的物理内存地址了）。
- 高端内存 那么，如何让内核访问到大于1G的物理内存？由此引入高端内存的概念，基本思路就是将3G－4G这1G的内核线性地址空间（从用户进程的角度看，从内核线程的角度看是0－1G）取出一部分挪作他用，而不是固定映射，即重用部分内核线性地址空间，映射到1G之上的物理内存。所以，对于x86 32位体系上的Linux内核将3G－4G的线性地址空间分为0－896m和896m－1G的部分，前面部分使用固定映射，当内核使用进程页表访问3G－3G＋896m的线性地址时，不会发生缺页中断，但是当访问3G＋896m以上的线性地址时，可能由于内核页表被更新，而进程页表还未和内核页表同步，此时会发生内核地址空间的缺页中断，从而将内核页表同步到当前进程页表。注意，使用vmalloc分配内存的时候，可能已经设置好了内核页表，等到下一次借助进程页表访问内核空间地址发生缺页时才会触发内核页表和当前页表的同步。 Linux x86 32位下的线性地址空间与物理地址空间 (图片出自《understanding the linux virtual memory manager》)  缺页 page fault的处理过程如下：在用户空间上下文和内核上下文下都可能访问缺页的线性地址导致缺页中断，但有些情况没有实际意义。
- 如果缺页地址位于内核线性地址空间  如果在vmalloc区，则同步内核页表和用户进程页表，否则挂掉。注意此处未分具体上下文  如果发生在中断上下文或者!mm，则检查exception table，如果没有则挂掉。 如果缺页地址发生在用户进程线性地址空间  如果在内核上下文，则查exception table，如果没有，则挂掉。这种情况没多大实际意义 如果在用户进程上下文  查找vma，找到，先判断是否需要栈扩张，否则进入通常的处理流程 查找vma，未找到，bad area，通常返回segment fault      具体的缺页中断流程图及代码如下： (图片出自《understanding the linux virtual memory manager》) （Linux 3.19.3 arch/x86/mm/fault.c 1044） /* * This routine handles page faults. It determines the address, * and the problem, and then passes it off to one of the appropriate * routines.</description>
+  用户进程 fork之后的用户态进程已经建立好了所需的数据结构，比如task struct，thread info，mm struct等，将编译链接好的可执行程序的地址区域与进程结构中内存区域做好映射，等开始执行的时候，访问并未经过映射的用户地址空间，会发生缺页中断，然后内核态的对应中断处理程序负责分配page，并将用户进程空间导致缺页的地址与page关联，然后检查是否有相同程序文件的buffer，因为可能其他进程执行同一个程序文件，已经将程序读到buffer里边了，如果没有，则将磁盘上的程序部分读到buffer，而buffer head通常是与分配的页面相关联的，所以实际上会读到对应页面代表的物理内存之中，返回到用户态导致缺页的地址继续执行，此时经过mmu的翻译，用户态地址成功映射到对应页面和物理地址，然后读取指令执行。在上述过程中，如果由于内存耗尽或者权限的问题，可能会返回-NOMEM或segment fault错误给用户态进程。
+  内核线程 没有独立的mm结构，所有内核线程共享一个内核地址空间与内核页表，由于为了方便系统调用等，在用户态进程规定了内核的地址空间是高1G的线性地址，而低3G线性地址空间供用户态使用。注意这部分是和用户态进程的线性地址是重合的，经过mmu的翻译，会转换到相同的物理地址，即前1G的物理地址（准确来讲后128M某些部分的物理地址可能会变化），内核线程访问内存也是要经过mmu的，所以借助用户态进程的页表，虽然内核有自己的内核页表，但不直接使用（为了减少用户态和内核态页表切换的消耗？），用户进程页表的高1G部分实际上是共享内核页表的映射的，访问高1G的线性地址时能访问到低1G的物理地址。而且，由于从用户进程角度看，内核地址空间只有3G－4G这一段（内核是无法直接访问0－3G的线性地址空间的，因为这一段是用户进程所有，一方面如果内核直接读写0－3G的线性地址可能会毁坏进程数据结构，另一方面，不同用户态进程线性地址空间实际映射到不同的物理内存地址，所以可能此刻内核线程借助这个用户态进程的页表成功映射到某个物理地址，但是到下一刻，借助下一个用户态进程的页表，相同的线性地址就可能映射到不同的物理内存地址了）。
+  高端内存 那么，如何让内核访问到大于1G的物理内存？由此引入高端内存的概念，基本思路就是将3G－4G这1G的内核线性地址空间（从用户进程的角度看，从内核线程的角度看是0－1G）取出一部分挪作他用，而不是固定映射，即重用部分内核线性地址空间，映射到1G之上的物理内存。所以，对于x86 32位体系上的Linux内核将3G－4G的线性地址空间分为0－896m和896m－1G的部分，前面部分使用固定映射，当内核使用进程页表访问3G－3G＋896m的线性地址时，不会发生缺页中断，但是当访问3G＋896m以上的线性地址时，可能由于内核页表被更新，而进程页表还未和内核页表同步，此时会发生内核地址空间的缺页中断，从而将内核页表同步到当前进程页表。注意，使用vmalloc分配内存的时候，可能已经设置好了内核页表，等到下一次借助进程页表访问内核空间地址发生缺页时才会触发内核页表和当前页表的同步。 Linux x86 32位下的线性地址空间与物理地址空间 (图片出自《understanding the linux virtual memory manager》)   缺页 page fault的处理过程如下：在用户空间上下文和内核上下文下都可能访问缺页的线性地址导致缺页中断，但有些情况没有实际意义。
+ 如果缺页地址位于内核线性地址空间  如果在vmalloc区，则同步内核页表和用户进程页表，否则挂掉。注意此处未分具体上下文   如果发生在中断上下文或者!mm，则检查exception table，如果没有则挂掉。 如果缺页地址发生在用户进程线性地址空间  如果在内核上下文，则查exception table，如果没有，则挂掉。这种情况没多大实际意义 如果在用户进程上下文  查找vma，找到，先判断是否需要栈扩张，否则进入通常的处理流程 查找vma，未找到，bad area，通常返回segment fault      具体的缺页中断流程图及代码如下： (图片出自《understanding the linux virtual memory manager》)   （Linux 3.19.3 arch/x86/mm/fault.c 1044） /* * This routine handles page faults.</description>
     </item>
     
     <item>
@@ -423,21 +398,19 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E4%B8%8E%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/</guid>
       <description>编译流程  1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下 2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设配置的压缩工具是gzip)。 3.使用生成的compressed/mkpiggy为compressed/vmlinux.bin.gz添加解压缩程序头，生成compressed/piggy.S，进而生成compressed/piggy.o。 4.将compressed/head_64.o，compressed/misc.o，compressed/piggy.o链接为compressed/vmlinux。 5.回到boot目录，用objcopy为compressed/vmlinux去掉符号等信息生成boot/vmlinux.bin。 6.将boot/setup.bin与boot/vmlinux.bin链接，生成bzImage。 7.将各个设置为动态编译的模块链接为内核模块kmo。 8.over，maybe copy bzImage to /boot and kmods to /lib.  下面是内核镜像的组成:
-启动流程 早期版本的linux内核，如0.1，是通过自带的bootsect.S/setup.S引导，现在需要通过bootloader如grub/lilo来引导。grub的作用大致如下:
+ 启动流程 早期版本的linux内核，如0.1，是通过自带的bootsect.S/setup.S引导，现在需要通过bootloader如grub/lilo来引导。grub的作用大致如下:
  1.grub安装时将stage1 512字节和所在分区文件系统类型对应的stage1.5文件分别写入mbr和之后的扇区。 2.bios通过中断加载mbr的512个字节的扇区到0x7c00地址，跳转到0x07c0:0x0000执行。 3.通过bios中断加载/boot/grub下的stage2，读取/boot/grub/menu.lst配置文件生成启动引导菜单。 4.加载/boot/vmlinuz-xxx-xx与/boot/inird-xxx，将控制权交给内核。  下面是较为详细的步骤:
- 1.BIOS加载硬盘第一个扇区(MBR 512字节)到0000:07C00处，MBR包含引导代码(446字节，比如grub第一阶段的引导代码)，分区表(64字节)信息，结束标志0xAA55(2字节)
- 2.MBR开始执行加载活跃分区，grub第一阶段代码加载1.5阶段的文件系统相关的代码(通过bios中断读活跃分区的扇区)
- 3.有了grub1.5阶段的文件系统相关的模块，接下来读取位于文件系统的grub第2阶段的代码，并执行
- 4.grub第2阶段的代码读取/boot/grub.cfg文件，生成引导菜单
- 5.加载对应的压缩内核vmlinuz和initrd（到哪个地址？）
- 6.实模式下执行vmlinuz头setup部分(bootsect和setup)[head.S[calll main],main.c[go_to_protected_mode]] ==&amp;gt; 准备进入32位保护模式
- 7.跳转到过渡的32位保护模式执行compressed/head_64.S[startup_32,startup_64] ==&amp;gt; 进入临时的32位保护模式
- 8.解压缩剩余的vmlinuz，设置页表等，设置64位环境，跳转到解压地址执行 ==&amp;gt; 进入64位
- 9.arch/x86/kernel/head_64.S[startup_64]
- 10.arch/x86/kernel/head64.c[x86_64_start_up]
- 11.init/main.c[start_kernel]
- 12.然后后面的事情就比较好知道了:)
-   ref: Linux source code 3.</description>
+  1.BIOS加载硬盘第一个扇区(MBR 512字节)到0000:07C00处，MBR包含引导代码(446字节，比如grub第一阶段的引导代码)，分区表(64字节)信息，结束标志0xAA55(2字节)
+  2.MBR开始执行加载活跃分区，grub第一阶段代码加载1.5阶段的文件系统相关的代码(通过bios中断读活跃分区的扇区)
+  3.有了grub1.5阶段的文件系统相关的模块，接下来读取位于文件系统的grub第2阶段的代码，并执行
+  4.grub第2阶段的代码读取/boot/grub.cfg文件，生成引导菜单
+  5.加载对应的压缩内核vmlinuz和initrd（到哪个地址？）
+  6.实模式下执行vmlinuz头setup部分(bootsect和setup)[head.S[calll main],main.c[go_to_protected_mode]] ==&amp;gt; 准备进入32位保护模式
+  7.跳转到过渡的32位保护模式执行compressed/head_64.S[startup_32,startup_64] ==&amp;gt; 进入临时的32位保护模式
+  8.解压缩剩余的vmlinuz，设置页表等，设置64位环境，跳转到解压地址执行 ==&amp;gt; 进入64位
+  9.arch/x86/kernel/head_64.S[startup_64]
+  10.arch/x86/kernel/head64.c[x86_64_start_up]
+  11.</description>
     </item>
     
     <item>
@@ -447,7 +420,7 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/y-combinator/</guid>
       <description>由于匿名函数(通常成为lambda函数但是跟lambda calculus不同)在递归时无法获得函数名，从而导致一些问题，而Y Combinator能很好地解决这个问题。利用不动点的原理，可以利用一般的函数来辅助得到匿名函数的递归形式，从而间接调用无法表达的真正的匿名函数。下面以一个阶乘的递归来说明。
-#Python版本，后面会加上C++版本 #F(f) = f def F(f,n): return 1 if n==0 else n*f(n-1) #或者用lambda #F = lambda f,n: 1 if n==0 else n*f(n-1) #Y不能用lambda，因为Y会调用自己 #Y(F) = f = F(f) = F(Y(F)) def Y(F): return lambda n: F(Y(F),n) a = Y(F) # 6 print a(3)  一些解释：
+#Python版本，后面会加上C++版本 #F(f) = f def F(f,n): return 1 if n==0 else n*f(n-1) #或者用lambda #F = lambda f,n: 1 if n==0 else n*f(n-1) #Y不能用lambda，因为Y会调用自己 #Y(F) = f = F(f) = F(Y(F)) def Y(F): return lambda n: F(Y(F),n) a = Y(F) # 6 print a(3) 一些解释：
  F是伪递归函数，将真正的我们假设的匿名函数作为参数，有性质 F(f)=f. 好了以上是我们的已知条件，为了得到f的间接表达式，我们引入Y函数 使得Y(F) = f 所以有Y(F) = f = F(f) = F(Y(F)) （最终的目标是要用YF的组合表示f），所以很容易就得到了Y(F)的函数表达式为F(Y(F))，而Y不是匿名函数，所以能自身调用(其实感觉这东西没想象中那么玄乎～)，上面的代码也就比较好理解了。我们假设的函数只有一个额外参数n，这完全可以自己添加其他参数，只需稍微修改Y中F的调用。  最后附上一段C++的实现代码：
 //需要C++11支持 #include &amp;lt;iostream&amp;gt; #include &amp;lt;functional&amp;gt; //F(f) = f int F(std::function&amp;lt;int(int)&amp;gt; f, int n) { return n==0 ?</description>
     </item>
@@ -459,19 +432,18 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80/</guid>
       <description>关于Linux 32位内存下的内存空间布局，可以参考这篇博文Linux下C程序进程地址空间局关于源代码中各种数据类型/代码在elf格式文件以及进程空间中所处的段，在x86_64下和i386下是类似的，本文主要关注vm.legacy_va_layout以及kernel.randomize_va_space参数影响下的进程空间内存宏观布局，以及vDSO和多线程下的堆和栈分布。
-情形一：  vm_legacy_va_layout=1
- kernel.randomize_va_space=0  此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局
+ 情形一：  vm_legacy_va_layout=1 kernel.randomize_va_space=0  此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局
 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向上增长 2aaaaaaab000&amp;ndash;&amp;gt; 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000 你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的
-情形二：  vm_legacy_va_layout=0
- kernel.randomize_va_space=0  现在默认内存布局，不随机化
+ 情形二：  vm_legacy_va_layout=0 kernel.randomize_va_space=0  现在默认内存布局，不随机化
 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向下增长 &amp;lt;&amp;ndash;7ffff7fff000 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000
-情形三：  vm_legacy_va_layout=0
- kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化  对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。
-情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述  vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。 &amp;gt; 如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题： &amp;gt; getpid，gettimeofday是不是系统调用？
-其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。
+ 情形三：  vm_legacy_va_layout=0 kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化  对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。
+ 情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述   vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。
+  如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题：
+ getpid，gettimeofday是不是系统调用？
+ 其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。
 vDSO全称是virtual dynamic shared object，是一种内核将一些本身应该是系统调用的直接映射到用户空间，这样对于一些使用比较频繁的系统调用，直接在用户空间调用可以节省开销。如果想详细了解，可以参考这篇文档
 下面我们用一段程序验证下：
-#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.h&amp;gt; #include &amp;lt;unistd.</description>
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.</description>
     </item>
     
     <item>
@@ -481,10 +453,10 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
       
       <guid>https://feilengcui008.github.io/post/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E5%B0%8F%E7%BB%93/</guid>
       <description>网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。
-网络编程模型  阻塞和非阻塞 阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。
- 同步/异步 同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的std::async/std::future等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。
- IO复用 IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。
-  常见网络库采用的模型(只看epoll)：  nginx：master进程+多个worker进程，one eventloop per process memcached：主线程+多个worker线程，one eventloop per thread tornado：单线程，one eventloop per thread muduo：网络库，one eventloop per thread libevent、libev、boost.asio：网络库，跨平台eventloop封装 &amp;hellip;  排除掉传统的单线程、多进程、多线程等模型，最常用的高性能网络编程模型是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。
+ 网络编程模型   阻塞和非阻塞 阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。
+  同步/异步 同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的std::async/std::future等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。
+  IO复用 IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。
+   常见网络库采用的模型(只看epoll)：  nginx：master进程+多个worker进程，one eventloop per process memcached：主线程+多个worker线程，one eventloop per thread tornado：单线程，one eventloop per thread muduo：网络库，one eventloop per thread libevent、libev、boost.asio：网络库，跨平台eventloop封装 &amp;hellip;  排除掉传统的单线程、多进程、多线程等模型，最常用的高性能网络编程模型是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。
 应用层之外 前面的模型多是针对应用层的C10K类问题的解决方案，在更高并发要求的环境下就需要在内核态下做手脚了，比如使用零拷贝等技术，直接越过内核协议栈，实现高速数据包的传递，相应的内核模块也早有实现。主要的技术点在于：
  数据平面与控制平面分离，减少不必要的系统调用 用户态驱动uio/vfio等减少内存拷贝 使用内存池减少内存分配 通过CPU亲和性提高缓存命中率 网卡多队列与poll模式充分利用多核 batch syscall 用户态协议栈 &amp;hellip;  相应的技术方案大多数是围绕这些点来做优化结合的。比如OSDI &amp;lsquo;14上的Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</description>
     </item>

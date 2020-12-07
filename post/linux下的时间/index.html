@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.50-DEV" />
+<meta name="generator" content="Hugo 0.79.0" />
 <title>Linux下的时间</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -78,242 +78,196 @@
   </header>
 
   <div class="article-content">
-    
-
-<h3 id="时钟">时钟</h3>
-
+    <h3 id="时钟">时钟</h3>
 <ul>
-<li><p>硬件时钟</p>
-
+<li>
+<p>硬件时钟</p>
 <ul>
 <li>RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间</li>
-
-<li><p>读取方式</p>
-
+<li>读取方式
 <ul>
-<li><p>通过ioctl</p>
-
+<li>通过ioctl
 <pre><code>#include &lt;linux/rtc.h&gt;
 int ioctl(fd, RTC_request, param);
 </code></pre></li>
-
-<li><p>hwclock命令</p></li>
-</ul></li>
-
-<li><p>通常内核在boot以及从低电量中恢复时，会读取RTC更新system time</p></li>
-</ul></li>
-
-<li><p>软件时钟</p>
-
+<li>hwclock命令</li>
+</ul>
+</li>
+<li>通常内核在boot以及从低电量中恢复时，会读取RTC更新system time</li>
+</ul>
+</li>
+<li>
+<p>软件时钟</p>
 <ul>
 <li>HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100</li>
 <li>精度影响select等依赖timeout的系统调用</li>
 <li>HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。</li>
-</ul></li>
-
-<li><p>外部时钟</p>
-
+</ul>
+</li>
+<li>
+<p>外部时钟</p>
 <ul>
 <li>从网络ntp，原子钟等同步</li>
-</ul></li>
 </ul>
-
-<hr />
-
+</li>
+</ul>
+<hr>
 <h3 id="时间">时间</h3>
-
 <ul>
-<li><p>时间类别</p>
-
+<li>
+<p>时间类别</p>
 <ul>
 <li>wall clock time =&gt; 硬件时间</li>
 <li>real time =&gt; 从某个时间点(比如Epoch)开始的系统时间</li>
 <li>sys and user time =&gt; 通常指程序在内核态和用户态花的时间</li>
-</ul></li>
-
-<li><p>时间的表示</p>
-
-<ul>
-<li>time_t 从Epoch开始的秒数</li>
-<li>calendar time 字符串</li>
-<li>拆分时间 struct tm</li>
 </ul>
-
-<pre><code class="language-C++">  struct tm {
-    int tm_sec;         /* seconds */
-    int tm_min;         /* minutes */
-    int tm_hour;        /* hours */
-    int tm_mday;        /* day of the month */
-    int tm_mon;         /* month */
-    int tm_year;        /* year */
-    int tm_wday;        /* day of the week */
-    int tm_yday;        /* day in the year */
-    int tm_isdst;       /* daylight saving time */
-  };
-</code></pre>
-
+</li>
+<li>
+<p>时间的表示</p>
 <ul>
-<li>struct timeval/struct timespec</li>
+<li>
+<p>time_t 从Epoch开始的秒数</p>
+</li>
+<li>
+<p>calendar time 字符串</p>
+</li>
+<li>
+<p>拆分时间 struct tm</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> {
+  <span style="color:#66d9ef">int</span> tm_sec;         <span style="color:#75715e">/* seconds */</span>
+  <span style="color:#66d9ef">int</span> tm_min;         <span style="color:#75715e">/* minutes */</span>
+  <span style="color:#66d9ef">int</span> tm_hour;        <span style="color:#75715e">/* hours */</span>
+  <span style="color:#66d9ef">int</span> tm_mday;        <span style="color:#75715e">/* day of the month */</span>
+  <span style="color:#66d9ef">int</span> tm_mon;         <span style="color:#75715e">/* month */</span>
+  <span style="color:#66d9ef">int</span> tm_year;        <span style="color:#75715e">/* year */</span>
+  <span style="color:#66d9ef">int</span> tm_wday;        <span style="color:#75715e">/* day of the week */</span>
+  <span style="color:#66d9ef">int</span> tm_yday;        <span style="color:#75715e">/* day in the year */</span>
+  <span style="color:#66d9ef">int</span> tm_isdst;       <span style="color:#75715e">/* daylight saving time */</span>
+};
+</code></pre></div></li>
+<li>
+<p>struct timeval/struct timespec</p>
+</li>
 </ul>
-
-<pre><code class="language-C++">struct timeval {
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> {
   time_t seconds;
   suseconds_t useconds;
 }
 
-struct timespec {
-  time_t   tv_sec;        /* seconds */
-  long     tv_nsec;       /* nanoseconds */
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> {
+  time_t   tv_sec;        <span style="color:#75715e">/* seconds */</span>
+  <span style="color:#66d9ef">long</span>     tv_nsec;       <span style="color:#75715e">/* nanoseconds */</span>
 };
-</code></pre></li>
+</code></pre></div></li>
 </ul>
-
-<hr />
-
+<hr>
 <h3 id="系统时间的操作">系统时间的操作</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/time.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// number of seconds since epoch
+</span><span style="color:#75715e"></span>time_t <span style="color:#a6e22e">time</span>(time_t <span style="color:#f92672">*</span>t) 
 
-<pre><code class="language-C++">#include &lt;time.h&gt;
-#include &lt;sys/time.h&gt;
+<span style="color:#75715e">//参数time_t*
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>ctime(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);
+<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">ctime_r</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf);
 
-// number of seconds since epoch
-time_t time(time_t *t) 
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">gmtime</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">gmtime_r</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>result);
 
-//参数time_t*
-char *ctime(const time_t *timep);
-char *ctime_r(const time_t *timep, char *buf);
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">localtime</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep);
+<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">localtime_r</span>(<span style="color:#66d9ef">const</span> time_t <span style="color:#f92672">*</span>timep, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>result);
 
-struct tm *gmtime(const time_t *timep);
-struct tm *gmtime_r(const time_t *timep, struct tm *result);
-
-struct tm *localtime(const time_t *timep);
-struct tm *localtime_r(const time_t *timep, struct tm *result);
-
-//参数struct tm*
-char *asctime(const struct tm *tm);
-char *asctime_r(const struct tm *tm, char *buf);
-time_t mktime(struct tm *tm);
+<span style="color:#75715e">//参数struct tm*
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">asctime</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>tm);
+<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">asctime_r</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>tm, <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>buf);
+time_t <span style="color:#a6e22e">mktime</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>tm);
 
 
-int gettimeofday(struct timeval *tv, struct timezone *tz);//如果系统时间调整了会影响
-int clock_gettime(clockid_t clk_id, struct timespec *tp);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">gettimeofday</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> <span style="color:#f92672">*</span>tv, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timezone</span> <span style="color:#f92672">*</span>tz);<span style="color:#75715e">//如果系统时间调整了会影响
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">clock_gettime</span>(clockid_t clk_id, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>tp);
 
-//将tm按照format处理后放到s
-size_t strftime(char *s, size_t max, const char *format, const struct tm *tm);
+<span style="color:#75715e">//将tm按照format处理后放到s
+</span><span style="color:#75715e"></span>size_t <span style="color:#a6e22e">strftime</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s, size_t max, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>tm);
 
-//将字符串时间s按照format格式化后放入tm
-char *strptime(const char *s, const char *format, struct tm *tm);
+<span style="color:#75715e">//将字符串时间s按照format格式化后放入tm
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span><span style="color:#a6e22e">strptime</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>s, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>format, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> <span style="color:#f92672">*</span>tm);
 
-</code></pre>
-
-<hr />
-
+</code></pre></div><hr>
 <h3 id="定时器">定时器</h3>
-
 <ul>
 <li>sleep</li>
 </ul>
-
-<pre><code class="language-C++">unsigned int sleep(unsigned int seconds);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sleep</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
+</code></pre></div><ul>
 <li>usleep</li>
 </ul>
-
-<pre><code class="language-C++">int usleep(useconds_t usec);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">usleep</span>(useconds_t usec);
+</code></pre></div><ul>
 <li>nanosleep</li>
 </ul>
-
-<pre><code class="language-C++">int nanosleep(const struct timespec *req, struct timespec *rem);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">nanosleep</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>req, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>rem);
+</code></pre></div><ul>
 <li>alarm</li>
 </ul>
-
-<pre><code class="language-C++">// SIGALARM after seconds
-unsigned int alarm(unsigned int seconds);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// SIGALARM after seconds
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">alarm</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
+</code></pre></div><ul>
 <li>timer_create</li>
 </ul>
-
-<pre><code class="language-C++">int timer_create(clockid_t clockid, struct sigevent *sevp, timer_t *timerid);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_create</span>(clockid_t clockid, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">sigevent</span> <span style="color:#f92672">*</span>sevp, timer_t <span style="color:#f92672">*</span>timerid);
+</code></pre></div><ul>
 <li>setitimer and timerfd_create ＋ select/poll/epoll</li>
 </ul>
-
-<pre><code class="language-C++">int timerfd_create(int clockid, int flags);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_create</span>(<span style="color:#66d9ef">int</span> clockid, <span style="color:#66d9ef">int</span> flags);
+</code></pre></div><ul>
 <li>select</li>
 </ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">select</span>(<span style="color:#66d9ef">int</span> nfds, fd_set <span style="color:#f92672">*</span>readfds, fd_set <span style="color:#f92672">*</span>writefds,
+                  fd_set <span style="color:#f92672">*</span>exceptfds, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> <span style="color:#f92672">*</span>timeout);
+<span style="color:#75715e">// struct timespec可以精确到纳秒，但是pselect下次无法修改timeout 
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">pselect</span>(<span style="color:#66d9ef">int</span> nfds, fd_set <span style="color:#f92672">*</span>readfds, fd_set <span style="color:#f92672">*</span>writefds,
+                   fd_set <span style="color:#f92672">*</span>exceptfds, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>timeout,
+                   <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>sigmask);
 
-<pre><code class="language-C++">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
-int select(int nfds, fd_set *readfds, fd_set *writefds,
-                  fd_set *exceptfds, struct timeval *timeout);
-// struct timespec可以精确到纳秒，但是pselect下次无法修改timeout 
-int pselect(int nfds, fd_set *readfds, fd_set *writefds,
-                   fd_set *exceptfds, const struct timespec *timeout,
-                   const sigset_t *sigmask);
-
-// 一般能提供周期，延时，时间点触发，但核心还是时间点触发的timer
-// 1.call_period =&gt; 触发一次重新注册call_at
-// 2.call_later =&gt; 转换为call_at 
-// 3.call_at =&gt; 时间点触发的timer可以用一个优先级队列保存
-
-</code></pre>
-
-<ul>
+<span style="color:#75715e">// 一般能提供周期，延时，时间点触发，但核心还是时间点触发的timer
+</span><span style="color:#75715e">// 1.call_period =&gt; 触发一次重新注册call_at
+</span><span style="color:#75715e">// 2.call_later =&gt; 转换为call_at 
+</span><span style="color:#75715e">// 3.call_at =&gt; 时间点触发的timer可以用一个优先级队列保存
+</span><span style="color:#75715e"></span>
+</code></pre></div><ul>
 <li>poll</li>
 </ul>
-
-<pre><code class="language-C++">// timeout最小单位ms，并且rounded up to系统时钟的精度
-int poll(struct pollfd *fds, nfds_t nfds, int timeout);
-// 注意timespec会被转换成ms
-int ppoll(struct pollfd *fds, nfds_t nfds,
-               const struct timespec *timeout_ts, const sigset_t *sigmask);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">poll</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">pollfd</span> <span style="color:#f92672">*</span>fds, nfds_t nfds, <span style="color:#66d9ef">int</span> timeout);
+<span style="color:#75715e">// 注意timespec会被转换成ms
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">ppoll</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">pollfd</span> <span style="color:#f92672">*</span>fds, nfds_t nfds,
+               <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>timeout_ts, <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>sigmask);
+</code></pre></div><ul>
 <li>epoll</li>
 </ul>
-
-<pre><code class="language-C++">// timeout最小单位ms，并且rounded up to系统时钟的精度
-int epoll_wait(int epfd, struct epoll_event *events,
-                      int maxevents, int timeout);
-int epoll_pwait(int epfd, struct epoll_event *events,
-                      int maxevents, int timeout,
-                      const sigset_t *sigmask);
-</code></pre>
-
-<ul>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_wait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>events,
+                      <span style="color:#66d9ef">int</span> maxevents, <span style="color:#66d9ef">int</span> timeout);
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_pwait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>events,
+                      <span style="color:#66d9ef">int</span> maxevents, <span style="color:#66d9ef">int</span> timeout,
+                      <span style="color:#66d9ef">const</span> sigset_t <span style="color:#f92672">*</span>sigmask);
+</code></pre></div><ul>
 <li>eventfd + select/poll/epoll</li>
 </ul>
-
 <blockquote>
 <p>一个fd可同时负责读接受事件通知和写触发事件通知</p>
 </blockquote>
-
 <ul>
 <li>signaled + select/poll/epoll</li>
 </ul>
-
 <blockquote>
 <p>借助alarm/setitimer/timer_create等触发的SIGALARM，通过signalfd传递到多路复用中</p>
 </blockquote>
-
 <ul>
 <li>pipe + select/poll/epoll</li>
 </ul>
-
 <blockquote>
 <p>一端另起线程定时触发，另一端放到多路复用中</p>
 </blockquote>

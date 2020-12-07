@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>分布式系统 on 靠谱</title>
@@ -6,24 +6,19 @@
     <description>Recent content in 分布式系统 on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 08 Mar 2018 19:52:51 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Thu, 08 Mar 2018 19:52:51 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Raft读请求</title>
       <link>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</link>
       <pubDate>Thu, 08 Mar 2018 19:52:51 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/raft%E8%AF%BB%E8%AF%B7%E6%B1%82/</guid>
-      <description> Raft保证读请求Linearizability的方法  1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
- 2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex 后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
- 3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
- 4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
-  Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）  Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
-Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.
-  举个例：在Raft中，Linearizability读保证任何一个客户端的读请求对其他所有客户端后续的请求都是可见的，而Sequential读保证某个客户端自己的读请求对后续自己的请求是可见的。比如其中一个客户端提交了写请求且Leader上更新了状态机，接着此客户端向Leader发起读请求，而由于Follower可能还没有apply这条日志，所以另一个客户端向Follower发起了读请求，这样两个客户端将读取到不同的数据。  </description>
+      <description>Raft保证读请求Linearizability的方法   1.Leader把每次读请求作为一条日志记录，以日志复制的形式提交，并应用到状态机后，读取状态机中的数据返回。（一次RTT、一次磁盘写）
+  2.使用Leader Lease，保证整个集群只有一个Leader，Leader接收到都请求后，记录下当前的commitIndex为readIndex，当applyIndex大于等于readIndex 后，则可以读取状态机中的数据返回。（0次RTT、0次磁盘写）
+  3.不使用Leader Lease，而是当Leader通过以下两点来保证整个集群中只有其一个正常工作的Leader：（1）在每个Term开始时，由于新选出的Leader可能不知道上一个Term的commitIndex，所以需要先在当前新的Term提交一条空操作的日志；（2）Leader每次接到读请求后，向多数节点发送心跳确认自己的Leader身份。之后的读流程与Leader Lease的做法相同。（一次RTT、0次磁盘写）
+  4.从Follower节点读：Follower先向Leader询问readIndex，Leader收到Follower的请求后依然要通过2或3中的方法确认自己Leader的身份，然后返回当前的commitIndex作为readIndex，Follower拿到readIndex后，等待本地的applyIndex大于等于readIndex后，即可读取状态机中的数据返回。（2次或1次RTT、0次磁盘写）
+   Raft保证读请求Sequential Consistency的方法  Leader处理每次读写、Follower处理每次读请求时，都返回本节点的applyIndex，客户端在本地保存自己看到的最新的applyIndex。客户端每次请求时都带上这个applyIndex（假设为clientIndex），Leader或者Follower拿客户端请求中的clientIndex和自己本地的applyIndex比较，如果applyIndex大于等于clientIndex，则可以读取状态机数据返回，否则等待，直到applyIndex大于等于clientIndex。（0次RTT、0次写磁盘）   Linearizability和Sequential Consistency的区别  Linearizability - All processes see all shared accesses in the same order. Accesses are furthurmore ordered according to a global timestamp
+  Sequential - All processes see all shared accesses in the same order. Accesses are not ordered in time.</description>
     </item>
     
     <item>
@@ -33,11 +28,10 @@ Sequential - All processes see all shared accesses in the same order. Accesses a
       
       <guid>https://feilengcui008.github.io/post/raft%E5%AE%9E%E7%8E%B0%E5%B0%8F%E7%BB%93/</guid>
       <description>上一周花了大部分时间重新拾起了之前落下的MIT6.824 2016的分布式课程，实现和调试了下Raft协议，虽然Raft协议相对其他容错分布式一致性协议如Paxos/Multi-Paxos/VR/Zab等来说更容易理解，但是在实现和调试过程中也遇到不少细节问题。虽然论文中有伪代码似的协议描述，但是要把每一小部分逻辑组合起来放到正确的位置还是需要不少思考和踩坑的，这篇文章对此做一个小结。
-Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。
- 宏观
- 合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化  Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)  Log Replication
- 发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)    细节
- Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data  Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致    测试和其他一些问题</description>
+ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replication部分，没有考虑Snapshot和Membership Reconfiguration的部分，因为前两者是后两者的实现基础，也是Raft协议的核心。MIT6.824 2016使用的是Go语言实现，一大好处是并发和异步处理非常直观简洁，不用自己去管理异步线程。
+  宏观
+ 合理规划同步和异步执行的代码块，比如Heartbeat routine/向多个节点异步发送请求的routine 注意加锁解锁，每个节点的heartbeat routine/请求返回/接收请求都可能改变Raft结构的状态数据，尤其注意不要带锁发请求，很容易和另一个同时带锁发请求的节点死锁 理清以下几块的大体逻辑  公共部分的逻辑  发现小的term丢弃 发现大的term，跟新自身term，转换为Follower，重置votedFor 修改term/votedFor/log之后需要持久化   Leader/Follower/Candidate的Heartbeat routine逻辑 Leader Election  发送RequestVote并处理返回，成为leader后的逻辑(nop log replication) 接收到RequestVote的逻辑，如何投票(Leader Election Restriction)   Log Replication  发送AppendEntries并处理返回(consistency check and repair)，达成一致后的逻辑(更新commitIndex/nextIndex/matchIndex， apply log) 接收到AppendEntries的逻辑(consistency check and repair, 更新commitIndex，apply log)        细节
+ Leader Election  timeout的随机性 timeout的范围，必须远大于rpc请求的平均时间，不然可能很久都选不出主，通常rpc请求在ms级别，所以可设置150~300ms 选主请求发送结束后，由于有可能在选主请求(RequestVote)的返回或者别的节点的选主请求中发现较大的term，而被重置为Follower，这时即使投票数超过半数也应该放弃成为Leader，因为当前选主请求的term已经过时，成为Leader可能导致在新的term中出现两个Leader.(注意这点是由于发送请求是异步的，同步请求发现较大的term后可直接修改状态返回) 每次发现较大的term时，自身重置为Follower，更新term的同时，需要重置votedFor，以便在新的term中可以参与投票 每次选主成功后，发送一条nop的日志复制请求，让Leader提交所有之前应该提交的日志，从而让Leader的状态机为最新，这样为读请求提供linearializability，不会返回stale data   Log Replication  Leader更新commitIndex时，需要严格按照论文上的限制条件(使用matchIndex)，不能提交以前term的日志 对于同一term同一log index的日志复制，如果失败，应该无限重试，直到成功或者自身不再是Leader，因为我们需要保证在同一term同一log index下有唯一的一条日志cmd，如果不无限重试，有可能会导致以下的问题  五个节点(0, 1, 2, 3, 4), node 0为leader，复制一条Term n, LogIndex m, Cmd cmd1的日志 node 1收到cmd1的日志请求，node 2, 3, 4未收到 如果node 0不无限重试而返回，此时另一个cmd2的日志复制请求到达，leader 0使用同一个Term和LogIndex发送请求 node 2, 3, 4收到cmd2的请求，node 1未收到 node 1通过election成为新的leader(RequestVote的检查会通过，因为具有相同的Term和LogIndex) node 1发送nop提交之前的日志，cmd1被applied(consistency check会通过，因为PrevLogTerm和PrevLogIndex相同) cmd2则被node 2, 3, 4 applied cmd1和cmd2发生了不一致        测试和其他一些问题</description>
     </item>
     
     <item>
@@ -47,18 +41,18 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
       
       <guid>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%89/</guid>
       <description>在上一篇文章中讨论了leader选举对于基本Paxos算法在实际工程应用中的必要性，这一篇文章首先结合raft的选举算法谈谈leader选举的实质和常用方法，然后结合raft算法选举后的日志恢复以及《Paxos Made Simple》里lamport勾勒的multi-paxos的日志恢复来详细分析一下选主后要做的两件重要事情以及俩算法在这块的差异。
-1.raft的选主算法以及选主算法的实质 前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。
+ 1.raft的选主算法以及选主算法的实质 前面一篇文章中提到，选主本质上就是分布式共识问题，可以用基本Paxos解决，下面就raft选主算法与基本Paxos的对应关系来说明。
 关于raft选主的详细描述可以参考原论文
  raft选主时的term实际上对应基本Paxos中的proposal id raft选主时的要求即每个term期间只能最多有一个leader实际上对应于基本Paxos的每个proposal要么达成决议要么没达成决议 raft选主时的随机timeout实际上是为了防止基本Paxos livelock的问题，这也是FLP定理所决定的 raft选举时与基本Paxos的区别在于，raft选举不要求在某个term(proposal id)选出一个leader(达成决议后)不需要后续的某个term(proposal id)选出同一台机器作为leader(使用同一个值达成决议)，而是可以每次重新选一个机器(proposal选不同值)，当然我们可以使用一定方法，增大选某台机器的概率，比如为每台机器设置rank值。 raft选举时，当candidate和leader接受到更大的term时立即更新term转为follower，在下一次超时前自然不能再提proposal，实际上对应于基本Paxos第一阶段acceptor接收到proposal id更大的proposal时更新proposal id放弃当前的proposal(在选主中实际上就对应放弃我candidate和leader的身份，本质上就是proposer的身份)  所以选主本质上是可以通过基本Paxos算法来保证的，选主没有完全使用Paxos算法，可以看作使用了Paxos算法的某个子算法解决了比容错分布式一致问题限制稍微小的问题。当然，我们可以在选主时加上额外的限制条件，只要能保证可能选出一个主。
-2.选主后日志的同步 选出新的leader后，它至少要负责做两件事情，一件是确定下一次客户请求应该用哪个日志槽位或者说项，另一件是确定整个集群的机器过去已经提交过的最近的项(或者说日志)，确定这两个值的过程实际上就是日志恢复的过程，下面对两种算法具体分析。这里补充一点之前文章漏掉的东西，基本Paxos算法实际上有三个阶段，最后一个阶段是提交阶段，只是通常leader-based算法为了优化网络开销，将第三阶段和第二阶段合并了，而在每次执行第二阶段是带上leader已经提交过的日志号，所以新leader还需要确定最近被提交过的日志，而这种优化也引入了另外的复杂性。
- 对于raft来说
- 由于选主时额外的限制条件以及log replication时的consistency check保证(关于这两者是什么东西，不细说，基本上这就是raft简化了multi-paxos最核心的东西吧)，所以每个新leader一定有最新的日志，所以对于下一条日志槽位的选取，只需要读取最后一条日志来判断就行了。关于raft的log replication，后面有机会再说。
- 而对于已提交日志的判断，由于存在可能已经形成多数派，也就是在内存中形成了多数派，但是还没有机器commited到磁盘，这时，新的leader无法判断这条日志是已经提交还是没有提交(参见原论文5.4.2节)，raft的做法是不管这条可能被新leader覆盖掉的日志，只需要保证在新的term期间，提交一条日志，那么由于consistency check，自然会提交之前的日志。
-  对于multi-paxos来说
- 由于在log replication说，不像raft那样保证一个顺序应答(不能保证线性一致性，能保证顺序一致性)，也就是保证一个日志槽位达成多数派后才接受下一个请求，multi-paxos可以在一个日志槽位还没有达成多数派时并发处理另外一个日志槽位，所以新leader在恢复确认下一个可用日志槽位以及已提交日志时更麻烦。
- lamport原论文描述的方法是，对于明确知道已提交的日志(这一点我们可以通过给每一条已提交日志加一个标示，这样可以减少日志恢复的时间)，不用再次进行基本Paxos的决议，而对于未明确知道已提交的日志，则进行基本Paxos的二个阶段来确认已达成多数派的值，对于中间空洞且之前没有达成过多数派的，直接写一条空操作的日志，至于为什么会产生这种情况，可以参考原论文。一旦所有日志都经过这种方法恢复后，下一个可用日志槽位和最近已提交日志号也就能确定了。
-   对比上面两者恢复的过程，我们可以看到raft是怎么简化multi-paxos的。一旦新的leader确定了上面那两件事情，就可以进入正常的log replication阶段了，也就仅仅是多数派的事情了。
-3.log replication，客户端交互，membership管理，leader lease等 这一节为后面的文章做个铺垫，对于log replication实际上不会涉及太多状态的reason，所以也就比较容易理解，基本上是类似简化的两阶段提交，后面会介绍下raft的log replication。对于客户端交互，leader什么时候返回结果，客户端怎么超时重试，以及怎么保证请求的幂等，membership management，以及leader lease等一些优化手段。</description>
+ 2.选主后日志的同步 选出新的leader后，它至少要负责做两件事情，一件是确定下一次客户请求应该用哪个日志槽位或者说项，另一件是确定整个集群的机器过去已经提交过的最近的项(或者说日志)，确定这两个值的过程实际上就是日志恢复的过程，下面对两种算法具体分析。这里补充一点之前文章漏掉的东西，基本Paxos算法实际上有三个阶段，最后一个阶段是提交阶段，只是通常leader-based算法为了优化网络开销，将第三阶段和第二阶段合并了，而在每次执行第二阶段是带上leader已经提交过的日志号，所以新leader还需要确定最近被提交过的日志，而这种优化也引入了另外的复杂性。
+  对于raft来说
+  由于选主时额外的限制条件以及log replication时的consistency check保证(关于这两者是什么东西，不细说，基本上这就是raft简化了multi-paxos最核心的东西吧)，所以每个新leader一定有最新的日志，所以对于下一条日志槽位的选取，只需要读取最后一条日志来判断就行了。关于raft的log replication，后面有机会再说。
+  而对于已提交日志的判断，由于存在可能已经形成多数派，也就是在内存中形成了多数派，但是还没有机器commited到磁盘，这时，新的leader无法判断这条日志是已经提交还是没有提交(参见原论文5.4.2节)，raft的做法是不管这条可能被新leader覆盖掉的日志，只需要保证在新的term期间，提交一条日志，那么由于consistency check，自然会提交之前的日志。
+    对于multi-paxos来说
+  由于在log replication说，不像raft那样保证一个顺序应答(不能保证线性一致性，能保证顺序一致性)，也就是保证一个日志槽位达成多数派后才接受下一个请求，multi-paxos可以在一个日志槽位还没有达成多数派时并发处理另外一个日志槽位，所以新leader在恢复确认下一个可用日志槽位以及已提交日志时更麻烦。
+  lamport原论文描述的方法是，对于明确知道已提交的日志(这一点我们可以通过给每一条已提交日志加一个标示，这样可以减少日志恢复的时间)，不用再次进行基本Paxos的决议，而对于未明确知道已提交的日志，则进行基本Paxos的二个阶段来确认已达成多数派的值，对于中间空洞且之前没有达成过多数派的，直接写一条空操作的日志，至于为什么会产生这种情况，可以参考原论文。一旦所有日志都经过这种方法恢复后，下一个可用日志槽位和最近已提交日志号也就能确定了。
+    对比上面两者恢复的过程，我们可以看到raft是怎么简化multi-paxos的。一旦新的leader确定了上面那两件事情，就可以进入正常的log replication阶段了，也就仅仅是多数派的事情了。
+ 3.log replication，客户端交互，membership管理，leader lease等 这一节为后面的文章做个铺垫，对于log replication实际上不会涉及太多状态的reason，所以也就比较容易理解，基本上是类似简化的两阶段提交，后面会介绍下raft的log replication。对于客户端交互，leader什么时候返回结果，客户端怎么超时重试，以及怎么保证请求的幂等，membership management，以及leader lease等一些优化手段。</description>
     </item>
     
     <item>
@@ -70,7 +64,7 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
       <description>上一篇文章推导了基本Paxos算法，并引出了在实际使用中其存在的问题，然后说明了leader-based分布式一致性协议的优势。这篇文章分析一下选主的本质，选出一个主对整个算法的影响，采用选主会存在的问题以及基本Paxos协议是怎么样保证这些问题不会影响一致性的。
 1.为什么选主 至于为什么选主？个人认为有如下原因：
  避免并发决议导致的livelock和新丢失的问题 可以采用一定方法在选主时(raft)，选主中或者选主后保证leader上有最新的达成多数派(达成多数派应该用多数派已经将值写入持久化日志来判定)，这样可以优化针对同一个项的读请求，不然每次客户端读请求也需要走一遍基本Paxos 选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议(至于脑裂的问题，后面会分析)，  2.不同的选主算法，其本质是什么？ 前面说了在一个leader统治期间内，不可能存在多个leader同时对一个项达成多数派(如果一个leader也没有自然满足，包括脑裂后面会分析到也是满足的)，但是对于选主本身来说，实际上其本质上就是一个分布式一致性问题，并且可能有多个proposer并发提出选主决议，所以可以使用基本Paxos来解决，这就回到了基本的Paxos算法了！所以我们需要为每次选主决议编号，比如raft算法的term，这个实际上就对应基本Paxos算法的proposal id。
-3.选主后对整个算法造成什么影响？ 前面提到了&amp;rdquo;选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议&amp;rdquo;。这样实际上基本Paxos的第一阶段prepare就没有必要了，因为对于下一个项来说，在这个leader统治期内，在达成多数派之前，不可能有其他人提出决议并达成多数派，所以可以直接使用客户端的值进入第二阶段accept。
+3.选主后对整个算法造成什么影响？ 前面提到了&amp;quot;选出leader可以保证在一个leader的统治期间内只有这一个leader可以接收客户端请求，发起决议&amp;quot;。这样实际上基本Paxos的第一阶段prepare就没有必要了，因为对于下一个项来说，在这个leader统治期内，在达成多数派之前，不可能有其他人提出决议并达成多数派，所以可以直接使用客户端的值进入第二阶段accept。
 4.选主可能会导致的问题？ 最大的问题应该是脑裂了，也就是说可能存在多个分区多个leader接收客户端响应，但是由于多数派的限制，只能最多有一个分区能达成多数派。我们假设最简单的情况，A/B/C/D/E五台机器，两个分区P1有三台A/B/C和P2有两台D/E，那么可能的情况是：
  (1).P1有leader；P2没有leader (2).P1有leader；P2也有leader  显然由于多数派的限制，只有P1可能达成决议
 5.新的leader选出来后的操作 一般来说，新的leader选出来后，我们需要对leader进行日志恢复，以便leader决定下一次客户端请求的时候该用哪个日志槽位或者说哪个项吧，这里也是不同的算法差异较大的地方，比如raft，viewstamped replication，zab以及lamport 《Paxos Made Simple》里面第三节描述的方法。在lamport论文的描述中，还是采用基本的Paxos，对未明确知道达成多数派的项重新走一遍基本Paxos算法，具体可以参照原论文，细节还是挺多。对于raft来说，由于其保证日志是连续的，且保证在选主的时候只选择具有最新的日志的机器，所以选主之后，新的leader上的日志本身就是最新的。
@@ -84,10 +78,10 @@ Raft实现 这里实现的主要是Raft基本的Leader Election和Log Replicatio
       
       <guid>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/</guid>
       <description>这一篇文章主要介绍一下分布式共识、分布式容错一致性协议的背景以及Paxos算法。
-1. 分布式系统基本概念  分布式系统的基本特点
- 部分故障  容错  没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致  通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等   系统模型
- 同步和异步  同步 异步(执行时间和消息传递时间没有上限)  网络模型  可靠 消息丢失，重复传递，消息乱序  故障模型  crash-failure fault byzantine fault   一致性
- data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)  client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)  其他   2.</description>
+ 1. 分布式系统基本概念   分布式系统的基本特点
+ 部分故障  容错   没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致   通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等      系统模型
+ 同步和异步  同步 异步(执行时间和消息传递时间没有上限)   网络模型  可靠 消息丢失，重复传递，消息乱序   故障模型  crash-failure fault byzantine fault      一致性
+ data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)   client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)   其他     2.</description>
     </item>
     
   </channel>

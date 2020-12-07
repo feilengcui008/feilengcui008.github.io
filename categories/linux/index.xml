@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Linux on 靠谱</title>
@@ -6,11 +6,7 @@
     <description>Recent content in Linux on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 09 Oct 2017 11:41:42 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/categories/linux/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 09 Oct 2017 11:41:42 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/linux/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Linux内核栈与thread_info</title>
       <link>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E6%A0%88/</link>
@@ -19,7 +15,7 @@
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E6%A0%88/</guid>
       <description>内核栈与thread_info Linux内核在x86平台下，PAGE_SIZE为4KB(32位和64位相同)，THREAD_SIZE为8KB(32位)或者16KB(64位)。THREAD_SIZE表示了整个内核栈的大小，栈可以向下增长(栈低在高地址)或者向上增长(栈低在低地址)，后面的分析都是基于向下增长的方式。如图中所示，整个内核栈可分为四个部分，从低地址开始依次为:
  thread_info结构体 溢出标志 从溢出标志开始到kernel_stack之间的实际可用栈内存空间，kernel_stack为percpu变量，通过它可间接找到内核栈的起始地址 从kernel_stack到栈底的长度为KERNEL_STACK_OFFSET的保留空间  内核引入thread_info的一大原因是方便通过它直接找到进(线)程的task_struct指针，x86 平台的thread_info结构体定义在arch/x86/include/asm/thread_info.h。
-// Linux 3.19.3 x86平台的thread_info struct thread_info { struct task_struct	*task;	/* main task structure */ struct exec_domain	*exec_domain;	/* execution domain */ __u32	flags;	/* low level flags */ __u32	status;	/* thread synchronous flags */ __u32	cpu;	/* current CPU */ int	saved_preempt_count; mm_segment_t	addr_limit; void __user	*sysenter_return; unsigned int	sig_on_uaccess_error:1; unsigned int	uaccess_err:1;	/* uaccess failed */ };  由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</description>
+// Linux 3.19.3 x86平台的thread_info struct thread_info { struct task_struct	*task;	/* main task structure */ struct exec_domain	*exec_domain;	/* execution domain */ __u32	flags;	/* low level flags */ __u32	status;	/* thread synchronous flags */ __u32	cpu;	/* current CPU */ int	saved_preempt_count; mm_segment_t	addr_limit; void __user	*sysenter_return; unsigned int	sig_on_uaccess_error:1; unsigned int	uaccess_err:1;	/* uaccess failed */ }; 由于thread_info结构体恰好位于内核栈的低地址开始处，所以只要知道内核栈的起始地址，就可以通过其得到thread_info，进而得到task_struct，后面会分析这个过程的实现。</description>
     </item>
     
     <item>
@@ -40,11 +36,9 @@ Linux在x86_64和i386下的ABI:
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E6%8A%A2%E5%8D%A0/</guid>
       <description>本文主要介绍内核抢占的相关概念和具体实现，以及抢占对内核调度、内核竞态和同步的一些影响。(所用内核版本3.19.3)
-1. 基本概念  用户抢占和内核抢占  用户抢占发生点  当从系统调用或者中断上下文返回用户态的时候，会检查need_resched标志，如果被设置则会重新选择用户态task执行  内核抢占发生点  当从中断上下文返回内核态的时候，检查need_resched标识以及__preemp_count计数，如果标识被设置，并且可抢占，则会触发调度程序preempt_schedule_irq() 内核代码由于阻塞等原因直接或间接显示调用schedule，比如preemp_disable时可能会触发preempt_schedule()  本质上内核态中的task是共享一个内核地址空间，在同一个core上，从中断返回的task很可能执行和被抢占的task相同的代码，并且两者同时等待各自的资源释放，也可能两者修改同一共享变量，所以会造成死锁或者竞态等；而对于用户态抢占来说，由于每个用户态进程都有独立的地址空间，所以在从内核代码(系统调用或者中断)返回用户态时，由于是不同地址空间的锁或者共享变量，所以不会出现不同地址空间之间的死锁或者竞态，也就没必要检查preempt_count，是安全的。preempt_count主要负责内核抢占计数。   2. 内核抢占的实现  percpu变量__preempt_count
-抢占计数8位, PREEMPT_MASK =&amp;gt; 0x000000ff 软中断计数8位, SOFTIRQ_MASK =&amp;gt; 0x0000ff00 硬中断计数4位, HARDIRQ_MASK =&amp;gt; 0x000f0000 不可屏蔽中断1位, NMI_MASK =&amp;gt; 0x00100000 PREEMPTIVE_ACTIVE(标识内核抢占触发的schedule) =&amp;gt; 0x00200000 调度标识1位, PREEMPT_NEED_RESCHED =&amp;gt; 0x80000000  __preempt_count的作用
- 抢占计数 判断当前所在上下文 重新调度标识  thread_info的flags
- thread_info的flags中有一个是TIF_NEED_RESCHED，在系统调用返回，中断返回，以及preempt_disable的时候会检查是否设置，如果设置并且抢占计数为0(可抢占)，则会触发重新调度schedule()或者preempt_schedule()或者preempt_schedule_irq()。通常在scheduler_tick中会检查是否设置此标识(每个HZ触发一次)，然后在下一次中断返回时检查，如果设置将触发重新调度，而在schedule()中会清除此标识。
-// kernel/sched/core.c // 设置thread_info flags和__preempt_count的need_resched标识 void resched_curr(struct rq *rq) { /*省略*/ if (cpu == smp_processor_id()) { // 设置thread_info的need_resched标识 set_tsk_need_resched(curr); // 设置抢占计数__preempt_count里的need_resched标识 set_preempt_need_resched(); return; } /*省略*/ } //在schedule()中清除thread_info和__preempt_count中的need_resched标识 static void __sched __schedule(void) { /*省略*/ need_resched: // 关抢占读取percpu变量中当前cpu id，运行队列 preempt_disable(); cpu = smp_processor_id(); rq = cpu_rq(cpu); rcu_note_context_switch(); prev = rq-&amp;gt;curr; /*省略*/ //关闭本地中断，关闭抢占，获取rq自旋锁 raw_spin_lock_irq(&amp;amp;rq-&amp;gt;lock); switch_count = &amp;amp;prev-&amp;gt;nivcsw; // PREEMPT_ACTIVE 0x00200000 // preempt_count = __preempt_count &amp;amp; (~(0x80000000)) // 如果进程没有处于running的状态或者设置了PREEMPT_ACTIVE标识 //(即本次schedule是由于内核抢占导致)，则不会将当前进程移出队列 // 此处PREEMPT_ACTIVE的标识是由中断返回内核空间时调用 // preempt_schdule_irq或者内核空间调用preempt_schedule // 而设置的，表明是由于内核抢占导致的schedule，此时不会将当前 // 进程从运行队列取出，因为有可能其再也无法重新运行。 if (prev-&amp;gt;state &amp;amp;&amp;amp; !</description>
+ 1. 基本概念  用户抢占和内核抢占  用户抢占发生点  当从系统调用或者中断上下文返回用户态的时候，会检查need_resched标志，如果被设置则会重新选择用户态task执行   内核抢占发生点  当从中断上下文返回内核态的时候，检查need_resched标识以及__preemp_count计数，如果标识被设置，并且可抢占，则会触发调度程序preempt_schedule_irq() 内核代码由于阻塞等原因直接或间接显示调用schedule，比如preemp_disable时可能会触发preempt_schedule()   本质上内核态中的task是共享一个内核地址空间，在同一个core上，从中断返回的task很可能执行和被抢占的task相同的代码，并且两者同时等待各自的资源释放，也可能两者修改同一共享变量，所以会造成死锁或者竞态等；而对于用户态抢占来说，由于每个用户态进程都有独立的地址空间，所以在从内核代码(系统调用或者中断)返回用户态时，由于是不同地址空间的锁或者共享变量，所以不会出现不同地址空间之间的死锁或者竞态，也就没必要检查__preempt_count，是安全的。__preempt_count主要负责内核抢占计数。     2. 内核抢占的实现  percpu变量__preempt_count  抢占计数8位, PREEMPT_MASK =&amp;gt; 0x000000ff 软中断计数8位, SOFTIRQ_MASK =&amp;gt; 0x0000ff00 硬中断计数4位, HARDIRQ_MASK =&amp;gt; 0x000f0000 不可屏蔽中断1位, NMI_MASK =&amp;gt; 0x00100000 PREEMPTIVE_ACTIVE(标识内核抢占触发的schedule) =&amp;gt; 0x00200000 调度标识1位, PREEMPT_NEED_RESCHED =&amp;gt; 0x80000000   __preempt_count的作用
+ 抢占计数 判断当前所在上下文 重新调度标识    thread_info的flags
+ thread_info的flags中有一个是TIF_NEED_RESCHED，在系统调用返回，中断返回，以及preempt_disable的时候会检查是否设置，如果设置并且抢占计数为0(可抢占)，则会触发重新调度schedule()或者preempt_schedule()或者preempt_schedule_irq()。通常在scheduler_tick中会检查是否设置此标识(每个HZ触发一次)，然后在下一次中断返回时检查，如果设置将触发重新调度，而在schedule()中会清除此标识。    // kernel/sched/core.c // 设置thread_info flags和__preempt_count的need_resched标识 void resched_curr(struct rq *rq) { /*省略*/ if (cpu == smp_processor_id()) { // 设置thread_info的need_resched标识 set_tsk_need_resched(curr); // 设置抢占计数__preempt_count里的need_resched标识 set_preempt_need_resched(); return; } /*省略*/ } //在schedule()中清除thread_info和__preempt_count中的need_resched标识 static void __sched __schedule(void) { /*省略*/ need_resched: // 关抢占读取percpu变量中当前cpu id，运行队列 preempt_disable(); cpu = smp_processor_id(); rq = cpu_rq(cpu); rcu_note_context_switch(); prev = rq-&amp;gt;curr; /*省略*/ //关闭本地中断，关闭抢占，获取rq自旋锁 raw_spin_lock_irq(&amp;amp;rq-&amp;gt;lock); switch_count = &amp;amp;prev-&amp;gt;nivcsw; // PREEMPT_ACTIVE 0x00200000 // preempt_count = __preempt_count &amp;amp; (~(0x80000000)) // 如果进程没有处于running的状态或者设置了PREEMPT_ACTIVE标识 //(即本次schedule是由于内核抢占导致)，则不会将当前进程移出队列 // 此处PREEMPT_ACTIVE的标识是由中断返回内核空间时调用 // preempt_schdule_irq或者内核空间调用preempt_schedule // 而设置的，表明是由于内核抢占导致的schedule，此时不会将当前 // 进程从运行队列取出，因为有可能其再也无法重新运行。 if (prev-&amp;gt;state &amp;amp;&amp;amp; !</description>
     </item>
     
     <item>
@@ -55,9 +49,8 @@ Linux在x86_64和i386下的ABI:
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8namespace/</guid>
       <description>1. 介绍 Namespace是Linux内核为容器技术提供的基础设施之一(另一个是cgroups)，包括uts/user/pid/mnt/ipc/net六个(3.13.0的内核)，主要用来做资源的隔离，本质上是全局资源的映射，映射之间独立了自然隔离了。主要涉及到的接口是:
  clone setns unshare /proc/pid/ns, /proc/pid/uid_map, /proc/pid/gid_map等  后面会简单分析一下内核源码里面是怎么实现这几个namespace的，并以几个简单系统调用为例，看看namespace是怎么产生影响的，最后简单分析下setns和unshare的实现。
-2. 测试流程及代码 下面是一些简单的例子，主要测试uts/pid/user/mnt四个namespace的效果，测试代码主要用到三个进程，一个是clone系统调用执行/bin/bash后的进程，也是生成新的子namespace的初始进程，然后是打开/proc/pid/ns下的namespace链接文件，用setns将第二个可执行文件的进程加入/bin/bash的进程的namespace(容器)，并让其fork出一个子进程，测试pid namespace的差异。值得注意的几个点:
- 不同版本的内核setns和unshare对namespace的支持不一样，较老的内核可能只支持ipc/net/uts三个namespace 某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&amp;gt;pid_namespace_for_children) 用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/&amp;hellip;的错误
-// 代码1: 开一些新的namespace(启动新容器) #define _GNU_SOURCE #include &amp;lt;sys/wait.h&amp;gt; #include &amp;lt;sched.h&amp;gt; #include &amp;lt;string.h&amp;gt; #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;unistd.h&amp;gt; #define errExit(msg) do { perror(msg); exit(EXIT_FAILURE); \ } while (0) /* Start function for cloned child */ static int childFunc(void *arg) { const char *binary = &amp;quot;/bin/bash&amp;quot;; char *const argv[] = { &amp;quot;/bin/bash&amp;quot;, NULL }; char *const envp[] = { NULL }; /* wrappers for execve */ // has const char * as argument list // execl // execle =&amp;gt; has envp // execlp =&amp;gt; need search PATH // has char *const arr[] as argument list // execv // execvpe =&amp;gt; need search PATH and has envp // execvp =&amp;gt; need search PATH //int ret = execve(binary, argv, envp); int ret = execv(binary, argv); if (ret &amp;lt; 0) { errExit(&amp;quot;execve error&amp;quot;); } return ret; } #define STACK_SIZE (1024 * 1024) /* Stack size for cloned child */ int main(int argc, char *argv[]) { char *stack; char *stackTop; pid_t pid; stack = malloc(STACK_SIZE); if (stack == NULL) errExit(&amp;quot;malloc&amp;quot;); stackTop = stack + STACK_SIZE; /* Assume stack grows downward */ //pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL); pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, NULL); //pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL); if (pid == -1) errExit(&amp;quot;clone&amp;quot;); printf(&amp;quot;clone() returned %ld\n&amp;quot;, (long) pid); if (waitpid(pid, NULL, 0) == -1) errExit(&amp;quot;waitpid&amp;quot;); printf(&amp;quot;child has terminated\n&amp;quot;); exit(EXIT_SUCCESS); }  // 代码2: 使用setns加入新进程 #define _GNU_SOURCE // ?</description>
+ 2. 测试流程及代码 下面是一些简单的例子，主要测试uts/pid/user/mnt四个namespace的效果，测试代码主要用到三个进程，一个是clone系统调用执行/bin/bash后的进程，也是生成新的子namespace的初始进程，然后是打开/proc/pid/ns下的namespace链接文件，用setns将第二个可执行文件的进程加入/bin/bash的进程的namespace(容器)，并让其fork出一个子进程，测试pid namespace的差异。值得注意的几个点:
+ 不同版本的内核setns和unshare对namespace的支持不一样，较老的内核可能只支持ipc/net/uts三个namespace 某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&amp;gt;pid_namespace_for_children) 用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/&amp;hellip;的错误  // 代码1: 开一些新的namespace(启动新容器) #define _GNU_SOURCE #include &amp;lt;sys/wait.h&amp;gt; #include &amp;lt;sched.h&amp;gt; #include &amp;lt;string.h&amp;gt; #include &amp;lt;stdio.h&amp;gt; #include &amp;lt;stdlib.h&amp;gt; #include &amp;lt;unistd.h&amp;gt; #define errExit(msg) do { perror(msg); exit(EXIT_FAILURE); \ } while (0) /* Start function for cloned child */ static int childFunc(void *arg) { const char *binary = &amp;quot;/bin/bash&amp;quot;; char *const argv[] = { &amp;quot;/bin/bash&amp;quot;, NULL }; char *const envp[] = { NULL }; /* wrappers for execve */ // has const char * as argument list // execl // execle =&amp;gt; has envp // execlp =&amp;gt; need search PATH // has char *const arr[] as argument list // execv // execvpe =&amp;gt; need search PATH and has envp // execvp =&amp;gt; need search PATH //int ret = execve(binary, argv, envp); int ret = execv(binary, argv); if (ret &amp;lt; 0) { errExit(&amp;quot;execve error&amp;quot;); } return ret; } #define STACK_SIZE (1024 * 1024) /* Stack size for cloned child */ int main(int argc, char *argv[]) { char *stack; char *stackTop; pid_t pid; stack = malloc(STACK_SIZE); if (stack == NULL) errExit(&amp;quot;malloc&amp;quot;); stackTop = stack + STACK_SIZE; /* Assume stack grows downward */ //pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL); pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, NULL); //pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL); if (pid == -1) errExit(&amp;quot;clone&amp;quot;); printf(&amp;quot;clone() returned %ld\n&amp;quot;, (long) pid); if (waitpid(pid, NULL, 0) == -1) errExit(&amp;quot;waitpid&amp;quot;); printf(&amp;quot;child has terminated\n&amp;quot;); exit(EXIT_SUCCESS); } // 代码2: 使用setns加入新进程 #define _GNU_SOURCE // ?</description>
     </item>
     
     <item>
@@ -66,15 +59,11 @@ Linux在x86_64和i386下的ABI:
       <pubDate>Mon, 16 May 2016 17:03:34 +0800</pubDate>
       
       <guid>https://feilengcui008.github.io/post/linux%E4%B8%8B%E7%9A%84%E6%97%B6%E9%97%B4/</guid>
-      <description>时钟  硬件时钟
- RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式
- 通过ioctl
-#include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令
-  通常内核在boot以及从低电量中恢复时，会读取RTC更新system time
-  软件时钟
- HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。  外部时钟
- 从网络ntp，原子钟等同步   时间  时间类别
- wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间  时间的表示</description>
+      <description>时钟   硬件时钟
+ RTC(real time clock)，记录wall clock time，硬件对应到/dev/rtc设备文件，读取设备文件可得到硬件时间 读取方式  通过ioctl #include &amp;lt;linux/rtc.h&amp;gt; int ioctl(fd, RTC_request, param);  hwclock命令   通常内核在boot以及从低电量中恢复时，会读取RTC更新system time    软件时钟
+ HZ and jiffies, 由内核维护，对于PC通常HZ配置为 1s / 10ms = 100 精度影响select等依赖timeout的系统调用 HRT(high-resolution timers). Linux 2.6.21开始，内核支持高精度定时器，不受内核jiffy限制，可以达到硬件时钟的精度。    外部时钟
+ 从网络ntp，原子钟等同步     时间   时间类别
+ wall clock time =&amp;gt; 硬件时间 real time =&amp;gt; 从某个时间点(比如Epoch)开始的系统时间 sys and user time =&amp;gt; 通常指程序在内核态和用户态花的时间    时间的表示</description>
     </item>
     
     <item>
@@ -84,9 +73,8 @@ Linux在x86_64和i386下的ABI:
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%8D%8F%E8%AE%AE%E6%A0%88socket%E6%8E%A5%E5%8F%A3%E5%B1%82/</guid>
       <description>本文接上一篇Linux内核协议栈-初始化流程分析，在上一篇中主要分析了了Linux内核协议栈涉及到的关键初始化函数，在这一篇文章中将分析协议栈的BSD socket和到传输层的流程。
-1.准备 协议的基本分层： (A代表socket的某个系统调用) BSD socket system calls A =&amp;gt; proto_ops-&amp;gt;A =&amp;gt; sock-&amp;gt;A =&amp;gt; tcp_prot =&amp;gt; A
- BSD socket层和具体协议族某个类型的联系是通过struct proto_ops，在include/linux/net.h中定义了不同协议族如af_inet，af_unix等的通用操作函数指针的结构体struct proto_ops，具体的定义有各个协议族的某个类型的子模块自己完成。比如ipv4/af_inet.c中定义的af_inet family的tcp/udp等相应的struct proto_ops。 由于对于每个family的不同类型，其针对socket的某些需求可能不同，所以抽了一层struct sock出来，sock-&amp;gt;sk_prot挂接到具体tcp/udp等传输层的struct proto上(具体定义在ipv4/tcp_ipv4.c,ipv4/udp.c) 另外，由于内容比较多，这一篇主要分析socket，bind，listen，accept几个系统调用，下一篇会涉及connect，send，recv等的分析
-//不同协议族的通用函数hooks //比如af_inet相关的定义在ipv4/af_inet.c中 //除了创建socket为系统调用外，基本针对socket层的操作函数都在这里面 struct proto_ops { int family; struct module *owner; int (*release) (struct socket *sock); int (*bind) (struct socket *sock, struct sockaddr *myaddr, int sockaddr_len); int (*connect) (struct socket *sock, struct sockaddr *vaddr, int sockaddr_len, int flags); int (*socketpair)(struct socket *sock1, struct socket *sock2); int (*accept) (struct socket *sock, struct socket *newsock, int flags); int (*getname) (struct socket *sock, struct sockaddr *addr, int *sockaddr_len, int peer); unsigned int (*poll) (struct file *file, struct socket *sock, struct poll_table_struct *wait); int (*ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #ifdef CONFIG_COMPAT int (*compat_ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #endif int (*listen) (struct socket *sock, int len); int (*shutdown) (struct socket *sock, int flags); int (*setsockopt)(struct socket *sock, int level, int optname, char __user *optval, unsigned int optlen); /*省略部分*/ };  //传输层的proto //作为sock-&amp;gt;sk_prot与具体传输层的hooks struct proto { void (*close)(struct sock *sk, long timeout); int (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len); int (*disconnect)(struct sock *sk, int flags); struct sock * (*accept)(struct sock *sk, int flags, int *err); int (*ioctl)(struct sock *sk, int cmd, unsigned long arg); int (*init)(struct sock *sk); void (*destroy)(struct sock *sk); void (*shutdown)(struct sock *sk, int how); int (*setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); #ifdef CONFIG_COMPAT int (*compat_setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*compat_getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); int (*compat_ioctl)(struct sock *sk, unsigned int cmd, unsigned long arg); #endif int (*sendmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len); int (*recvmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len, int noblock, int flags, int *addr_len); int (*sendpage)(struct sock *sk, struct page *page, int offset, size_t size, int flags); int (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len); /*省略部分*/ };   同时附上其他几个关键结构体：</description>
+ 1.准备 协议的基本分层： (A代表socket的某个系统调用) BSD socket system calls A =&amp;gt; proto_ops-&amp;gt;A =&amp;gt; sock-&amp;gt;A =&amp;gt; tcp_prot =&amp;gt; A
+ BSD socket层和具体协议族某个类型的联系是通过struct proto_ops，在include/linux/net.h中定义了不同协议族如af_inet，af_unix等的通用操作函数指针的结构体struct proto_ops，具体的定义有各个协议族的某个类型的子模块自己完成。比如ipv4/af_inet.c中定义的af_inet family的tcp/udp等相应的struct proto_ops。 由于对于每个family的不同类型，其针对socket的某些需求可能不同，所以抽了一层struct sock出来，sock-&amp;gt;sk_prot挂接到具体tcp/udp等传输层的struct proto上(具体定义在ipv4/tcp_ipv4.c,ipv4/udp.c) 另外，由于内容比较多，这一篇主要分析socket，bind，listen，accept几个系统调用，下一篇会涉及connect，send，recv等的分析  //不同协议族的通用函数hooks //比如af_inet相关的定义在ipv4/af_inet.c中 //除了创建socket为系统调用外，基本针对socket层的操作函数都在这里面 struct proto_ops { int family; struct module *owner; int (*release) (struct socket *sock); int (*bind) (struct socket *sock, struct sockaddr *myaddr, int sockaddr_len); int (*connect) (struct socket *sock, struct sockaddr *vaddr, int sockaddr_len, int flags); int (*socketpair)(struct socket *sock1, struct socket *sock2); int (*accept) (struct socket *sock, struct socket *newsock, int flags); int (*getname) (struct socket *sock, struct sockaddr *addr, int *sockaddr_len, int peer); unsigned int (*poll) (struct file *file, struct socket *sock, struct poll_table_struct *wait); int (*ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #ifdef CONFIG_COMPAT int (*compat_ioctl) (struct socket *sock, unsigned int cmd, unsigned long arg); #endif int (*listen) (struct socket *sock, int len); int (*shutdown) (struct socket *sock, int flags); int (*setsockopt)(struct socket *sock, int level, int optname, char __user *optval, unsigned int optlen); /*省略部分*/ }; //传输层的proto //作为sock-&amp;gt;sk_prot与具体传输层的hooks struct proto { void (*close)(struct sock *sk, long timeout); int (*connect)(struct sock *sk, struct sockaddr *uaddr, int addr_len); int (*disconnect)(struct sock *sk, int flags); struct sock * (*accept)(struct sock *sk, int flags, int *err); int (*ioctl)(struct sock *sk, int cmd, unsigned long arg); int (*init)(struct sock *sk); void (*destroy)(struct sock *sk); void (*shutdown)(struct sock *sk, int how); int (*setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); #ifdef CONFIG_COMPAT int (*compat_setsockopt)(struct sock *sk, int level, int optname, char __user *optval, unsigned int optlen); int (*compat_getsockopt)(struct sock *sk, int level, int optname, char __user *optval, int __user *option); int (*compat_ioctl)(struct sock *sk, unsigned int cmd, unsigned long arg); #endif int (*sendmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len); int (*recvmsg)(struct kiocb *iocb, struct sock *sk, struct msghdr *msg, size_t len, int noblock, int flags, int *addr_len); int (*sendpage)(struct sock *sk, struct page *page, int offset, size_t size, int flags); int (*bind)(struct sock *sk, struct sockaddr *uaddr, int addr_len); /*省略部分*/ }; 同时附上其他几个关键结构体：</description>
     </item>
     
     <item>
@@ -96,15 +84,14 @@ Linux在x86_64和i386下的ABI:
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%8D%8F%E8%AE%AE%E6%A0%88%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%81%E7%A8%8B/</guid>
       <description>本文主要针对Linux-3.19.3版本的内核简单分析内核协议栈初始化涉及到的关键步骤和主要函数。
-1.准备
- Linux内核协议栈本身构建在虚拟文件系统之上，所以对Linux VFS不太了解的可以参考内核源码根目录下Documentation/filesystems/vfs.txt，另外，socket接口层，协议层，设备层的许多数据结构涉及到内存管理，所以对基本虚拟内存管理，slab缓存，页高速缓存不太了解的也可以查阅相关文档。
- 源码涉及的主要文件位于net/socket.c，net/core，include/linux/net*
-  2.开始
+ 1.准备
+  Linux内核协议栈本身构建在虚拟文件系统之上，所以对Linux VFS不太了解的可以参考内核源码根目录下Documentation/filesystems/vfs.txt，另外，socket接口层，协议层，设备层的许多数据结构涉及到内存管理，所以对基本虚拟内存管理，slab缓存，页高速缓存不太了解的也可以查阅相关文档。
+  源码涉及的主要文件位于net/socket.c，net/core，include/linux/net*
+   2.开始
 开始分析前，这里有些小技巧可以快速定位到主要的初始化函数，在分析其他子系统源码时也可以采用这个技巧
-grep _initcall socket.c find ./core/ -name &amp;quot;*.c&amp;quot; |xargs cat | grep _initcall grep net_inuse_init tags  这里*__initcall宏是设置初始化函数位于内核代码段.initcall#id.init的位置其中id代表优先级level，小的一般初始化靠前，定义在include/linux/init.h，使用gcc的attribute扩展。而各个level的初始化函数的调用流程基本如下：
+grep _initcall socket.c find ./core/ -name &amp;quot;*.c&amp;quot; |xargs cat | grep _initcall grep net_inuse_init tags 这里*__initcall宏是设置初始化函数位于内核代码段.initcall#id.init的位置其中id代表优先级level，小的一般初始化靠前，定义在include/linux/init.h，使用gcc的attribute扩展。而各个level的初始化函数的调用流程基本如下：
 start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; kernel_init_freeable -&amp;gt; do_basic_setup -&amp;gt; do_initcalls -&amp;gt; do_initcall_level -&amp;gt; do_one_initcall -&amp;gt; *(initcall_t)  3.详细分析
- 可以看到pure_initcall(net_ns_init)位于0的初始化level，基本不依赖其他的初始化子系统，所以从这个开始
-//core/net_namespace.c //基本上这个函数主要的作用是初始化net结构init_net的一些数据，比如namespace相关，并且调用注册的pernet operations的init钩子针对net进行各自需求的初始化 pure_initcall(net_ns_init);  static int __init net_ns_init(void) { struct net_generic *ng; //net namespace相关 #ifdef CONFIG_NET_NS //分配slab缓存 net_cachep = kmem_cache_create(&amp;quot;net_namespace&amp;quot;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL); /* Create workqueue for cleanup */ netns_wq = create_singlethread_workqueue(&amp;quot;netns&amp;quot;); if (!</description>
+ 可以看到pure_initcall(net_ns_init)位于0的初始化level，基本不依赖其他的初始化子系统，所以从这个开始  //core/net_namespace.c //基本上这个函数主要的作用是初始化net结构init_net的一些数据，比如namespace相关，并且调用注册的pernet operations的init钩子针对net进行各自需求的初始化 pure_initcall(net_ns_init); static int __init net_ns_init(void) { struct net_generic *ng; //net namespace相关 #ifdef CONFIG_NET_NS //分配slab缓存 net_cachep = kmem_cache_create(&amp;quot;net_namespace&amp;quot;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL); /* Create workqueue for cleanup */ netns_wq = create_singlethread_workqueue(&amp;quot;netns&amp;quot;); if (!</description>
     </item>
     
     <item>
@@ -114,9 +101,8 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E9%A1%B5%E9%AB%98%E9%80%9F%E7%BC%93%E5%AD%98/</guid>
       <description>Linux内核的VFS是非常经典的抽象，不仅抽象出了flesystem，super_block，inode，dentry，file等结构，而且还提供了像页高速缓存层的通用接口，当然，你可以自己选择是否使用或者自己定制使用方式。本文主要根据自己阅读Linux Kernel 3.19.3系统调用read相关的源码来追踪页高速缓存在整个流程中的痕迹，以常规文件的页高速缓存为例，了解页高速缓存的实现过程，不过于追究具体bio请求的底层细节。另外，在写操作的过程中，页高速缓存的处理流程有所不同(回写)，涉及的东西更多，本文主要关注读操作。Linux VFS相关的重要数据结构及概念可以参考Document目录下的vfs.txt。
-1.与页高速缓存相关的重要数据结构 除了前述基本数据结构以外，struct address_space 和 struct address_space_operations也在页高速缓存中起着极其重要的作用。
- address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。 address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。
-//include/linux/fs.h struct address_space { //指向文件的inode，可能为NULL struct inode *host; //存放装有缓存数据的页面 struct radix_tree_root page_tree; spinlock_t tree_lock; atomic_t i_mmap_writable; struct rb_root i_mmap; struct list_head i_mmap_nonlinear; struct rw_semaphore i_mmap_rwsem; //已缓存页的数量 unsigned long nrpages; unsigned long nrshadows; pgoff_t writeback_index; //address_space相关操作，定义了具体读写页面的钩子 const struct address_space_operations *a_ops; unsigned long flags; struct backing_dev_info *backing_dev_info; spinlock_t private_lock; struct list_head private_list; void *private_data; } __attribute__((aligned(sizeof(long))));  //include/linux/fs.</description>
+ 1.与页高速缓存相关的重要数据结构 除了前述基本数据结构以外，struct address_space 和 struct address_space_operations也在页高速缓存中起着极其重要的作用。
+ address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。 address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。  //include/linux/fs.h struct address_space { //指向文件的inode，可能为NULL struct inode *host; //存放装有缓存数据的页面 struct radix_tree_root page_tree; spinlock_t tree_lock; atomic_t i_mmap_writable; struct rb_root i_mmap; struct list_head i_mmap_nonlinear; struct rw_semaphore i_mmap_rwsem; //已缓存页的数量 unsigned long nrpages; unsigned long nrshadows; pgoff_t writeback_index; //address_space相关操作，定义了具体读写页面的钩子 const struct address_space_operations *a_ops; unsigned long flags; struct backing_dev_info *backing_dev_info; spinlock_t private_lock; struct list_head private_list; void *private_data; } __attribute__((aligned(sizeof(long)))); //include/linux/fs.</description>
     </item>
     
     <item>
@@ -126,10 +112,10 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E4%B8%8E%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD/</guid>
       <description>简单描述了x86 32位体系结构下Linux内核的用户进程和内核线程的线性地址空间和物理内存的联系，分析了高端内存的引入与缺页中断的具体处理流程。先介绍了用户态进程的执行流程，然后对比了内核线程，引入高端内存的概念，最后分析了缺页中断的流程。
- 用户进程 fork之后的用户态进程已经建立好了所需的数据结构，比如task struct，thread info，mm struct等，将编译链接好的可执行程序的地址区域与进程结构中内存区域做好映射，等开始执行的时候，访问并未经过映射的用户地址空间，会发生缺页中断，然后内核态的对应中断处理程序负责分配page，并将用户进程空间导致缺页的地址与page关联，然后检查是否有相同程序文件的buffer，因为可能其他进程执行同一个程序文件，已经将程序读到buffer里边了，如果没有，则将磁盘上的程序部分读到buffer，而buffer head通常是与分配的页面相关联的，所以实际上会读到对应页面代表的物理内存之中，返回到用户态导致缺页的地址继续执行，此时经过mmu的翻译，用户态地址成功映射到对应页面和物理地址，然后读取指令执行。在上述过程中，如果由于内存耗尽或者权限的问题，可能会返回-NOMEM或segment fault错误给用户态进程。
- 内核线程 没有独立的mm结构，所有内核线程共享一个内核地址空间与内核页表，由于为了方便系统调用等，在用户态进程规定了内核的地址空间是高1G的线性地址，而低3G线性地址空间供用户态使用。注意这部分是和用户态进程的线性地址是重合的，经过mmu的翻译，会转换到相同的物理地址，即前1G的物理地址（准确来讲后128M某些部分的物理地址可能会变化），内核线程访问内存也是要经过mmu的，所以借助用户态进程的页表，虽然内核有自己的内核页表，但不直接使用（为了减少用户态和内核态页表切换的消耗？），用户进程页表的高1G部分实际上是共享内核页表的映射的，访问高1G的线性地址时能访问到低1G的物理地址。而且，由于从用户进程角度看，内核地址空间只有3G－4G这一段（内核是无法直接访问0－3G的线性地址空间的，因为这一段是用户进程所有，一方面如果内核直接读写0－3G的线性地址可能会毁坏进程数据结构，另一方面，不同用户态进程线性地址空间实际映射到不同的物理内存地址，所以可能此刻内核线程借助这个用户态进程的页表成功映射到某个物理地址，但是到下一刻，借助下一个用户态进程的页表，相同的线性地址就可能映射到不同的物理内存地址了）。
- 高端内存 那么，如何让内核访问到大于1G的物理内存？由此引入高端内存的概念，基本思路就是将3G－4G这1G的内核线性地址空间（从用户进程的角度看，从内核线程的角度看是0－1G）取出一部分挪作他用，而不是固定映射，即重用部分内核线性地址空间，映射到1G之上的物理内存。所以，对于x86 32位体系上的Linux内核将3G－4G的线性地址空间分为0－896m和896m－1G的部分，前面部分使用固定映射，当内核使用进程页表访问3G－3G＋896m的线性地址时，不会发生缺页中断，但是当访问3G＋896m以上的线性地址时，可能由于内核页表被更新，而进程页表还未和内核页表同步，此时会发生内核地址空间的缺页中断，从而将内核页表同步到当前进程页表。注意，使用vmalloc分配内存的时候，可能已经设置好了内核页表，等到下一次借助进程页表访问内核空间地址发生缺页时才会触发内核页表和当前页表的同步。 Linux x86 32位下的线性地址空间与物理地址空间 (图片出自《understanding the linux virtual memory manager》)  缺页 page fault的处理过程如下：在用户空间上下文和内核上下文下都可能访问缺页的线性地址导致缺页中断，但有些情况没有实际意义。
- 如果缺页地址位于内核线性地址空间  如果在vmalloc区，则同步内核页表和用户进程页表，否则挂掉。注意此处未分具体上下文  如果发生在中断上下文或者!mm，则检查exception table，如果没有则挂掉。 如果缺页地址发生在用户进程线性地址空间  如果在内核上下文，则查exception table，如果没有，则挂掉。这种情况没多大实际意义 如果在用户进程上下文  查找vma，找到，先判断是否需要栈扩张，否则进入通常的处理流程 查找vma，未找到，bad area，通常返回segment fault      具体的缺页中断流程图及代码如下： (图片出自《understanding the linux virtual memory manager》) （Linux 3.19.3 arch/x86/mm/fault.c 1044） /* * This routine handles page faults. It determines the address, * and the problem, and then passes it off to one of the appropriate * routines.</description>
+  用户进程 fork之后的用户态进程已经建立好了所需的数据结构，比如task struct，thread info，mm struct等，将编译链接好的可执行程序的地址区域与进程结构中内存区域做好映射，等开始执行的时候，访问并未经过映射的用户地址空间，会发生缺页中断，然后内核态的对应中断处理程序负责分配page，并将用户进程空间导致缺页的地址与page关联，然后检查是否有相同程序文件的buffer，因为可能其他进程执行同一个程序文件，已经将程序读到buffer里边了，如果没有，则将磁盘上的程序部分读到buffer，而buffer head通常是与分配的页面相关联的，所以实际上会读到对应页面代表的物理内存之中，返回到用户态导致缺页的地址继续执行，此时经过mmu的翻译，用户态地址成功映射到对应页面和物理地址，然后读取指令执行。在上述过程中，如果由于内存耗尽或者权限的问题，可能会返回-NOMEM或segment fault错误给用户态进程。
+  内核线程 没有独立的mm结构，所有内核线程共享一个内核地址空间与内核页表，由于为了方便系统调用等，在用户态进程规定了内核的地址空间是高1G的线性地址，而低3G线性地址空间供用户态使用。注意这部分是和用户态进程的线性地址是重合的，经过mmu的翻译，会转换到相同的物理地址，即前1G的物理地址（准确来讲后128M某些部分的物理地址可能会变化），内核线程访问内存也是要经过mmu的，所以借助用户态进程的页表，虽然内核有自己的内核页表，但不直接使用（为了减少用户态和内核态页表切换的消耗？），用户进程页表的高1G部分实际上是共享内核页表的映射的，访问高1G的线性地址时能访问到低1G的物理地址。而且，由于从用户进程角度看，内核地址空间只有3G－4G这一段（内核是无法直接访问0－3G的线性地址空间的，因为这一段是用户进程所有，一方面如果内核直接读写0－3G的线性地址可能会毁坏进程数据结构，另一方面，不同用户态进程线性地址空间实际映射到不同的物理内存地址，所以可能此刻内核线程借助这个用户态进程的页表成功映射到某个物理地址，但是到下一刻，借助下一个用户态进程的页表，相同的线性地址就可能映射到不同的物理内存地址了）。
+  高端内存 那么，如何让内核访问到大于1G的物理内存？由此引入高端内存的概念，基本思路就是将3G－4G这1G的内核线性地址空间（从用户进程的角度看，从内核线程的角度看是0－1G）取出一部分挪作他用，而不是固定映射，即重用部分内核线性地址空间，映射到1G之上的物理内存。所以，对于x86 32位体系上的Linux内核将3G－4G的线性地址空间分为0－896m和896m－1G的部分，前面部分使用固定映射，当内核使用进程页表访问3G－3G＋896m的线性地址时，不会发生缺页中断，但是当访问3G＋896m以上的线性地址时，可能由于内核页表被更新，而进程页表还未和内核页表同步，此时会发生内核地址空间的缺页中断，从而将内核页表同步到当前进程页表。注意，使用vmalloc分配内存的时候，可能已经设置好了内核页表，等到下一次借助进程页表访问内核空间地址发生缺页时才会触发内核页表和当前页表的同步。 Linux x86 32位下的线性地址空间与物理地址空间 (图片出自《understanding the linux virtual memory manager》)   缺页 page fault的处理过程如下：在用户空间上下文和内核上下文下都可能访问缺页的线性地址导致缺页中断，但有些情况没有实际意义。
+ 如果缺页地址位于内核线性地址空间  如果在vmalloc区，则同步内核页表和用户进程页表，否则挂掉。注意此处未分具体上下文   如果发生在中断上下文或者!mm，则检查exception table，如果没有则挂掉。 如果缺页地址发生在用户进程线性地址空间  如果在内核上下文，则查exception table，如果没有，则挂掉。这种情况没多大实际意义 如果在用户进程上下文  查找vma，找到，先判断是否需要栈扩张，否则进入通常的处理流程 查找vma，未找到，bad area，通常返回segment fault      具体的缺页中断流程图及代码如下： (图片出自《understanding the linux virtual memory manager》)   （Linux 3.19.3 arch/x86/mm/fault.c 1044） /* * This routine handles page faults.</description>
     </item>
     
     <item>
@@ -139,21 +125,19 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91%E4%B8%8E%E5%90%AF%E5%8A%A8%E6%B5%81%E7%A8%8B/</guid>
       <description>编译流程  1.编译除arch/x86/boot目录外的其他目录，生成各模块的built_in.o，将静态编译进内核的模块链接成ELF格式的文件vmlinux大约100M，置于源码根目录之下 2.通过objcopy将源码根目录下的vmlinux去掉符号等信息置于arch/x86/boot/compressed/vmlinux.bin，大约15M，将其压缩为boot/vmlinux.bin.gz(假设配置的压缩工具是gzip)。 3.使用生成的compressed/mkpiggy为compressed/vmlinux.bin.gz添加解压缩程序头，生成compressed/piggy.S，进而生成compressed/piggy.o。 4.将compressed/head_64.o，compressed/misc.o，compressed/piggy.o链接为compressed/vmlinux。 5.回到boot目录，用objcopy为compressed/vmlinux去掉符号等信息生成boot/vmlinux.bin。 6.将boot/setup.bin与boot/vmlinux.bin链接，生成bzImage。 7.将各个设置为动态编译的模块链接为内核模块kmo。 8.over，maybe copy bzImage to /boot and kmods to /lib.  下面是内核镜像的组成:
-启动流程 早期版本的linux内核，如0.1，是通过自带的bootsect.S/setup.S引导，现在需要通过bootloader如grub/lilo来引导。grub的作用大致如下:
+ 启动流程 早期版本的linux内核，如0.1，是通过自带的bootsect.S/setup.S引导，现在需要通过bootloader如grub/lilo来引导。grub的作用大致如下:
  1.grub安装时将stage1 512字节和所在分区文件系统类型对应的stage1.5文件分别写入mbr和之后的扇区。 2.bios通过中断加载mbr的512个字节的扇区到0x7c00地址，跳转到0x07c0:0x0000执行。 3.通过bios中断加载/boot/grub下的stage2，读取/boot/grub/menu.lst配置文件生成启动引导菜单。 4.加载/boot/vmlinuz-xxx-xx与/boot/inird-xxx，将控制权交给内核。  下面是较为详细的步骤:
- 1.BIOS加载硬盘第一个扇区(MBR 512字节)到0000:07C00处，MBR包含引导代码(446字节，比如grub第一阶段的引导代码)，分区表(64字节)信息，结束标志0xAA55(2字节)
- 2.MBR开始执行加载活跃分区，grub第一阶段代码加载1.5阶段的文件系统相关的代码(通过bios中断读活跃分区的扇区)
- 3.有了grub1.5阶段的文件系统相关的模块，接下来读取位于文件系统的grub第2阶段的代码，并执行
- 4.grub第2阶段的代码读取/boot/grub.cfg文件，生成引导菜单
- 5.加载对应的压缩内核vmlinuz和initrd（到哪个地址？）
- 6.实模式下执行vmlinuz头setup部分(bootsect和setup)[head.S[calll main],main.c[go_to_protected_mode]] ==&amp;gt; 准备进入32位保护模式
- 7.跳转到过渡的32位保护模式执行compressed/head_64.S[startup_32,startup_64] ==&amp;gt; 进入临时的32位保护模式
- 8.解压缩剩余的vmlinuz，设置页表等，设置64位环境，跳转到解压地址执行 ==&amp;gt; 进入64位
- 9.arch/x86/kernel/head_64.S[startup_64]
- 10.arch/x86/kernel/head64.c[x86_64_start_up]
- 11.init/main.c[start_kernel]
- 12.然后后面的事情就比较好知道了:)
-   ref: Linux source code 3.</description>
+  1.BIOS加载硬盘第一个扇区(MBR 512字节)到0000:07C00处，MBR包含引导代码(446字节，比如grub第一阶段的引导代码)，分区表(64字节)信息，结束标志0xAA55(2字节)
+  2.MBR开始执行加载活跃分区，grub第一阶段代码加载1.5阶段的文件系统相关的代码(通过bios中断读活跃分区的扇区)
+  3.有了grub1.5阶段的文件系统相关的模块，接下来读取位于文件系统的grub第2阶段的代码，并执行
+  4.grub第2阶段的代码读取/boot/grub.cfg文件，生成引导菜单
+  5.加载对应的压缩内核vmlinuz和initrd（到哪个地址？）
+  6.实模式下执行vmlinuz头setup部分(bootsect和setup)[head.S[calll main],main.c[go_to_protected_mode]] ==&amp;gt; 准备进入32位保护模式
+  7.跳转到过渡的32位保护模式执行compressed/head_64.S[startup_32,startup_64] ==&amp;gt; 进入临时的32位保护模式
+  8.解压缩剩余的vmlinuz，设置页表等，设置64位环境，跳转到解压地址执行 ==&amp;gt; 进入64位
+  9.arch/x86/kernel/head_64.S[startup_64]
+  10.arch/x86/kernel/head64.c[x86_64_start_up]
+  11.</description>
     </item>
     
     <item>
@@ -163,19 +147,18 @@ start_kernel -&amp;gt; rest_init -&amp;gt; kernel_init内核线程 -&amp;gt; ker
       
       <guid>https://feilengcui008.github.io/post/linux%E4%B8%8Bx86_64%E8%BF%9B%E7%A8%8B%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80/</guid>
       <description>关于Linux 32位内存下的内存空间布局，可以参考这篇博文Linux下C程序进程地址空间局关于源代码中各种数据类型/代码在elf格式文件以及进程空间中所处的段，在x86_64下和i386下是类似的，本文主要关注vm.legacy_va_layout以及kernel.randomize_va_space参数影响下的进程空间内存宏观布局，以及vDSO和多线程下的堆和栈分布。
-情形一：  vm_legacy_va_layout=1
- kernel.randomize_va_space=0  此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局
+ 情形一：  vm_legacy_va_layout=1 kernel.randomize_va_space=0  此种情况下采用传统内存布局方式，不开启随机化，程序的内存布局
 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向上增长 2aaaaaaab000&amp;ndash;&amp;gt; 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000 你可以试一下其他程序，在kernel.randomize_va_space=0时堆起点是不变的
-情形二：  vm_legacy_va_layout=0
- kernel.randomize_va_space=0  现在默认内存布局，不随机化
+ 情形二：  vm_legacy_va_layout=0 kernel.randomize_va_space=0  现在默认内存布局，不随机化
 可以看出: 代码段：0x400000&amp;ndash;&amp;gt; 数据段 堆：向下增长 &amp;lt;&amp;ndash;7ffff7fff000 栈：7ffffffde000&amp;lt;&amp;ndash;7ffffffff000 系统调用：ffffffffff600000-ffffffffff601000
-情形三：  vm_legacy_va_layout=0
- kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化  对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。
-情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述  vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。 &amp;gt; 如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题： &amp;gt; getpid，gettimeofday是不是系统调用？
-其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。
+ 情形三：  vm_legacy_va_layout=0 kernel.randomize_va_space=2 //ubuntu 14.04默认值 使用现在默认布局，随机化  对比两次启动的cat程序，其内存布局堆的起点是变化的，这从一定程度上防止了缓冲区溢出攻击。
+ 情形四：  vm_legacy_va_layout=1 kernel.randomize_va_space=2 //ubuntu 14.04默认值 与情形三类似，不再赘述   vDSO 在前面谈了两个不同参数下的进程运行时内存空间宏观的分布。也许你会注意到这样一个细节，在每个进程的stack以上的地址中，有一段动态变化的映射地址段，比如下面这个进程，映射到vdso。
+  如果我们用ldd看相应的程序，会发现vdso在磁盘上没有对应的so文件。 不记得曾经在哪里看到大概这样一个问题：
+ getpid，gettimeofday是不是系统调用？
+ 其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。
 vDSO全称是virtual dynamic shared object，是一种内核将一些本身应该是系统调用的直接映射到用户空间，这样对于一些使用比较频繁的系统调用，直接在用户空间调用可以节省开销。如果想详细了解，可以参考这篇文档
 下面我们用一段程序验证下：
-#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.h&amp;gt; #include &amp;lt;unistd.</description>
+#include &amp;lt;stdio.h&amp;gt; #include &amp;lt;sys/time.h&amp;gt; #include &amp;lt;sys/syscall.</description>
     </item>
     
     <item>
@@ -185,10 +168,10 @@ vDSO全称是virtual dynamic shared object，是一种内核将一些本身应�
       
       <guid>https://feilengcui008.github.io/post/linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E5%B0%8F%E7%BB%93/</guid>
       <description>网络编程是一个很大也很有趣的话题，要写好一个高性能并且bug少的服务端或者客户端程序还是挺不容易的，而且往往涉及到进程线程管理、内存管理、协议栈、并发等许多相关的知识，而不仅仅只是会使用socket那么简单。
-网络编程模型  阻塞和非阻塞 阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。
- 同步/异步 同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的std::async/std::future等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。
- IO复用 IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。
-  常见网络库采用的模型(只看epoll)：  nginx：master进程+多个worker进程，one eventloop per process memcached：主线程+多个worker线程，one eventloop per thread tornado：单线程，one eventloop per thread muduo：网络库，one eventloop per thread libevent、libev、boost.asio：网络库，跨平台eventloop封装 &amp;hellip;  排除掉传统的单线程、多进程、多线程等模型，最常用的高性能网络编程模型是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。
+ 网络编程模型   阻塞和非阻塞 阻塞和非阻塞通常是指文件描述符本身的属性。对于默认阻塞的socket来说，当socket读缓冲区中没有数据或者写缓冲区满时，都会造成read/recv或者write/send系统调用阻塞，而非阻塞socket在这种情况下会产生EWOULDBLOCK或者EAGAIN等错误并立即返回，不会等待socket变得可读或者可写。在Linux下我们可以通过accept4/fcntl系统调用设置socket为非阻塞。
+  同步/异步 同步和异步可以分两层理解。一个是底层OS提供的IO基础设施的同步和异步，另一个是编程方式上的同步和异步。同步IO和异步IO更多地是怎么处理读写问题的一种手段。通常这也对应着两种高性能网络编程模式reactor和proactor。同步通常是事件发生时主动读写数据，直到显示地返回读写状态标志；而异步通常是我们交给操作系统帮我们读写，只需要注册读写完成的回调函数，提交读写的请求后，控制权就返回到进程。对于编程方式上的异步，典型的比如事件循环的回调、C++11的std::async/std::future等等，更多的是通过回调或者线程的方式组织异步的代码逻辑。
+  IO复用 IO复用通常是用select/poll/epoll等来统一代理多个socket的事件的发生。select是一种比较通用的多路复用技术，poll是Linux平台下对select做的改进，而epoll是目前Linux下最常用的多路复用技术。
+   常见网络库采用的模型(只看epoll)：  nginx：master进程+多个worker进程，one eventloop per process memcached：主线程+多个worker线程，one eventloop per thread tornado：单线程，one eventloop per thread muduo：网络库，one eventloop per thread libevent、libev、boost.asio：网络库，跨平台eventloop封装 &amp;hellip;  排除掉传统的单线程、多进程、多线程等模型，最常用的高性能网络编程模型是one eventloop per thread与多线程的组合。另外，为了处理耗时的任务再加上线程池，为了更好的内存管理再加上对象池。
 应用层之外 前面的模型多是针对应用层的C10K类问题的解决方案，在更高并发要求的环境下就需要在内核态下做手脚了，比如使用零拷贝等技术，直接越过内核协议栈，实现高速数据包的传递，相应的内核模块也早有实现。主要的技术点在于：
  数据平面与控制平面分离，减少不必要的系统调用 用户态驱动uio/vfio等减少内存拷贝 使用内存池减少内存分配 通过CPU亲和性提高缓存命中率 网卡多队列与poll模式充分利用多核 batch syscall 用户态协议栈 &amp;hellip;  相应的技术方案大多数是围绕这些点来做优化结合的。比如OSDI &amp;lsquo;14上的Arrakis、IX，再早的有pfring、netmap、intel DPDK、mTCP等等。</description>
     </item>

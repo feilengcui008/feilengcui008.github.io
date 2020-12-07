@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Paxos on 靠谱</title>
@@ -6,11 +6,7 @@
     <description>Recent content in Paxos on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 08 Mar 2016 19:05:46 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/tags/paxos/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Tue, 08 Mar 2016 19:05:46 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/tags/paxos/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>分布式一致性协议(一)</title>
       <link>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/</link>
@@ -18,10 +14,10 @@
       
       <guid>https://feilengcui008.github.io/post/%E5%88%86%E5%B8%83%E5%BC%8F%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE-%E4%B8%80/</guid>
       <description>这一篇文章主要介绍一下分布式共识、分布式容错一致性协议的背景以及Paxos算法。
-1. 分布式系统基本概念  分布式系统的基本特点
- 部分故障  容错  没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致  通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等   系统模型
- 同步和异步  同步 异步(执行时间和消息传递时间没有上限)  网络模型  可靠 消息丢失，重复传递，消息乱序  故障模型  crash-failure fault byzantine fault   一致性
- data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)  client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)  其他   2.</description>
+ 1. 分布式系统基本概念   分布式系统的基本特点
+ 部分故障  容错   没有全局时钟  事件定序 : 原子时钟，Lamport Clock，Vector Clock等 副本一致性问题 : 通常为了保证容错，需要使用多个副本，副本之间的复制需要保证强一致   通信延时影响性能和扩展性  保证系统正确性下较少消息传递，减少共享状态，使用缓存等等      系统模型
+ 同步和异步  同步 异步(执行时间和消息传递时间没有上限)   网络模型  可靠 消息丢失，重复传递，消息乱序   故障模型  crash-failure fault byzantine fault      一致性
+ data-central  严格一致性(strict consistency) 线性一致性(linear consistency) 顺序一致性(sequential consistency) 因果一致性(casual consistency) 弱一致性(weak consistency) 最终一致性(eventual consistency)   client-central  单调读一致性(Monotonic Reads Consistency) 单调写一致性(Monotonic Writes Consistency) 读写一致性(Read Your Writes Consistency) 写读一致性(Write Follows Read Consistency)   其他     2.</description>
     </item>
     
   </channel>

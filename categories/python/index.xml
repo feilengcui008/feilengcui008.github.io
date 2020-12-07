@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Python on 靠谱</title>
@@ -6,11 +6,7 @@
     <description>Recent content in Python on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 16 Oct 2016 17:46:43 +0800</lastBuildDate>
-    
-	<atom:link href="https://feilengcui008.github.io/categories/python/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Sun, 16 Oct 2016 17:46:43 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/python/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Python退出时hang住的问题</title>
       <link>https://feilengcui008.github.io/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/</link>
@@ -18,7 +14,7 @@
       
       <guid>https://feilengcui008.github.io/post/python%E9%80%80%E5%87%BA%E6%97%B6hang%E4%BD%8F%E7%9A%84%E9%97%AE%E9%A2%98/</guid>
       <description>最近使用Python遇到两个非常不好定位的问题，表现都是Python主线程退出时hang住。最终定位出一个是subprocess模块使用不当的问题，另一个是threading.Timer线程的问题。
-subprocess模块使用不当的问题 Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。
+ subprocess模块使用不当的问题 Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。
 # main.py #!/usr/bin/env python # encoding: utf-8 import subprocess import os import tempfile import sys import traceback import commands # both parent and child process will hang # if run.py stdout/stderr exceed 64K, since # parent process is waiting child process exit # but child process is blocked by writing pipe def testSubprocessCallPipe(): # call: just Popen().wait() p = subprocess.Popen([&amp;quot;python&amp;quot;, &amp;quot;run.py&amp;quot;], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE) ret = p.</description>
     </item>
     

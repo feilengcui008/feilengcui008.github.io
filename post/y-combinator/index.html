@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.50-DEV" />
+<meta name="generator" content="Hugo 0.79.0" />
 <title>Y Combinator</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -77,7 +77,6 @@
 
   <div class="article-content">
     <p>由于匿名函数(通常成为lambda函数但是跟lambda calculus不同)在递归时无法获得函数名，从而导致一些问题，而Y Combinator能很好地解决这个问题。利用不动点的原理，可以利用一般的函数来辅助得到匿名函数的递归形式，从而间接调用无法表达的真正的匿名函数。下面以一个阶乘的递归来说明。</p>
-
 <pre><code>#Python版本，后面会加上C++版本
 #F(f) = f
 def F(f,n):
@@ -92,10 +91,7 @@ def Y(F):
 a = Y(F)
 # 6
 print a(3)
-</code></pre>
-
-<p>一些解释：</p>
-
+</code></pre><p>一些解释：</p>
 <ul>
 <li>F是伪递归函数，将真正的我们假设的匿名函数作为参数，有性质
 F(f)=f.</li>
@@ -103,9 +99,7 @@ F(f)=f.</li>
 使得Y(F) = f</li>
 <li>所以有Y(F) = f = F(f) = F(Y(F)) （最终的目标是要用YF的组合表示f），所以很容易就得到了Y(F)的函数表达式为F(Y(F))，而Y不是匿名函数，所以能自身调用(其实感觉这东西没想象中那么玄乎～)，上面的代码也就比较好理解了。我们假设的函数只有一个额外参数n，这完全可以自己添加其他参数，只需稍微修改Y中F的调用。</li>
 </ul>
-
 <p>最后附上一段C++的实现代码：</p>
-
 <pre><code>//需要C++11支持
 #include &lt;iostream&gt;
 #include &lt;functional&gt;
@@ -135,7 +129,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 </code></pre>
-
   </div>
 </article>
 
