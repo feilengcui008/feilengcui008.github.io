@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux内核内存访问与缺页中断</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -122,7 +122,7 @@ page fault的处理过程如下：在用户空间上下文和内核上下文下�
 <img src="http://img.blog.csdn.net/20151016181719231" alt="这里写图片描述"></p>
 </li>
 </ul>
-<pre><code>（Linux 3.19.3 arch/x86/mm/fault.c 1044）
+<pre tabindex="0"><code>（Linux 3.19.3 arch/x86/mm/fault.c 1044）
 /*
  * This routine handles page faults.  It determines the address,
  * and the problem, and then passes it off to one of the appropriate

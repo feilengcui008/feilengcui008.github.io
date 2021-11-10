@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Go的context包实现分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -100,7 +100,7 @@
 <ul>
 <li>Context接口</li>
 </ul>
-<pre><code>type Context interface {
+<pre tabindex="0"><code>type Context interface {
   // 只用于timerCtx，即WithDeadline和WithTimeout
   Deadline() (deadline time.Time, ok bool)
   // 需要获取通知的goroutine可以select此chan，当此ctx被cancel时，会close此chan
@@ -114,7 +114,7 @@
 </code></pre><ul>
 <li>几种主要Context的实现</li>
 </ul>
-<pre><code>// cancelCtx
+<pre tabindex="0"><code>// cancelCtx
 type cancelCtx struct {
   Context
   mu       sync.Mutex            
@@ -164,7 +164,7 @@ func (c *cancelCtx) cancel(removeFromParent bool, err error) {
 </code></pre><ul>
 <li>外部接口</li>
 </ul>
-<pre><code>// Background
+<pre tabindex="0"><code>// Background
 func Background() Context {
   // 直接返回默认的顶层ctx
   return background
@@ -217,7 +217,7 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
 
 </code></pre><hr>
 <h2 id="3-简单例子">3. 简单例子</h2>
-<pre><code>package main
+<pre tabindex="0"><code>package main
 
 import (
   &quot;context&quot;

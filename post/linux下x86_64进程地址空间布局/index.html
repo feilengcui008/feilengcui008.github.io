@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux下x86_64进程地址空间布局</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -139,7 +139,7 @@
 <p>其实这个问题的答案就和vDSO有关，杂x86_64和i386上，getpid是系统调用，而gettimeofday不是。</p>
 <p>vDSO全称是virtual dynamic shared object，是一种内核将一些本身应该是系统调用的直接映射到用户空间，这样对于一些使用比较频繁的系统调用，直接在用户空间调用可以节省开销。如果想详细了解，可以参考<a href="http://man7.org/linux/man-pages/man7/vdso.7.html">这篇文档</a></p>
 <p>下面我们用一段程序验证下：</p>
-<pre><code>#include &lt;stdio.h&gt;
+<pre tabindex="0"><code>#include &lt;stdio.h&gt;
 #include &lt;sys/time.h&gt;
 #include &lt;sys/syscall.h&gt;
 #include &lt;unistd.h&gt;
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
     return 0;
 }
 </code></pre><p>编译为可执行文件后，我们可以用strace来验证：</p>
-<pre><code>strace -o temp ./vdso
+<pre tabindex="0"><code>strace -o temp ./vdso
 grep getpid temp
 grep gettimeofday temp
 </code></pre><hr>
@@ -183,7 +183,7 @@ grep gettimeofday temp
 <ul>
 <li>测试代码１：</li>
 </ul>
-<pre><code>#include &lt;pthread.h&gt;
+<pre tabindex="0"><code>#include &lt;pthread.h&gt;
 #include &lt;unistd.h&gt;
 #include &lt;stdio.h&gt;
 
@@ -232,7 +232,7 @@ int main(int argc, char *argv[])
 </code></pre><ul>
 <li>测试代码2：打印内核栈地址</li>
 </ul>
-<pre><code>#include &lt;linux/module.h&gt;
+<pre tabindex="0"><code>#include &lt;linux/module.h&gt;
 #include &lt;linux/errno.h&gt;
 #include &lt;linux/sched.h&gt;
 #include &lt;asm/thread_info.h&gt;

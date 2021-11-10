@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux内核栈与thread_info</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -88,7 +88,7 @@
 </ul>
 <p><img src="/images/kernel_stack.jpg" alt="kernel_stack"></p>
 <p>内核引入thread_info的一大原因是方便通过它直接找到进(线)程的task_struct指针，x86 平台的thread_info结构体定义在arch/x86/include/asm/thread_info.h。</p>
-<pre><code>// Linux 3.19.3 x86平台的thread_info
+<pre tabindex="0"><code>// Linux 3.19.3 x86平台的thread_info
 struct thread_info {
 	struct task_struct	*task;		/* main task structure */
 	struct exec_domain	*exec_domain;	/* execution domain */
@@ -110,7 +110,7 @@ struct thread_info {
 <li>内核栈的起始地址即是thread_info的起始地址，所以通过thread_info-&gt;task即可获得task_struct指针</li>
 <li>在每次上下文切换时，更新kernel_stack percpu变量</li>
 </ul>
-<pre><code>// 以Linux 3.19.3 x86的源码为例
+<pre tabindex="0"><code>// 以Linux 3.19.3 x86的源码为例
 // 注意，arch/xxx/include/asm/...下的头文件是对应
 // include/asm-generic/...下的平台相关实现，若arch
 // 目录下没有相同的头文件，则使用asm-generic目录下
@@ -145,7 +145,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 } 
 
 </code></pre><p>但是Linux内核引入percpu变量之后，逐渐通过percpu变量来实现current宏，并且从Linux 4.1开始，x86移除了kernel_stack，并逐渐开始简化thread_info结构体，直到Linux 4.9彻底不再通过thread_info获取task_struct指针，而是直接通过current_struct percpu变量存放task_struct的指针，具体可参见<a href="https://github.com/torvalds/linux/commit/15f4eae70d365bba26854c90b6002aaabb18c8aa">此commit</a></p>
-<pre><code>// 以Linux 3.19.3 x86的源码为例
+<pre tabindex="0"><code>// 以Linux 3.19.3 x86的源码为例
 
 // arch/x86/include/asm/current.h
 DECLARE_PER_CPU(struct task_struct *, current_task);

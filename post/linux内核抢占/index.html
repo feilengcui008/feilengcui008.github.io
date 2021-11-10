@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux内核抢占</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -104,7 +104,7 @@
 <ul>
 <li>percpu变量__preempt_count</li>
 </ul>
-<pre><code>抢占计数8位, PREEMPT_MASK                     =&gt; 0x000000ff
+<pre tabindex="0"><code>抢占计数8位, PREEMPT_MASK                     =&gt; 0x000000ff
 软中断计数8位, SOFTIRQ_MASK                   =&gt; 0x0000ff00
 硬中断计数4位, HARDIRQ_MASK                   =&gt; 0x000f0000
 不可屏蔽中断1位, NMI_MASK                     =&gt; 0x00100000
@@ -126,7 +126,7 @@ PREEMPTIVE_ACTIVE(标识内核抢占触发的schedule)  =&gt; 0x00200000
 </ul>
 </li>
 </ul>
-<pre><code>// kernel/sched/core.c
+<pre tabindex="0"><code>// kernel/sched/core.c
 // 设置thread_info flags和__preempt_count的need_resched标识
 void resched_curr(struct rq *rq)
 {
@@ -209,7 +209,7 @@ need_resched:
 </code></pre><ul>
 <li>__preempt_count的相关操作</li>
 </ul>
-<pre><code>
+<pre tabindex="0"><code>
 /////// need_resched标识相关 ///////
 
 // PREEMPT_NEED_RESCHED位如果是0表示需要调度
@@ -344,7 +344,7 @@ static __always_inline bool need_resched(void)
 </ul>
 </li>
 </ul>
-<pre><code>// 系统调用的处理逻辑 
+<pre tabindex="0"><code>// 系统调用的处理逻辑 
 
 ENTRY(system_call)
   /* ... 省略 ... */
@@ -478,7 +478,7 @@ int_restore_rest:
   CFI_ENDPROC
 END(system_call)
 
-</code></pre><pre><code>// 中断入口基本流程
+</code></pre><pre tabindex="0"><code>// 中断入口基本流程
 
 // 调用do_IRQ的函数wrapper
   .macro interrupt func

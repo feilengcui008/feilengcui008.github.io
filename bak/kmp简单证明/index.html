@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>KMP简单证明</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -85,7 +85,7 @@
     <p>在简单证明KMP之前，先分析一下朴素算法以及一种模式串没有相同字符的特殊情况下的变形，方便一步一步导入KMP算法的思路中。</p>
 <h4 id="朴素算法">朴素算法</h4>
 <p>朴素算法比较明了，不再赘述，下面是简单的代码：</p>
-<pre><code>  // time : O(n*m), space : O(1)
+<pre tabindex="0"><code>  // time : O(n*m), space : O(1)
   int naive(const std::string &amp;text, const std::string &amp;pattern)
   {
     // corner case 
@@ -110,7 +110,7 @@
 <h4 id="模式串不含有相同字符">模式串不含有相同字符</h4>
 <p>这种情况下，当模式串的一个位置不匹配的时候，我们可以优化朴素算法直接跳过前面模式串已经匹配的长度，实际上这种思路和
 KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
-<pre><code>  // if pattern has different chars 
+<pre tabindex="0"><code>  // if pattern has different chars 
   // we can optimize it to O(n)
   // proof:
   // assume match break in index j of pattern length m
@@ -180,7 +180,7 @@ KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
 <p>最后附上kmp代码</p>
 </li>
 </ul>
-<pre><code>  // longest common prefix and suffix of
+<pre tabindex="0"><code>  // longest common prefix and suffix of
   // substr of pattern[0, i] 
   // use dyamic programming 
   // time : O(m), space : O(m)

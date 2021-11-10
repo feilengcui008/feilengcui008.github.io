@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux下的时间</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -87,7 +87,7 @@
 <li>读取方式
 <ul>
 <li>通过ioctl
-<pre><code>#include &lt;linux/rtc.h&gt;
+<pre tabindex="0"><code>#include &lt;linux/rtc.h&gt;
 int ioctl(fd, RTC_request, param);
 </code></pre></li>
 <li>hwclock命令</li>
@@ -133,7 +133,7 @@ int ioctl(fd, RTC_request, param);
 </li>
 <li>
 <p>拆分时间 struct tm</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">tm</span> {
   <span style="color:#66d9ef">int</span> tm_sec;         <span style="color:#75715e">/* seconds */</span>
   <span style="color:#66d9ef">int</span> tm_min;         <span style="color:#75715e">/* minutes */</span>
   <span style="color:#66d9ef">int</span> tm_hour;        <span style="color:#75715e">/* hours */</span>
@@ -149,7 +149,7 @@ int ioctl(fd, RTC_request, param);
 <p>struct timeval/struct timespec</p>
 </li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> {
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> {
   time_t seconds;
   suseconds_t useconds;
 }
@@ -162,7 +162,7 @@ int ioctl(fd, RTC_request, param);
 </ul>
 <hr>
 <h3 id="系统时间的操作">系统时间的操作</h3>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;time.h&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/time.h&gt;</span><span style="color:#75715e">
 </span><span style="color:#75715e"></span>
 <span style="color:#75715e">// number of seconds since epoch
@@ -198,32 +198,32 @@ time_t <span style="color:#a6e22e">mktime</span>(<span style="color:#66d9ef">str
 <ul>
 <li>sleep</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sleep</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">sleep</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
 </code></pre></div><ul>
 <li>usleep</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">usleep</span>(useconds_t usec);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">usleep</span>(useconds_t usec);
 </code></pre></div><ul>
 <li>nanosleep</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">nanosleep</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>req, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>rem);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">nanosleep</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>req, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timespec</span> <span style="color:#f92672">*</span>rem);
 </code></pre></div><ul>
 <li>alarm</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// SIGALARM after seconds
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// SIGALARM after seconds
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">alarm</span>(<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">int</span> seconds);
 </code></pre></div><ul>
 <li>timer_create</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_create</span>(clockid_t clockid, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">sigevent</span> <span style="color:#f92672">*</span>sevp, timer_t <span style="color:#f92672">*</span>timerid);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timer_create</span>(clockid_t clockid, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">sigevent</span> <span style="color:#f92672">*</span>sevp, timer_t <span style="color:#f92672">*</span>timerid);
 </code></pre></div><ul>
 <li>setitimer and timerfd_create ＋ select/poll/epoll</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_create</span>(<span style="color:#66d9ef">int</span> clockid, <span style="color:#66d9ef">int</span> flags);
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">timerfd_create</span>(<span style="color:#66d9ef">int</span> clockid, <span style="color:#66d9ef">int</span> flags);
 </code></pre></div><ul>
 <li>select</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// struct timeval可以精确到微秒(如果硬件有高精度时钟支持)
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">select</span>(<span style="color:#66d9ef">int</span> nfds, fd_set <span style="color:#f92672">*</span>readfds, fd_set <span style="color:#f92672">*</span>writefds,
                   fd_set <span style="color:#f92672">*</span>exceptfds, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">timeval</span> <span style="color:#f92672">*</span>timeout);
 <span style="color:#75715e">// struct timespec可以精确到纳秒，但是pselect下次无法修改timeout 
@@ -239,7 +239,7 @@ time_t <span style="color:#a6e22e">mktime</span>(<span style="color:#66d9ef">str
 </code></pre></div><ul>
 <li>poll</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">poll</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">pollfd</span> <span style="color:#f92672">*</span>fds, nfds_t nfds, <span style="color:#66d9ef">int</span> timeout);
 <span style="color:#75715e">// 注意timespec会被转换成ms
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">ppoll</span>(<span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">pollfd</span> <span style="color:#f92672">*</span>fds, nfds_t nfds,
@@ -247,7 +247,7 @@ time_t <span style="color:#a6e22e">mktime</span>(<span style="color:#66d9ef">str
 </code></pre></div><ul>
 <li>epoll</li>
 </ul>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-C++" data-lang="C++"><span style="color:#75715e">// timeout最小单位ms，并且rounded up to系统时钟的精度
 </span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_wait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>events,
                       <span style="color:#66d9ef">int</span> maxevents, <span style="color:#66d9ef">int</span> timeout);
 <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">epoll_pwait</span>(<span style="color:#66d9ef">int</span> epfd, <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">epoll_event</span> <span style="color:#f92672">*</span>events,
