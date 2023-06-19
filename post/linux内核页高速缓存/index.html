@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="author" content="不一样的天空">
+<meta name="generator" content="Hugo 0.79.0" />
 <title>Linux内核页高速缓存</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -86,7 +86,7 @@
 <li>address_space结构通常被struct page的一个字段指向，主要存放已缓存页面的相关信息，便于快速查找对应文件的缓存页面，具体查找过程是通过radix tree结构的相关操作实现的。</li>
 <li>address_space_operations结构定义了具体读写页面等操作的钩子，比如生成并发送bio请求，我们可以定制相应的函数实现自己的读写逻辑。</li>
 </ul>
-<pre tabindex="0"><code>//include/linux/fs.h
+<pre><code>//include/linux/fs.h
 struct address_space {
     //指向文件的inode，可能为NULL
   struct inode    *host;  
@@ -109,7 +109,7 @@ struct address_space {
   struct list_head  private_list; 
   void      *private_data;
 } __attribute__((aligned(sizeof(long))));
-</code></pre><pre tabindex="0"><code>//include/linux/fs.h 
+</code></pre><pre><code>//include/linux/fs.h 
 struct address_space_operations {
     //具体写页面的操作
   int (*writepage)(struct page *page, struct writeback_control *wbc);
@@ -143,7 +143,7 @@ struct address_space_operations {
 <ul>
 <li>定义系统调用read</li>
 </ul>
-<pre tabindex="0"><code>//定义系统调用read
+<pre><code>//定义系统调用read
 //fs/read_write.c
 SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 {
@@ -166,7 +166,7 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 </code></pre><ul>
 <li>进入__vfs_read</li>
 </ul>
-<pre tabindex="0"><code>//fs/read_write.c
+<pre><code>//fs/read_write.c
 ssize_t __vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
   ssize_t ret;
@@ -187,7 +187,7 @@ ssize_t __vfs_read(struct file *file, char __user *buf, size_t count, loff_t *po
 </code></pre><ul>
 <li>以ext2为例，进入ext2的file_operations-&gt;read</li>
 </ul>
-<pre tabindex="0"><code>//fs/ext2/file.c
+<pre><code>//fs/ext2/file.c
 const struct file_operations ext2_file_operations = {
   .llseek   = generic_file_llseek,
   .read   = new_sync_read,  //重定向到read_iter此处即generic_file_read_iter
@@ -208,7 +208,7 @@ const struct file_operations ext2_file_operations = {
 </code></pre><ul>
 <li>进入generic_file_read_iter</li>
 </ul>
-<pre tabindex="0"><code>ssize_t
+<pre><code>ssize_t
 generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
 {
   struct file *file = iocb-&gt;ki_filp;
@@ -262,7 +262,7 @@ EXPORT_SYMBOL(generic_file_read_iter);
 <li>进入do_generic_file_read
 这个函数基本是整个页高速缓存的核心了，在具体的bio操作请求操作之前判断是否存在缓存页面，如果存在拷贝数据到用户空间，否则分配新页面，调用具体文件系统address_space_operations-&gt;readpage读取块数据到页面中，并且加入到radix tree中。</li>
 </ul>
-<pre tabindex="0"><code>static ssize_t do_generic_file_read(struct file *filp, loff_t *ppos,struct iov_iter *iter, ssize_t written)
+<pre><code>static ssize_t do_generic_file_read(struct file *filp, loff_t *ppos,struct iov_iter *iter, ssize_t written)
 {
     /* 省略部分 */
   for (;;) {

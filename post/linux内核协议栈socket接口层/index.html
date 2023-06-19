@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="author" content="不一样的天空">
+<meta name="generator" content="Hugo 0.79.0" />
 <title>Linux内核协议栈socket接口层</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -89,7 +89,7 @@ BSD socket system calls A =&gt; proto_ops-&gt;A  =&gt; sock-&gt;A =&gt; tcp_prot
 <li>由于对于每个family的不同类型，其针对socket的某些需求可能不同，所以抽了一层struct sock出来，sock-&gt;sk_prot挂接到具体tcp/udp等传输层的struct proto上(具体定义在ipv4/tcp_ipv4.c,ipv4/udp.c)</li>
 <li>另外，由于内容比较多，这一篇主要分析socket，bind，listen，accept几个系统调用，下一篇会涉及connect，send，recv等的分析</li>
 </ul>
-<pre tabindex="0"><code>//不同协议族的通用函数hooks
+<pre><code>//不同协议族的通用函数hooks
 //比如af_inet相关的定义在ipv4/af_inet.c中
 //除了创建socket为系统调用外，基本针对socket层的操作函数都在这里面
 struct proto_ops {
@@ -123,7 +123,7 @@ struct proto_ops {
               int optname, char __user *optval, unsigned int optlen);
 /*省略部分*/
 };
-</code></pre><pre tabindex="0"><code>//传输层的proto 
+</code></pre><pre><code>//传输层的proto 
 //作为sock-&gt;sk_prot与具体传输层的hooks
 struct proto {
   void      (*close)(struct sock *sk,
@@ -173,7 +173,7 @@ struct proto {
 };
 
 </code></pre><p>同时附上其他几个关键结构体：</p>
-<pre tabindex="0"><code>//bsd socket层
+<pre><code>//bsd socket层
 //include/linux/net.h
 struct socket {
   socket_state    state;
@@ -186,7 +186,7 @@ struct socket {
   struct sock   *sk;
   const struct proto_ops  *ops;
 };
-</code></pre><pre tabindex="0"><code>//sock层
+</code></pre><pre><code>//sock层
 struct sock {
  sock_common  __sk_common;
 #define sk_node     __sk_common.skc_node
@@ -244,7 +244,7 @@ struct sock {
 <ul>
 <li>socket</li>
 </ul>
-<pre tabindex="0"><code>//创建socket的系统调用
+<pre><code>//创建socket的系统调用
 SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 {
   int retval;
@@ -279,7 +279,7 @@ SYSCALL_DEFINE3(socket, int, family, int, type, int, protocol)
 </code></pre><ul>
 <li>socketpair</li>
 </ul>
-<pre tabindex="0"><code>//创建socketpair，注意af_inet协议族下没有pair，af_unix下有
+<pre><code>//创建socketpair，注意af_inet协议族下没有pair，af_unix下有
 SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
     int __user *, usockvec)
 {
@@ -361,7 +361,7 @@ SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
 </code></pre><ul>
 <li>bind</li>
 </ul>
-<pre tabindex="0"><code>SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
+<pre><code>SYSCALL_DEFINE3(bind, int, fd, struct sockaddr __user *, umyaddr, int, addrlen)
 {
   struct socket *sock;
   struct sockaddr_storage address;
@@ -392,7 +392,7 @@ SYSCALL_DEFINE4(socketpair, int, family, int, type, int, protocol,
 <li>listen
 listen所做的事情也比较简单，从系统调用的listen(fd, backlog)到proto_ops 的inet_listen与前面类似，这里分析下inet_listen中的核心函数inet_csk_listen_start(位于ipv4/inet_connection_sock.c中)。</li>
 </ul>
-<pre tabindex="0"><code>int inet_csk_listen_start(struct sock *sk, const int nr_table_entries)
+<pre><code>int inet_csk_listen_start(struct sock *sk, const int nr_table_entries)
 {
     //获得网络层inte_sock 
   struct inet_sock *inet = inet_sk(sk);
@@ -431,7 +431,7 @@ listen所做的事情也比较简单，从系统调用的listen(fd, backlog)到p
 <li>accept
 上面socket, socketpair, bind基本只涉及到BSD socket, sock层相关的，过程比较简单，而accept层在sock层和tcp层交互稍微复杂，下面详细分析</li>
 </ul>
-<pre tabindex="0"><code>//socket.c
+<pre><code>//socket.c
 //accept系统调用
 SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
     int __user *, upeer_addrlen, int, flags)
@@ -495,7 +495,7 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
   /*省略部分*/
 
 }
-</code></pre><pre tabindex="0"><code>//ipv4/af_inet.c
+</code></pre><pre><code>//ipv4/af_inet.c
 //inet family的tcp相关的proto_ops
 int inet_accept(struct socket *sock, struct socket *newsock, int flags)
 {
@@ -521,7 +521,7 @@ int inet_accept(struct socket *sock, struct socket *newsock, int flags)
 do_err:
   return err;
 }
-</code></pre><pre tabindex="0"><code>//ipv4/tcp_ipv4.c
+</code></pre><pre><code>//ipv4/tcp_ipv4.c
 //这里进入struct proto tcp_prot中的accept
 struct sock *inet_csk_accept(struct sock *sk, int flags, int *err)
 {
@@ -575,7 +575,7 @@ struct sock *inet_csk_accept(struct sock *sk, int flags, int *err)
   }
     //ok,清理，返回newsk
   /*省略部分*/
-</code></pre><pre tabindex="0"><code>//ipv4/inet_connection_sock.c
+</code></pre><pre><code>//ipv4/inet_connection_sock.c
 //accept连接请求的核心函数
 static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 {

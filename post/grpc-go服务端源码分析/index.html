@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="author" content="不一样的天空">
+<meta name="generator" content="Hugo 0.79.0" />
 <title>gRPC-Go服务端源码分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -149,7 +149,7 @@
 <ul>
 <li>实例化Server</li>
 </ul>
-<pre tabindex="0"><code>// 工厂方法
+<pre><code>// 工厂方法
 func NewServer(opt ...ServerOption) *Server {
   var opts options
   // 默认最大消息长度: 4M
@@ -237,7 +237,7 @@ type options struct {
 </code></pre><ul>
 <li>注册Service</li>
 </ul>
-<pre tabindex="0"><code>// 注册service: sd接口，ss实现
+<pre><code>// 注册service: sd接口，ss实现
 // 如果使用protobuf的gRPC-Go插件，则会生成sd接口
 func (s *Server) RegisterService(sd *ServiceDesc, ss interface{}) {
   // 检查ss是否实现sd定义的服务方法接口
@@ -320,7 +320,7 @@ func _Greeter_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error 
 </code></pre><ul>
 <li>监听并接收连接请求</li>
 </ul>
-<pre tabindex="0"><code>func (s *Server) Serve(lis net.Listener) error {
+<pre><code>func (s *Server) Serve(lis net.Listener) error {
   /* ... */
   var tempDelay time.Duration // how long to sleep on accept failure
   // 循环处理连接，每个连接使用一个goroutine处理
@@ -363,7 +363,7 @@ func _Greeter_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error 
 </code></pre><ul>
 <li>连接与请求处理</li>
 </ul>
-<pre tabindex="0"><code>func (s *Server) handleRawConn(rawConn net.Conn) {
+<pre><code>func (s *Server) handleRawConn(rawConn net.Conn) {
   // 是否加密
   conn, authInfo, err := s.useTransportAuthenticator(rawConn)
   /* ... */
@@ -540,7 +540,7 @@ func (s *Server) serveStreams(st transport.ServerTransport) {
 </code></pre><ul>
 <li>连接的处理细节(http2连接的建立)</li>
 </ul>
-<pre tabindex="0"><code>// 实现的ServerTransport的HandleStreams接口
+<pre><code>// 实现的ServerTransport的HandleStreams接口
 func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.Context, string) context.Context) {
   // Check the validity of client preface.
   // 检查是否是http2
@@ -624,7 +624,7 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
 </code></pre><ul>
 <li>新请求的处理细节(新流的打开和帧数据的处理)</li>
 </ul>
-<pre tabindex="0"><code>// 解析流，提取服务名，方法名等信息，handleStream实现的是stream的业务逻辑处理
+<pre><code>// 解析流，提取服务名，方法名等信息，handleStream实现的是stream的业务逻辑处理
 func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Stream, trInfo *traceInfo) {
   sm := stream.Method()
   if sm != &quot;&quot; &amp;&amp; sm[0] == '/' {

@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="author" content="不一样的天空">
+<meta name="generator" content="Hugo 0.79.0" />
 <title></title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -67,7 +67,7 @@
 <ul>
 <li>terminal</li>
 </ul>
-<pre tabindex="0"><code>echo $#  # arguments number
+<pre><code>echo $#  # arguments number
 echo $0  # exec filename
 echo $1  # first argument
 echo $2  # second argument 
@@ -79,7 +79,7 @@ echo $$  # current bash script process pid
 </code></pre><ul>
 <li>output color</li>
 </ul>
-<pre tabindex="0"><code>RED_COLOR='\E[1;31m'
+<pre><code>RED_COLOR='\E[1;31m'
 GREEN_COLOR='\E[1;32m'
 YELLOW_COLOR='\E[1;33m'
 BLUE_COLOR='\E[1;34m'
@@ -88,7 +88,7 @@ echo -e &quot;${RED_COLOR}installing basic utilities...${END_COLOR}&quot;
 </code></pre><ul>
 <li>syntax</li>
 </ul>
-<pre tabindex="0"><code># for clause
+<pre><code># for clause
 for i in &quot;$*&quot;; do
   echo $i
 done
@@ -200,7 +200,7 @@ complete -F _solactl solactl
 <ul>
 <li>普通模式</li>
 </ul>
-<pre tabindex="0"><code>基本模式：操作符+动作命令
+<pre><code>基本模式：操作符+动作命令
 . 重复上次修改
 * 查找光标下的单词
 c 删除并进入插入模式
@@ -216,7 +216,7 @@ ga 查看当前光标下字符编码
 </code></pre><ul>
 <li>插入模式</li>
 </ul>
-<pre tabindex="0"><code>&lt;CTRL-h&gt; 删除前一个字符
+<pre><code>&lt;CTRL-h&gt; 删除前一个字符
 &lt;CTRL-w&gt; 删除前一个单词
 &lt;CTRL-u&gt; 删除至行首
 &lt;CTRL-o&gt; 插入普通模式，可配合zz将当前编辑行置于屏幕正中
@@ -224,25 +224,25 @@ ga 查看当前光标下字符编码
 </code></pre><ul>
 <li>可视模式</li>
 </ul>
-<pre tabindex="0"><code>gv 重选上次的可视区域
+<pre><code>gv 重选上次的可视区域
 o 切换选区活动端
 </code></pre><ul>
 <li>命令行模式</li>
 </ul>
-<pre tabindex="0"><code>基本模式 :[range]cmd
+<pre><code>基本模式 :[range]cmd
 :{start},{end}cmd 选中start行到end行之间的内容，执行cmd命令，start和end可以是数字、模式等
 . 当前行
 % 所有行
 </code></pre><ul>
 <li>文件操作</li>
 </ul>
-<pre tabindex="0"><code>:args 参数列表
+<pre><code>:args 参数列表
 :argdo cmd 对参数列表中的所有文件执行命令
 &lt;CTRL-w-=&gt; 所有窗口等宽等高
 </code></pre><ul>
 <li>动作命令</li>
 </ul>
-<pre tabindex="0"><code>gj 按screenline跳转到下一行
+<pre><code>gj 按screenline跳转到下一行
 gj 按screenline跳转到上一行
 w 单词
 b 单词开头
@@ -265,7 +265,7 @@ ap 整段
 </code></pre><ul>
 <li>寄存器</li>
 </ul>
-<pre tabindex="0"><code>&quot;&quot; 无名寄存器，x、p等默认使用的寄存器
+<pre><code>&quot;&quot; 无名寄存器，x、p等默认使用的寄存器
 &quot;0 复制(yy)专用寄存器
 &quot;_ 黑洞寄存器，内容直接丢掉
 &quot;+ 加号寄存器(系统剪切板)
@@ -280,12 +280,12 @@ q 结束录制宏
 </code></pre><ul>
 <li>其他</li>
 </ul>
-<pre tabindex="0"><code>:g/pattern/cmd global命令，针对所有符合pattern的行执行cmd
+<pre><code>:g/pattern/cmd global命令，针对所有符合pattern的行执行cmd
 :v/pattern/cmd vglobal命令，针对所有不符合pattern的行执行cmd
 </code></pre><hr>
 <p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h2 id="iptables">iptables</h2>
-<pre tabindex="0"><code>#!/bin/bash 
+<pre><code>#!/bin/bash 
 
 IPTABLES=/sbin/iptables
 
@@ -337,7 +337,7 @@ $IPTABLES -A OUTPUT -p tcp  --sport 4000  -j ACCEPT
 </code></pre><hr>
 <p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h2 id="mysql">mysql</h2>
-<pre tabindex="0"><code># 权限管理
+<pre><code># 权限管理
 show grants for 'name'@'localhost'
 grant select,insert,update,delete on *.* to 'name'@'localhost'
 revoke select on db.table from 'name'@'localhost'
@@ -361,7 +361,7 @@ eval $MYSQL_EXEC
 </code></pre><hr>
 <p><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
 <h3 id="regex">regex</h3>
-<pre tabindex="0"><code>^  # 行首
+<pre><code>^  # 行首
 $  # 行尾
 [abc], [a-z], [^abc], [^a-z]  # 范围内匹配字符 
 (a|b|c)  # 或
