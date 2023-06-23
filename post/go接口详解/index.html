@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="不一样的天空">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Go接口详解</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -84,7 +84,7 @@
 <ul>
 <li>下面是接口在runtime中的实现，注意其中包含了接口本身和实际数据类型的类型信息:</li>
 </ul>
-<pre><code>// src/runtime/runtime2.go
+<pre tabindex="0"><code>// src/runtime/runtime2.go
 type iface struct {
   // 包含接口的静态类型信息、数据的动态类型信息、函数表
   tab  *itab
@@ -129,7 +129,7 @@ type itab struct {
 <hr>
 <h2 id="2-runtime中接口的转换操作">2. runtime中接口的转换操作</h2>
 <p>接口相关的操作主要在于对其内部字段itab的操作，因为接口转换最重要的是类型信息。这里简单分析几个runtime中相关的函数。主要实现在<code>src/runtime/iface.go</code>中。值得注意的是，接口的类型转换在编译期会生成一个函数调用的语法树节点(OCALL)，调用runtime提供的相应接口转换函数完成接口的类型设置，所以接口的转换是在运行时发生的，其具体类型的方法地址表也是在运行时填写的，这一点和C++的虚函数表不太一样。另外，由于在运行时转换会产生开销，所以对转换的itab做了缓存。</p>
-<pre><code>type MyReader struct {
+<pre tabindex="0"><code>type MyReader struct {
 }
 func (r MyReader) Read(b []byte) (n int, err error) {
 }
@@ -138,7 +138,7 @@ var i io.Reader = MyReader{}
 realReader := i.(MyReader)
 var ei interface{} = interface{}(realReader)
 </code></pre><p>下面以convI2I为例来说明，编译时生成OCALL语法树节点的过程。</p>
-<pre><code>// src/cmd/compile/internal/gc/walk.go
+<pre tabindex="0"><code>// src/cmd/compile/internal/gc/walk.go
 func convFuncName(from, to *types.Type) string {
   tkind := to.Tie()
   switch from.Tie() {
@@ -174,7 +174,7 @@ func walkexpr(n *Node, init *Nodes) *Node {
 <ul>
 <li>getitab</li>
 </ul>
-<pre><code>// 根据接口类型和实际数据类型生成itab
+<pre tabindex="0"><code>// 根据接口类型和实际数据类型生成itab
 func getitab(inter *interfacetype, typ *_type, canfail bool) *itab {
   // 先从缓存中找
   h := itabhash(inter, typ)
@@ -218,7 +218,7 @@ func getitab(inter *interfacetype, typ *_type, canfail bool) *itab {
 </code></pre><ul>
 <li>additab</li>
 </ul>
-<pre><code>// 检查具体类型是否实现了接口规定的方法，并使用具体类型的方法
+<pre tabindex="0"><code>// 检查具体类型是否实现了接口规定的方法，并使用具体类型的方法
 // 地址填充方法表。
 func additab(m *itab, locked, canfail bool) {
   inter := m.inter
@@ -285,7 +285,7 @@ func additab(m *itab, locked, canfail bool) {
 </code></pre><ul>
 <li>convI2I</li>
 </ul>
-<pre><code>// 将已有的接口，转换为新的接口类型，失败panic
+<pre tabindex="0"><code>// 将已有的接口，转换为新的接口类型，失败panic
 // 比如:
 // var rc io.ReadCloser
 // var r io.Reader
@@ -310,7 +310,7 @@ func convI2I(inter *interfacetype, i iface) (r iface) {
 </code></pre><ul>
 <li>convT2I</li>
 </ul>
-<pre><code>// 使用itab并拷贝数据，得到iface
+<pre tabindex="0"><code>// 使用itab并拷贝数据，得到iface
 func convT2I(tab *itab, elem unsafe.Pointer) (i iface) {
   t := tab._type
   if raceenabled {
@@ -328,7 +328,7 @@ func convT2I(tab *itab, elem unsafe.Pointer) (i iface) {
   return
 }
 </code></pre><p>从上面convX2I我们可以看到，在接口类型之间转换时，并没有分配内存和拷贝数据，但是将非接口类型转换为接口类型时，却发生了内存分配和数据拷贝。这里的原因是Go接口的数据不能被改变，所以接口之间的转换可以使用同一块内存，但是其他情况为了避免外部改变导致接口内数据改变，所以会进行内存分配和数据拷贝。另外，这也是反射非指针变量时无法直接改变变量数据的原因，因为反射会先将变量转换为空接口类型可以参考<a href="https://groups.google.com/forum/#!topic/golang-nuts/e5ddPzR7eKI">go-nuts</a>。这里我们用一个简单的程序测试一下。</p>
-<pre><code>package main
+<pre tabindex="0"><code>package main
 
 import &quot;fmt&quot;
 
@@ -366,7 +366,7 @@ i1 = {_type = 0x492e00, data = 0xc4200741a0}
 <hr>
 <h2 id="4-nil接口的问题">4. nil接口的问题</h2>
 <p>具体的代码可参考<a href="https://github.com/feilengcui008/pieces/blob/master/go/basics/traps_main.go#L94">nil接口返回值测试</a>。理解了接口的底层实现，这个问题其实也比较好理解了。需要说明的是nil在Go中既指空值，也指空类型。这里的空值并非零值，空值是指未初始化，比如slice没有分配底层的内存。只有chan、interface、func、slice、map、pointer可直接与nil比较和用nil赋值。对于非接口类型来说，对其赋值nil的语义是将其数据变为未初始化的状态，而给接口类型来说，还会将接口的类型信息字段itab置nil。所以:</p>
-<pre><code>type MyReader interface {
+<pre tabindex="0"><code>type MyReader interface {
 }
 var r MyReader  // (nil, nil)
 var n *int = nil
@@ -376,7 +376,7 @@ var inter interface{} = r2 // (nil, nil)
 </code></pre><hr>
 <h2 id="5-接口与反射">5. 接口与反射</h2>
 <p>反射实现的一个基本前提是编译期为运行时提供足够的类型信息，一般来说都会使用一个基本类型(比如Go中的interface、Java中的Object)来存放具体类型的信息，以便在运行时使用。C++到目前为止也没有比较成熟的反射库，大部分原因就是没有比较好的方法提供运行时所需的类型信息，typeid等运行时信息太原始了。Go的反射的实现就是基于interface的。这里简单分析两个常用方法<code>reflect.TypeOf, reflect.ValueOf</code>的实现。</p>
-<pre><code>// src/reflect/value.go
+<pre tabindex="0"><code>// src/reflect/value.go
 // 注意: 从前面的分析可知当转换为空接口的时候，itab指针会
 // 直接指向数据的实际类型，所以反射的入口函数参数类型是interface{}，
 // 转换后，emptyInterface的rtype字段会直接指向数据类型，所以
@@ -419,7 +419,7 @@ func unpackEface(i interface{}) Value {
 </code></pre><hr>
 <h2 id="6-接口与duck-typing">6. 接口与duck typing</h2>
 <p>严格说来，Go的接口可能并不算真正的duck typing，看一个Python和Go对比的例子。在这个例子中我们并不管传入的类型是什么，也不用在乎Say方法返回的类型是什么。而在Go中，实现接口的Say方法的返回值类型也必须相同。但是，这两个例子中都不需要显示指定实现的接口，这对于代码的重构极其有利，这也是Go的接口相对于Java等接口的优势。</p>
-<pre><code># python duck typing
+<pre tabindex="0"><code># python duck typing
 def callSay(a):
     ret = a.Say()
     print ret

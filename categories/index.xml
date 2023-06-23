@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Categories on </title>
+    <title>Categories on 靠谱</title>
     <link>https://feilengcui008.github.io/categories/</link>
-    <description>Recent content in Categories on </description>
+    <description>Recent content in Categories on 靠谱</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 23 Jun 2023 11:01:08 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Rust</title>
+      <link>https://feilengcui008.github.io/categories/rust/</link>
+      <pubDate>Fri, 23 Jun 2023 11:01:08 +0800</pubDate>
+      
+      <guid>https://feilengcui008.github.io/categories/rust/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>Kubernetes</title>
       <link>https://feilengcui008.github.io/categories/kubernetes/</link>

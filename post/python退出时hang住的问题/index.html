@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="不一样的天空">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Python退出时hang住的问题</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -82,7 +82,7 @@
 <hr>
 <h4 id="subprocess模块使用不当的问题">subprocess模块使用不当的问题</h4>
 <p>Python的subprocess比较强大，基本上能替换os.system、os.popen、commands.getstatusoutput的功能，但是在使用的过程中需要注意参数stdin/stdout/stderr使用subprocess.PIPE的情况，因为管道通常会有默认大小的缓冲区(Linux x86_64下实测是64K)，父进程如果不使用communicate消耗掉子进程管道写端(stdout/stderr)中的数据，直接进入wait等待子进程退出，此时子进程可能阻塞在了pipe的写上，从而导致父子进程都hang住，下面是测试代码。</p>
-<pre><code># main.py
+<pre tabindex="0"><code># main.py
 #!/usr/bin/env python
 # encoding: utf-8
 
@@ -163,7 +163,7 @@ testSubprocessCommunicate()
 # hang
 print &quot;use pipe and call directly&quot;
 testSubprocessCallPipe()
-</code></pre><pre><code># run.py
+</code></pre><pre tabindex="0"><code># run.py
 import os
 
 print os.getpid()
@@ -192,7 +192,7 @@ print string
 <p>重现poc</p>
 </li>
 </ul>
-<pre><code>import threading
+<pre tabindex="0"><code>import threading
 
 import time
 import sys

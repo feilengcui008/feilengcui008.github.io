@@ -4,8 +4,8 @@
     <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="author" content="不一样的天空">
-<meta name="generator" content="Hugo 0.79.0" />
+<meta name="author" content="feilengcui008">
+<meta name="generator" content="Hugo 0.90.0-DEV" />
 <title>Linux内核namespace</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -95,7 +95,7 @@
 <li>某个进程创建后其pid namespace就固定了，使用setns和unshare改变后，其本身的pid namespace不会改变，只有fork出的子进程的pid namespace改变(改变的是每个进程的nsproxy-&gt;pid_namespace_for_children)</li>
 <li>用setns添加mnt namespace应该放在其他namespace之后，否则可能出现无法打开/proc/pid/ns/&hellip;的错误</li>
 </ul>
-<pre><code>// 代码1: 开一些新的namespace(启动新容器)
+<pre tabindex="0"><code>// 代码1: 开一些新的namespace(启动新容器)
 #define _GNU_SOURCE
 #include &lt;sys/wait.h&gt;
 #include &lt;sched.h&gt;
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
   exit(EXIT_SUCCESS);
 }
 
-</code></pre><pre><code>// 代码2: 使用setns加入新进程
+</code></pre><pre tabindex="0"><code>// 代码2: 使用setns加入新进程
 #define _GNU_SOURCE  // ?
 #include &lt;stdio.h&gt;
 #include &lt;string.h&gt;
@@ -377,7 +377,7 @@ int openAndSetns(const char *path)
 <ul>
 <li>源码主要位置:</li>
 </ul>
-<pre><code>// net_namespace为啥不链接个头文件到include/linux...
+<pre tabindex="0"><code>// net_namespace为啥不链接个头文件到include/linux...
 include/net/net_namespace.h
 include/linux/mnt_namespace.h与fs/mount.h
 include/linux/ipc_namespace.h
@@ -389,7 +389,7 @@ include/linux/utsname.h
 <li>几个namespace结构
 注意其他namespace都内嵌了user_namespace</li>
 </ul>
-<pre><code>struct user_namespace {
+<pre tabindex="0"><code>struct user_namespace {
   // uid_map 
   struct uid_gid_map  uid_map;
   // gid_map
@@ -410,7 +410,7 @@ include/linux/utsname.h
   struct rw_semaphore persistent_keyring_register_sem;
 #endif
 };
-</code></pre><pre><code>// uts_namespace
+</code></pre><pre tabindex="0"><code>// uts_namespace
 struct uts_namespace {
   struct kref kref;
   struct new_utsname name;
@@ -418,7 +418,7 @@ struct uts_namespace {
   // 封装ns的一些通用操作钩子函数
   struct ns_common ns;
 };
-</code></pre><pre><code>// pid_namespace 
+</code></pre><pre tabindex="0"><code>// pid_namespace 
 struct pid_namespace {
   struct kref kref;
   // pid映射
@@ -451,7 +451,7 @@ struct pid_namespace {
   // 封装ns的一些通用操作钩子函数
   struct ns_common ns;
 };
-</code></pre><pre><code>// mount namespace
+</code></pre><pre tabindex="0"><code>// mount namespace
 struct mnt_namespace {
   atomic_t    count;
   struct ns_common  ns;
@@ -464,7 +464,7 @@ struct mnt_namespace {
   wait_queue_head_t poll;
   u64 event;
 };
-</code></pre><pre><code>struct ipc_namespace {
+</code></pre><pre tabindex="0"><code>struct ipc_namespace {
   atomic_t  count;
   struct ipc_ids  ids[3];
 
@@ -507,7 +507,7 @@ struct mnt_namespace {
 
   struct ns_common ns;
 };
-</code></pre><pre><code>struct net {
+</code></pre><pre tabindex="0"><code>struct net {
   atomic_t    passive;  /* To decided when the network
              * namespace should be freed.
              */
@@ -538,7 +538,7 @@ struct mnt_namespace {
 <ul>
 <li>uts_namespace, 以uname系统调用为例</li>
 </ul>
-<pre><code>// syscall uname
+<pre tabindex="0"><code>// syscall uname
 SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
 {
   int error = 0;
@@ -558,7 +558,7 @@ SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
     error = -EFAULT;
   return error;
 }
-</code></pre><pre><code>static inline struct new_utsname *utsname(void)
+</code></pre><pre tabindex="0"><code>static inline struct new_utsname *utsname(void)
 {
   // 到当前进程uts namespace中查找utsname
   return &amp;current-&gt;nsproxy-&gt;uts_ns-&gt;name;
@@ -566,7 +566,7 @@ SYSCALL_DEFINE1(uname, struct old_utsname __user *, name)
 </code></pre><ul>
 <li>pid namespace，以getpid系统调用为例</li>
 </ul>
-<pre><code>/**
+<pre tabindex="0"><code>/**
  * sys_getpid - return the thread group id of the current process
  *
  * Note, despite the name, this returns the tgid not the pid.  The tgid and
@@ -584,7 +584,7 @@ static inline pid_t task_tgid_vnr(struct task_struct *tsk)
 {
   return pid_vnr(task_tgid(tsk));
 }
-</code></pre><pre><code>pid_t pid_vnr(struct pid *pid)
+</code></pre><pre tabindex="0"><code>pid_t pid_vnr(struct pid *pid)
 {
   return pid_nr_ns(pid, task_active_pid_ns(current));
 }
@@ -626,7 +626,7 @@ struct pid
 </code></pre><ul>
 <li>setns系统调用的实现</li>
 </ul>
-<pre><code>SYSCALL_DEFINE2(setns, int, fd, int, nstype)
+<pre tabindex="0"><code>SYSCALL_DEFINE2(setns, int, fd, int, nstype)
 {
   struct task_struct *tsk = current;
   struct nsproxy *new_nsproxy;
@@ -665,7 +665,7 @@ out:
   fput(file);
   return err;
 }
-</code></pre><pre><code>static struct nsproxy *create_new_namespaces(unsigned long flags,
+</code></pre><pre tabindex="0"><code>static struct nsproxy *create_new_namespaces(unsigned long flags,
   struct task_struct *tsk, struct user_namespace *user_ns,
   struct fs_struct *new_fs)
 {
@@ -710,7 +710,7 @@ out:
 </code></pre><ul>
 <li>unshare系统调用的实现</li>
 </ul>
-<pre><code>// unshare主要也是使用create_new_nsproxy和switch_tasks_namespace
+<pre tabindex="0"><code>// unshare主要也是使用create_new_nsproxy和switch_tasks_namespace
 SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 {
   struct fs_struct *fs, *new_fs = NULL;
