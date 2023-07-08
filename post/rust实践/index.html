@@ -100,29 +100,29 @@
 <li>当目标对象通过Arc被多方持有后，生命周期问题得以解决（不会出现use after free问题），但是多个引用者需要并发访问（读写）目标对象。显然，只有Arc原子引用计数是不够的（并且Rust的借用规则并不允许多个&amp;mut），这里需要做到共享与互斥，也就需要Atomic/Mutex/RwLock来控制对通过Arc引用的目标对象的并发读写。（不要去管Send/Sync，定义很难理解&quot;准确&quot;）
 以上，是Arc&lt;Mutex<!-- raw HTML omitted -->&gt;、Arc&lt;RwLock<!-- raw HTML omitted -->&gt;常见用法的由来。常见模式：</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust">Handler -&gt; <span style="color:#a6e22e">TableManager</span> -&gt; <span style="color:#a6e22e">ElectionInfo</span>
-Handler -&gt; <span style="color:#a6e22e">TabletManager</span> -&gt; <span style="color:#a6e22e">ElectionInfo</span>
+<pre tabindex="0"><code>Handler -&gt; TableManager -&gt; ElectionInfo
+Handler -&gt; TabletManager -&gt; ElectionInfo
 
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Handler</span> {
-    <span style="color:#66d9ef">pub</span> table_manager: <span style="color:#a6e22e">Arc</span><span style="color:#f92672">&lt;</span>TableManager<span style="color:#f92672">&gt;</span>,  <span style="color:#75715e">// 持有Arc副本
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">pub</span> tablet_manager: <span style="color:#a6e22e">Arc</span><span style="color:#f92672">&lt;</span>TabletManager<span style="color:#f92672">&gt;</span>,
+pub struct Handler {
+    pub table_manager: Arc&lt;TableManager&gt;,  // 持有Arc副本
+    pub tablet_manager: Arc&lt;TabletManager&gt;,
 }
 
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">TableManager</span> {
-    election_info: <span style="color:#a6e22e">Arc</span><span style="color:#f92672">&lt;</span>ElectionInfo<span style="color:#f92672">&gt;</span>,
+pub struct TableManager {
+    election_info: Arc&lt;ElectionInfo&gt;,
 }
 
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">TabletManager</span> {
-    election_info: <span style="color:#a6e22e">Arc</span><span style="color:#f92672">&lt;</span>ElectionInfo<span style="color:#f92672">&gt;</span>,
-    tablets: <span style="color:#a6e22e">RwLock</span><span style="color:#f92672">&lt;</span>TabletRouter<span style="color:#f92672">&gt;</span>, <span style="color:#75715e">// 并发读写
-</span><span style="color:#75715e"></span>    id_allocator: <span style="color:#a6e22e">AtomicU64</span>, <span style="color:#75715e">// 并发读写
-</span><span style="color:#75715e"></span>}
+pub struct TabletManager {
+    election_info: Arc&lt;ElectionInfo&gt;,
+    tablets: RwLock&lt;TabletRouter&gt;, // 并发读写
+    id_allocator: AtomicU64, // 并发读写
+}
 
-<span style="color:#75715e">// 怎么用
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> election_info <span style="color:#f92672">=</span> Arc::new(ElectionInfo::new());
-<span style="color:#66d9ef">let</span> table_manager <span style="color:#f92672">=</span> Arc::new(TableManager::new(election_info.clone()))
-<span style="color:#66d9ef">let</span> tablet_manager <span style="color:#f92672">=</span> Arc::new(TableManager::new(election_info.clone()))
-<span style="color:#66d9ef">let</span> handler <span style="color:#f92672">=</span> Handler::new(table_manager.clone(), tablet_manager.clone())
+// 怎么用
+let election_info = Arc::new(ElectionInfo::new());
+let table_manager = Arc::new(TableManager::new(election_info.clone()))
+let tablet_manager = Arc::new(TableManager::new(election_info.clone()))
+let handler = Handler::new(table_manager.clone(), tablet_manager.clone())
 tokio::spawn({
     election_info.xxx
 })
@@ -137,72 +137,72 @@ tokio::spawn({
 })
 tokio::spawn({
     handler.tablet_manager.id_allocator.load()
-    <span style="color:#66d9ef">let</span> router <span style="color:#f92672">=</span> handler.tablet_manager.tablets.write().unwrap();
+    let router = handler.tablet_manager.tablets.write().unwrap();
     router.ggg
-    <span style="color:#75715e">// router unlocked
-</span><span style="color:#75715e"></span>})
-</code></pre></div><h1 id="错误处理">错误处理</h1>
+    // router unlocked
+})
+</code></pre><h1 id="错误处理">错误处理</h1>
 <ul>
 <li>实现自定义Error的From并善用?;能极大降低不同层次错误转换的冗余代码，当然有时需要更丰富的错误信息时，可以手动构造错误。此外，出现错误时希望打印日志或者metrics等信息然后通过?;快速返回，可以使用map_err</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">init_table</span>(<span style="color:#f92672">&amp;</span>self, table: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">Table</span>) -&gt; Result<span style="color:#f92672">&lt;</span>(), TabletManagerError<span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">if</span> self.partitions.read().unwrap().get(<span style="color:#f92672">&amp;</span>table_name).is_some() {
-       <span style="color:#75715e">// 手动构造TabletManagerError，errmsg中注入更多信息
-</span><span style="color:#75715e"></span>       <span style="color:#66d9ef">return</span> Err(TabletManagerError::new(<span style="color:#f92672">&amp;</span>format!(
-           <span style="color:#e6db74">&#34;{}:table {table_name} partitions already exist, can not init again&#34;</span>,
+<pre tabindex="0"><code>pub async fn init_table(&amp;self, table: &amp;Table) -&gt; Result&lt;(), TabletManagerError&gt; {
+    if self.partitions.read().unwrap().get(&amp;table_name).is_some() {
+       // 手动构造TabletManagerError，errmsg中注入更多信息
+       return Err(TabletManagerError::new(&amp;format!(
+           &quot;{}:table {table_name} partitions already exist, can not init again&quot;,
            ManagerErrorKind::TableAlreadyExist,
        )));
     }
-    <span style="color:#f92672">....</span>
-    <span style="color:#75715e">// map_err打印错误信息
-</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> rw_replica_val <span style="color:#f92672">=</span> serde_json::to_string(<span style="color:#f92672">&amp;</span>rw_replica_route_info).map_err(<span style="color:#f92672">|</span>err<span style="color:#f92672">|</span> {
-        tracing::error<span style="color:#f92672">!</span>(
-            <span style="color:#e6db74">&#34;init tablet serialize rw replica data failed {err}, {table_name} {tablet_id}&#34;</span>
+    ....
+    // map_err打印错误信息
+    let rw_replica_val = serde_json::to_string(&amp;rw_replica_route_info).map_err(|err| {
+        tracing::error!(
+            &quot;init tablet serialize rw replica data failed {err}, {table_name} {tablet_id}&quot;
         );
         err
-    })<span style="color:#f92672">?</span>; <span style="color:#75715e">// ?;错误快速返回，并由于TabletManagerError实现了From，这里会自动转换json错误为TabletManagerError
-</span><span style="color:#75715e"></span>    <span style="color:#f92672">....</span>
+    })?; // ?;错误快速返回，并由于TabletManagerError实现了From，这里会自动转换json错误为TabletManagerError
+    ....
 }
 
-<span style="color:#66d9ef">impl</span> From<span style="color:#f92672">&lt;</span>serde_json::Error<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">for</span> TabletManagerError {
-    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">from</span>(e: <span style="color:#a6e22e">serde_json</span>::Error) -&gt; <span style="color:#a6e22e">Self</span> {
-        TabletManagerError::new(<span style="color:#e6db74">&#34;SystemError:serde json error&#34;</span>)
+impl From&lt;serde_json::Error&gt; for TabletManagerError {
+    fn from(e: serde_json::Error) -&gt; Self {
+        TabletManagerError::new(&quot;SystemError:serde json error&quot;)
     }
 }
-</code></pre></div><ul>
+</code></pre><ul>
 <li>在不希望明确具体的错误类型时，可以使用anyhow::Result/anyhow::format_error!</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#75715e">// 返回Result&lt;&gt;类型
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">on_leader_start</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Result<span style="color:#f92672">&lt;</span>()<span style="color:#f92672">&gt;</span> {
+<pre tabindex="0"><code>// 返回Result&lt;&gt;类型
+pub async fn on_leader_start(&amp;self) -&gt; Result&lt;()&gt; {
     self.tablet_task_manager
         .on_leader_start()
-        .<span style="color:#66d9ef">await</span>
-        .map_err(<span style="color:#f92672">|</span>err<span style="color:#f92672">|</span> {
-            <span style="color:#75715e">// 构造anyhow::Error
-</span><span style="color:#75715e"></span>            anyhow::format_err<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;call tablet task manager on leader start failed {err}&#34;</span>,)
+        .await
+        .map_err(|err| {
+            // 构造anyhow::Error
+            anyhow::format_err!(&quot;call tablet task manager on leader start failed {err}&quot;,)
     })
 }
-</code></pre></div><h1 id="stdsync--tokiosync">std::sync &amp; tokio::sync</h1>
+</code></pre><h1 id="stdsync--tokiosync">std::sync &amp; tokio::sync</h1>
 <ul>
 <li>垮await或者会导致线程长时间阻塞（例如睡眠挂起），用tokio::sync::Mutex/RwLock/Channel</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">SystemInfoManager</span><span style="color:#f92672">&lt;</span>T: <span style="color:#a6e22e">KvStore</span><span style="color:#f92672">&gt;</span> {
-    replica_epoch_allocator: <span style="color:#a6e22e">tokio</span>::sync::Mutex<span style="color:#f92672">&lt;</span>IdAllocator<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;&gt;</span>,
+<pre tabindex="0"><code>pub struct SystemInfoManager&lt;T: KvStore&gt; {
+    replica_epoch_allocator: tokio::sync::Mutex&lt;IdAllocator&lt;T&gt;&gt;,
 }
 
-<span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span>T: <span style="color:#a6e22e">KvStore</span><span style="color:#f92672">&gt;</span> SystemInfoManager<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;</span> {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">alloc_replica_epoch</span>(<span style="color:#f92672">&amp;</span>self) -&gt; Result<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">u64</span>, SystemInfoManagerError<span style="color:#f92672">&gt;</span> {
-        <span style="color:#75715e">// replica_epoch_allocator跨await，需要使用异步版本的Mutex，否则可能导致线程hang
-</span><span style="color:#75715e"></span>        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> id_allocator <span style="color:#f92672">=</span> self.replica_epoch_allocator.lock().<span style="color:#66d9ef">await</span>;
-        <span style="color:#66d9ef">let</span> new_id <span style="color:#f92672">=</span> id_allocator.alloc_id().<span style="color:#66d9ef">await</span>.map_err(<span style="color:#f92672">|</span>err<span style="color:#f92672">|</span> {
-            <span style="color:#66d9ef">let</span> err_msg <span style="color:#f92672">=</span> format!(<span style="color:#e6db74">&#34;alloc replica epoch failed {err}&#34;</span>);
-            tracing::error<span style="color:#f92672">!</span>(err_msg);
-            SystemInfoManagerError::new(<span style="color:#f92672">&amp;</span>err_msg)
-        })<span style="color:#f92672">?</span>;
+impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
+    pub async fn alloc_replica_epoch(&amp;self) -&gt; Result&lt;u64, SystemInfoManagerError&gt; {
+        // replica_epoch_allocator跨await，需要使用异步版本的Mutex，否则可能导致线程hang
+        let mut id_allocator = self.replica_epoch_allocator.lock().await;
+        let new_id = id_allocator.alloc_id().await.map_err(|err| {
+            let err_msg = format!(&quot;alloc replica epoch failed {err}&quot;);
+            tracing::error!(err_msg);
+            SystemInfoManagerError::new(&amp;err_msg)
+        })?;
         Ok(new_id)
     }
 }
-</code></pre></div><ul>
+</code></pre><ul>
 <li>不垮await且临界区较短，使用std::sync::Mutex/RwLock，性能更好</li>
 </ul>
 <h1 id="结构体方法中启动协程定时任务">结构体方法中启动协程定时任务</h1>
@@ -211,38 +211,38 @@ tokio::spawn({
 <li>tokio::select!，类似go中的select {}</li>
 <li>tokio_util::sync::CancellationToken</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">impl</span> TabletReplicaController {
-    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">run</span>(self: <span style="color:#a6e22e">Arc</span><span style="color:#f92672">&lt;</span>Self<span style="color:#f92672">&gt;</span>) {
+<pre tabindex="0"><code>impl TabletReplicaController {
+    pub fn run(self: Arc&lt;Self&gt;) {
         lust::spawn({
-            <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">move</span> {
-                <span style="color:#66d9ef">let</span> cloned_token <span style="color:#f92672">=</span> self.base.cancel_token.clone();
-                <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> tick_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-                <span style="color:#66d9ef">loop</span> {
-                    <span style="color:#66d9ef">let</span> interval <span style="color:#f92672">=</span>
+            async move {
+                let cloned_token = self.base.cancel_token.clone();
+                let mut tick_count = 0;
+                loop {
+                    let interval =
                         Duration::from_secs(get_config().tablet_replica_reconcile_interval_sec);
-                    <span style="color:#66d9ef">let</span> enabled <span style="color:#f92672">=</span> get_config().enable_tablet_replica_reconcile_controller;
-                    tokio::select<span style="color:#f92672">!</span> {
-                        _ <span style="color:#f92672">=</span> cloned_token.cancelled() <span style="color:#f92672">=&gt;</span> {
-                            tracing::info<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;tablet replica reconcile controller exit on stop signal&#34;</span>);
-                            <span style="color:#66d9ef">return</span>;
+                    let enabled = get_config().enable_tablet_replica_reconcile_controller;
+                    tokio::select! {
+                        _ = cloned_token.cancelled() =&gt; {
+                            tracing::info!(&quot;tablet replica reconcile controller exit on stop signal&quot;);
+                            return;
                         }
-                        _ <span style="color:#f92672">=</span> tokio::time::sleep(interval) <span style="color:#f92672">=&gt;</span> {
-                            tick_count <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
-                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">!</span>self.base.election_info.is_leader() {
-                                tracing::info<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;tablet replica reconcile controller not on leader, just skip&#34;</span>);
-                                <span style="color:#66d9ef">continue</span>;
+                        _ = tokio::time::sleep(interval) =&gt; {
+                            tick_count += 1;
+                            if !self.base.election_info.is_leader() {
+                                tracing::info!(&quot;tablet replica reconcile controller not on leader, just skip&quot;);
+                                continue;
                             }
-                            <span style="color:#66d9ef">if</span> <span style="color:#f92672">!</span>enabled {
-                                tracing::info<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;tablet replica reconcile controller not enabled, just skip&#34;</span>);
-                                <span style="color:#66d9ef">continue</span>;
+                            if !enabled {
+                                tracing::info!(&quot;tablet replica reconcile controller not enabled, just skip&quot;);
+                                continue;
                             }
-                            <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">let</span> Err(err) <span style="color:#f92672">=</span> self.do_tablet_replica_reconcile().<span style="color:#66d9ef">await</span> {
-                                metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_FAIL_COUNT).emit(tags<span style="color:#f92672">!</span>[], <span style="color:#ae81ff">1</span>);
-                                tracing::error<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;do tablet replica reconcile failed {err}, tick {tick_count}&#34;</span>);
-                                <span style="color:#66d9ef">continue</span>;
+                            if let Err(err) = self.do_tablet_replica_reconcile().await {
+                                metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_FAIL_COUNT).emit(tags![], 1);
+                                tracing::error!(&quot;do tablet replica reconcile failed {err}, tick {tick_count}&quot;);
+                                continue;
                             }
-                            metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_SUCCEED_COUNT).emit(tags<span style="color:#f92672">!</span>[], <span style="color:#ae81ff">1</span>);
-                            tracing::debug<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;do tablet replica reconcile success, tick {tick_count}&#34;</span>);
+                            metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_SUCCEED_COUNT).emit(tags![], 1);
+                            tracing::debug!(&quot;do tablet replica reconcile success, tick {tick_count}&quot;);
                         }
                     }
                 }
@@ -250,7 +250,7 @@ tokio::spawn({
         });
     }
 }
-</code></pre></div><h1 id="send--sync">Send &amp; Sync</h1>
+</code></pre><h1 id="send--sync">Send &amp; Sync</h1>
 <p>按Rust的官方定义：</p>
 <ul>
 <li>A type is Send if it is safe to send it to another thread</li>
@@ -276,10 +276,10 @@ pub type MetaStoreType = mock::MockMetaStore;
 (3) 编译/测试/运行时指定特定features flag
 cargo test/build/run --features &quot;mock_meta_store&quot;
 </code></pre><h1 id="enum默认值">Enum默认值</h1>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#75715e">#[derive(Debug, Clone, Default, Eq, PartialEq)]</span>
-<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">TabletTaskType</span> {
-    <span style="color:#75715e">#[default]</span> <span style="color:#75715e">// 加此标注即可
-</span><span style="color:#75715e"></span>    Invalid,
+<pre tabindex="0"><code>#[derive(Debug, Clone, Default, Eq, PartialEq)]
+pub enum TabletTaskType {
+    #[default] // 加此标注即可
+    Invalid,
     AddReplica,
     RemoveReplica,
     FailoverReplica,
@@ -287,43 +287,43 @@ cargo test/build/run --features &quot;mock_meta_store&quot;
     Merge,
     Reconcile,
 }
-</code></pre></div><h1 id="实现defer">实现defer</h1>
+</code></pre><h1 id="实现defer">实现defer</h1>
 <ul>
 <li>scopeguard这个crate里：scopeguard::defer!、scopeguard::guard，简单场景可以使用defer!即可，guard实测在一些宏的场景下不适用（guard会改变传入其中的类型，变成类似智能指针的东西）</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">use</span> scopeguard::defer;
+<pre tabindex="0"><code>use scopeguard::defer;
 
-<span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">some_func</span>() {
-    <span style="color:#f92672">....</span>
-    defer<span style="color:#f92672">!</span> {
-        metrics(metric::defs::TASK_MANAGER_SUBMIT_LATENCY).emit(tags, Instant::now().duration_since(start).as_nanos() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>);
+fn some_func() {
+    ....
+    defer! {
+        metrics(metric::defs::TASK_MANAGER_SUBMIT_LATENCY).emit(tags, Instant::now().duration_since(start).as_nanos() as i64);
     }
-    <span style="color:#f92672">....</span>
+    ....
 }
-</code></pre></div><h1 id="hashmap相关用法">HashMap相关用法</h1>
+</code></pre><h1 id="hashmap相关用法">HashMap相关用法</h1>
 <ul>
 <li>entry访问方式
 一行代码方便实现“key不存在则插入默认值再修改”</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"> ro_num_diff_by_idc
+<pre tabindex="0"><code> ro_num_diff_by_idc
      .entry(table_name.clone())
      .or_default()
-     .insert(<span style="color:#f92672">*</span>tablet_id, tablet_ro_scale_info);
+     .insert(*tablet_id, tablet_ro_scale_info);
  
- <span style="color:#f92672">*</span>current.entry(info.idc.clone()).or_default() <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
-</code></pre></div><h1 id="vec相关用法">Vec相关用法</h1>
+ *current.entry(info.idc.clone()).or_default() += 1;
+</code></pre><h1 id="vec相关用法">Vec相关用法</h1>
 <ul>
 <li>预分配</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> Vec::with_capacity(<span style="color:#ae81ff">1024</span>);
-<span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> vec![<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1024</span>]; <span style="color:#75715e">// 长度1024，每个元素初始化值为-1
-</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> (<span style="color:#ae81ff">0</span><span style="color:#f92672">..</span><span style="color:#ae81ff">1024</span>).collect(); <span style="color:#75715e">// 长度1023，元素为[0, 1024)
-</span></code></pre></div><ul>
+<pre tabindex="0"><code>let v = Vec::with_capacity(1024);
+let v = vec![-1, 1024]; // 长度1024，每个元素初始化值为-1
+let v = (0..1024).collect(); // 长度1023，元素为[0, 1024)
+</code></pre><ul>
 <li>Vec<!-- raw HTML omitted --> to Vec<!-- raw HTML omitted -->
 函数式编程链式写法，更简洁</li>
 </ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust">vec_u64.into_iter().map(<span style="color:#f92672">|</span>n<span style="color:#f92672">|</span> n <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>).collect()
-</code></pre></div><h1 id="测试的组织">测试的组织</h1>
+<pre tabindex="0"><code>vec_u64.into_iter().map(|n| n as i64).collect()
+</code></pre><h1 id="测试的组织">测试的组织</h1>
 <ul>
 <li>mod、crate、package
 <ul>
