@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
 <meta name="generator" content="Hugo 0.90.0-DEV" />
-<title>Rust常见模式和用法</title>
+<title>Rust实践</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/main.css">
@@ -51,15 +51,15 @@
         
         
 <div class="content content-post CENTER">
-  <article id="Rust常见模式和用法" class="article article-type-post" itemprop="blogPost">
+  <article id="Rust实践" class="article article-type-post" itemprop="blogPost">
   <header class="article-header">
-    <h1 class="post-title">Rust常见模式和用法</h1>
+    <h1 class="post-title">Rust实践</h1>
 
     <div class="article-meta">
       <p>
       <span>
         <i class="icon-calendar"></i>
-        <span>06-23-2023</span>
+        <span>06-28-2023</span>
       </span>
       </p>
       <span>
@@ -75,7 +75,7 @@
         <span class="article-meta-span"><a href="/tags/rust">Rust</a></span>
         
       </span>
-      <span id="/post/rust%E5%B8%B8%E8%A7%81%E6%A8%A1%E5%BC%8F%E5%92%8C%E7%94%A8%E6%B3%95/" class="leancloud_visitors" data-flag-title="Rust常见模式和用法">
+      <span id="/post/rust%E5%AE%9E%E8%B7%B5/" class="leancloud_visitors" data-flag-title="Rust实践">
         <span class="post-flag"><span>
       </span>
     </div>
@@ -169,6 +169,34 @@ tokio::spawn({
         TabletManagerError::new(<span style="color:#e6db74">&#34;SystemError:serde json error&#34;</span>)
     }
 }
+</code></pre></div><h1 id="错误处理-1">错误处理</h1>
+<ul>
+<li>实现自定义Error的From并善用?;能极大降低不同层次错误转换的冗余代码，当然有时需要更丰富的错误信息时，可以手动构造错误。此外，出现错误时希望打印日志或者metrics等信息然后通过?;快速返回，可以使用map_err</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">init_table</span>(<span style="color:#f92672">&amp;</span>self, table: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">Table</span>) -&gt; Result<span style="color:#f92672">&lt;</span>(), TabletManagerError<span style="color:#f92672">&gt;</span> {
+    <span style="color:#66d9ef">if</span> self.partitions.read().unwrap().get(<span style="color:#f92672">&amp;</span>table_name).is_some() {
+       <span style="color:#75715e">// 手动构造TabletManagerError，errmsg中注入更多信息
+</span><span style="color:#75715e"></span>       <span style="color:#66d9ef">return</span> Err(TabletManagerError::new(<span style="color:#f92672">&amp;</span>format!(
+           <span style="color:#e6db74">&#34;{}:table {table_name} partitions already exist, can not init again&#34;</span>,
+           ManagerErrorKind::TableAlreadyExist,
+       )));
+    }
+    <span style="color:#f92672">....</span>
+    <span style="color:#75715e">// map_err打印错误信息
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> rw_replica_val <span style="color:#f92672">=</span> serde_json::to_string(<span style="color:#f92672">&amp;</span>rw_replica_route_info).map_err(<span style="color:#f92672">|</span>err<span style="color:#f92672">|</span> {
+        tracing::error<span style="color:#f92672">!</span>(
+            <span style="color:#e6db74">&#34;init tablet serialize rw replica data failed {err}, {table_name} {tablet_id}&#34;</span>
+        );
+        err
+    })<span style="color:#f92672">?</span>; <span style="color:#75715e">// ?;错误快速返回，并由于TabletManagerError实现了From，这里会自动转换json错误为TabletManagerError
+</span><span style="color:#75715e"></span>    <span style="color:#f92672">....</span>
+}
+
+<span style="color:#66d9ef">impl</span> From<span style="color:#f92672">&lt;</span>serde_json::Error<span style="color:#f92672">&gt;</span> <span style="color:#66d9ef">for</span> TabletManagerError {
+    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">from</span>(e: <span style="color:#a6e22e">serde_json</span>::Error) -&gt; <span style="color:#a6e22e">Self</span> {
+        TabletManagerError::new(<span style="color:#e6db74">&#34;SystemError:serde json error&#34;</span>)
+    }
+}
 </code></pre></div><ul>
 <li>在不希望明确具体的错误类型时，可以使用anyhow::Result/anyhow::format_error!</li>
 </ul>
@@ -182,20 +210,9 @@ tokio::spawn({
 </span><span style="color:#75715e"></span>            anyhow::format_err<span style="color:#f92672">!</span>(<span style="color:#e6db74">&#34;call tablet task manager on leader start failed {err}&#34;</span>,)
     })
 }
-</code></pre></div><h1 id="hashmap的entry访问方式">HashMap的entry访问方式</h1>
-<ul>
-<li>一行代码方便实现“key不存在则插入默认值再修改”</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"> ro_num_diff_by_idc
-     .entry(table_name.clone())
-     .or_default()
-     .insert(<span style="color:#f92672">*</span>tablet_id, tablet_ro_scale_info);
- 
- <span style="color:#f92672">*</span>current.entry(info.idc.clone()).or_default() <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
 </code></pre></div><h1 id="stdsync--tokiosync">std::sync &amp; tokio::sync</h1>
 <ul>
 <li>垮await或者会导致线程长时间阻塞（例如睡眠挂起），用tokio::sync::Mutex/RwLock/Channel</li>
-<li>不垮await且临界区较短，使用std::sync::Mutex/RwLock，性能更好</li>
 </ul>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">SystemInfoManager</span><span style="color:#f92672">&lt;</span>T: <span style="color:#a6e22e">KvStore</span><span style="color:#f92672">&gt;</span> {
     replica_epoch_allocator: <span style="color:#a6e22e">tokio</span>::sync::Mutex<span style="color:#f92672">&lt;</span>IdAllocator<span style="color:#f92672">&lt;</span>T<span style="color:#f92672">&gt;&gt;</span>,
@@ -213,7 +230,10 @@ tokio::spawn({
         Ok(new_id)
     }
 }
-</code></pre></div><h1 id="结构体方法中启动协程定时任务">结构体方法中启动协程定时任务</h1>
+</code></pre></div><ul>
+<li>不垮await且临界区较短，使用std::sync::Mutex/RwLock，性能更好</li>
+</ul>
+<h1 id="结构体方法中启动协程定时任务">结构体方法中启动协程定时任务</h1>
 <ul>
 <li>参数Arc<!-- raw HTML omitted -->，原因在于tokio::spawn的协程需要共享结构体的所有权，并对其进行读写访问</li>
 <li>tokio::select!，类似go中的select {}</li>
@@ -258,20 +278,12 @@ tokio::spawn({
         });
     }
 }
-</code></pre></div><h1 id="异步队列">异步队列</h1>
-<ul>
-<li>blocking queue在队列为空时，consumer侧通常会阻塞，挂起当前线程，在Rust异步环境下推荐使用异步队列tokio::sync::mpsc或者async_channel crate，前者是mpsc后者是mpmc。async_channel是另一个Rust异步运行时smol的组件之一</li>
-</ul>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">let</span> (task_sender_can_clone, task_receiver_can_not_clone) <span style="color:#f92672">=</span> tokio::sync::mpsc::unbounded_channel();
-<span style="color:#66d9ef">let</span> (task_sender_can_clone, task_receiver_can_clone) <span style="color:#f92672">=</span> async_channel::unbounded();
 </code></pre></div><h1 id="send--sync">Send &amp; Sync</h1>
 <p>按Rust的官方定义：</p>
 <ul>
 <li>A type is Send if it is safe to send it to another thread</li>
-<li>A type is Sync if it is safe to share between threads (T is Sync if and only if &amp;T is Send)</li>
-</ul>
-<p>这里不做具体解释，只举几个例子直观“感受”下：</p>
-<ul>
+<li>A type is Sync if it is safe to share between threads (T is Sync if and only if &amp;T is Send)
+这里不做具体解释，只举几个例子直观“感受”下：</li>
 <li>MutexGuard是sync但不是send的，是为了保证锁必须是在同一个线程中加锁和解锁（试想如果是send的，被传递到其他线程析构解锁了，就违反此要求了）</li>
 <li>Cell是send但不是sync的，&amp;Cell可能因为内部可变性但是并没加锁导致并发读写问题，因此&amp;Cell不是send的，也即Cell不是sync的。Cell<!-- raw HTML omitted -->拥有完整的数据T，可以转移所有权send到其他线程，所以Cell是send的</li>
 <li>Rc既不是send也不是sync的，&amp;Rc不是send好理解，内部计数不是原子的存在并发问题，Rc不是send的原因在于引用计数不是原子的，所以可能多个线程以为自己是data的唯一owner，同时释放内存，而Arc不会出现这种情况</li>
@@ -281,17 +293,17 @@ tokio::spawn({
 <ul>
 <li>在编译期间根据传入的不同flag选择不同的实现，典型场景：跑测试时持久化store层可以是内存mock版、或者其他外部存储，我们希望复用测试用例，在跑本地单测时使用内存mock版，而在跑回归测试时使用线上外部存储的版本</li>
 </ul>
-<pre tabindex="0"><code>(1) 在Cargo.toml中定义features
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust">(<span style="color:#ae81ff">1</span>) <span style="color:#960050;background-color:#1e0010">在</span>Cargo.toml中定义features
 [features]
-mock_meta_store = [] # 存储使用内存mock形式，主要用于单测
-(2) 在代码中添加条件编译的实现
-#[cfg(not(feature = &quot;mock_meta_store&quot;))]
-pub type MetaStoreType = meta::GS3BasedKvStore;
-#[cfg(feature = &quot;mock_meta_store&quot;)]
-pub type MetaStoreType = mock::MockMetaStore;
-(3) 编译/测试/运行时指定特定features flag
-cargo test/build/run --features &quot;mock_meta_store&quot;
-</code></pre><h1 id="enum默认值">Enum默认值</h1>
+mock_meta_store <span style="color:#f92672">=</span> [] # <span style="color:#960050;background-color:#1e0010">存储使用内存</span>mock形式<span style="color:#960050;background-color:#1e0010">，主要用于单测</span>
+(<span style="color:#ae81ff">2</span>) <span style="color:#960050;background-color:#1e0010">在代码中添加条件编译的实现</span>
+<span style="color:#75715e">#[cfg(not(feature = </span><span style="color:#e6db74">&#34;mock_meta_store&#34;</span><span style="color:#75715e">))]</span>
+<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">type</span> <span style="color:#a6e22e">MetaStoreType</span> <span style="color:#f92672">=</span> meta::GS3BasedKvStore;
+<span style="color:#75715e">#[cfg(feature = </span><span style="color:#e6db74">&#34;mock_meta_store&#34;</span><span style="color:#75715e">)]</span>
+<span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">type</span> <span style="color:#a6e22e">MetaStoreType</span> <span style="color:#f92672">=</span> mock::MockMetaStore;
+(<span style="color:#ae81ff">3</span>) <span style="color:#960050;background-color:#1e0010">编译</span><span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">测试</span><span style="color:#f92672">/</span><span style="color:#960050;background-color:#1e0010">运行时指定特定</span>features flag
+cargo test<span style="color:#f92672">/</span>build<span style="color:#f92672">/</span>run <span style="color:#f92672">--</span>features <span style="color:#e6db74">&#34;mock_meta_store&#34;</span>
+</code></pre></div><h1 id="enum默认值">Enum默认值</h1>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#75715e">#[derive(Debug, Clone, Default, Eq, PartialEq)]</span>
 <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">TabletTaskType</span> {
     <span style="color:#75715e">#[default]</span> <span style="color:#75715e">// 加此标注即可
@@ -316,6 +328,88 @@ cargo test/build/run --features &quot;mock_meta_store&quot;
     }
     <span style="color:#f92672">....</span>
 }
+</code></pre></div><h1 id="hashmap相关用法">HashMap相关用法</h1>
+<ul>
+<li>entry访问方式
+一行代码方便实现“key不存在则插入默认值再修改”</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"> ro_num_diff_by_idc
+     .entry(table_name.clone())
+     .or_default()
+     .insert(<span style="color:#f92672">*</span>tablet_id, tablet_ro_scale_info);
+ 
+ <span style="color:#f92672">*</span>current.entry(info.idc.clone()).or_default() <span style="color:#f92672">+=</span> <span style="color:#ae81ff">1</span>;
+</code></pre></div><h1 id="vec相关用法">Vec相关用法</h1>
+<ul>
+<li>预分配</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> Vec::with_capacity(<span style="color:#ae81ff">1024</span>);
+<span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> vec![<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">1024</span>]; <span style="color:#75715e">// 长度1024，每个元素初始化值为-1
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> (<span style="color:#ae81ff">0</span><span style="color:#f92672">..</span><span style="color:#ae81ff">1024</span>).collect(); <span style="color:#75715e">// 长度1023，元素为[0, 1024)
+</span></code></pre></div><ul>
+<li>Vec<!-- raw HTML omitted --> to Vec<!-- raw HTML omitted -->
+函数式编程链式写法，更简洁</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust">vec_u64.into_iter().map(<span style="color:#f92672">|</span>n<span style="color:#f92672">|</span> n <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>).collect()
+</code></pre></div><h1 id="测试的组织">测试的组织</h1>
+<ul>
+<li>mod、crate、package
+<ul>
+<li>crate是编译单元，mod过多crate少无法有效利用并行编译，mod过少crate过多会增加代码改动重构成本，需要结合实际项目大小做取舍，对于大多数小型项目（~2万loc）单个crate足够</li>
+</ul>
+</li>
+<li>单元测试、集成测试
+<ul>
+<li>运行单测：cargo test  &ndash; &ndash;nocapture</li>
+<li>运行集成测试：cargo test &ndash;test integration &ndash; &ndash;nocapture</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-Rust" data-lang="Rust"><span style="color:#75715e">// Cargo.toml中加入集成测试模块的定义
+</span><span style="color:#75715e"></span>[[test]]
+name <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;integration&#34;</span>
+path <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;src/tests/integration/mod.rs&#34;</span>
+test <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;false&#34;</span> <span style="color:#75715e">// 默认不运行
+</span><span style="color:#75715e"></span>
+<span style="color:#75715e">// 参考的项目组织结构
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">├──</span> build.rs <span style="color:#75715e">// 控制编译行为的脚本
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">├──</span> Cargo.lock
+<span style="color:#960050;background-color:#1e0010">├──</span> Cargo.toml
+<span style="color:#960050;background-color:#1e0010">├──</span> clippy.toml <span style="color:#75715e">// clippy检查规则
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">├──</span> metaservice.conf <span style="color:#75715e">// 进程启动配置文件
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">├──</span> rust<span style="color:#f92672">-</span>toolchain.toml <span style="color:#75715e">// 此package依赖的rust工具链
+</span><span style="color:#75715e"></span><span style="color:#960050;background-color:#1e0010">└──</span> src
+    <span style="color:#960050;background-color:#1e0010">├──</span> bin
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> metaservice.rs <span style="color:#75715e">// 进程启动入口
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">├──</span> config <span style="color:#75715e">// 配置
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> defs.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> <span style="color:#66d9ef">mod</span>.rs
+    <span style="color:#960050;background-color:#1e0010">├──</span> handler <span style="color:#75715e">// API实现
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> defs.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> <span style="color:#66d9ef">mod</span>.rs
+    <span style="color:#960050;background-color:#1e0010">├──</span> lib.rs
+    <span style="color:#960050;background-color:#1e0010">├──</span> manager <span style="color:#75715e">// 逻辑层，单元测试放在代码实现文件中，也可对应拆分一个xx_test.rs文件
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> controller.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> error.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> task.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> <span style="color:#66d9ef">mod</span>.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> <span style="color:#f92672">......</span>
+    <span style="color:#960050;background-color:#1e0010">├──</span> metric <span style="color:#75715e">// 其他监控、日志、metric等模块
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> defs.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> <span style="color:#66d9ef">mod</span>.rs
+    <span style="color:#960050;background-color:#1e0010">├──</span> store <span style="color:#75715e">// 持久化层
+</span><span style="color:#75715e"></span>    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> error.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> meta.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">├──</span> mock.rs
+    <span style="color:#960050;background-color:#1e0010">│</span>   <span style="color:#960050;background-color:#1e0010">└──</span> <span style="color:#66d9ef">mod</span>.rs
+    <span style="color:#960050;background-color:#1e0010">└──</span> tests <span style="color:#75715e">// 集成测试、故障注入测试等，通常运行时间相比单测较长
+</span><span style="color:#75715e"></span>            <span style="color:#960050;background-color:#1e0010">└──</span> integration <span style="color:#75715e">// 集成测试，所有测试函数以&#34;integration_test&#34;开头
+</span><span style="color:#75715e"></span>                <span style="color:#960050;background-color:#1e0010">├──</span> cluster.rs
+                <span style="color:#960050;background-color:#1e0010">├──</span> common.rs
+                <span style="color:#960050;background-color:#1e0010">├──</span> controller.rs
+                <span style="color:#960050;background-color:#1e0010">├──</span> <span style="color:#66d9ef">mod</span>.rs
+                <span style="color:#960050;background-color:#1e0010">├──</span> table.rs
+                <span style="color:#960050;background-color:#1e0010">└──</span> tablet.rs
 </code></pre></div>
   </div>
 </article>
