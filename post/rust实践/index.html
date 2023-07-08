@@ -100,7 +100,7 @@
 <li>当目标对象通过Arc被多方持有后，生命周期问题得以解决（不会出现use after free问题），但是多个引用者需要并发访问（读写）目标对象。显然，只有Arc原子引用计数是不够的（并且Rust的借用规则并不允许多个&amp;mut），这里需要做到共享与互斥，也就需要Atomic/Mutex/RwLock来控制对通过Arc引用的目标对象的并发读写。（不要去管Send/Sync，定义很难理解&quot;准确&quot;）
 以上，是Arc&lt;Mutex<!-- raw HTML omitted -->&gt;、Arc&lt;RwLock<!-- raw HTML omitted -->&gt;常见用法的由来。常见模式：</li>
 </ul>
-<pre tabindex="0"><code>Handler -&gt; TableManager -&gt; ElectionInfo
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">Handler -&gt; TableManager -&gt; ElectionInfo
 Handler -&gt; TabletManager -&gt; ElectionInfo
 
 pub struct Handler {
@@ -145,7 +145,7 @@ tokio::spawn({
 <ul>
 <li>实现自定义Error的From并善用?;能极大降低不同层次错误转换的冗余代码，当然有时需要更丰富的错误信息时，可以手动构造错误。此外，出现错误时希望打印日志或者metrics等信息然后通过?;快速返回，可以使用map_err</li>
 </ul>
-<pre tabindex="0"><code>pub async fn init_table(&amp;self, table: &amp;Table) -&gt; Result&lt;(), TabletManagerError&gt; {
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">pub async fn init_table(&amp;self, table: &amp;Table) -&gt; Result&lt;(), TabletManagerError&gt; {
     if self.partitions.read().unwrap().get(&amp;table_name).is_some() {
        // 手动构造TabletManagerError，errmsg中注入更多信息
        return Err(TabletManagerError::new(&amp;format!(
@@ -172,7 +172,7 @@ impl From&lt;serde_json::Error&gt; for TabletManagerError {
 </code></pre><ul>
 <li>在不希望明确具体的错误类型时，可以使用anyhow::Result/anyhow::format_error!</li>
 </ul>
-<pre tabindex="0"><code>// 返回Result&lt;&gt;类型
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">// 返回Result&lt;&gt;类型
 pub async fn on_leader_start(&amp;self) -&gt; Result&lt;()&gt; {
     self.tablet_task_manager
         .on_leader_start()
@@ -186,7 +186,7 @@ pub async fn on_leader_start(&amp;self) -&gt; Result&lt;()&gt; {
 <ul>
 <li>垮await或者会导致线程长时间阻塞（例如睡眠挂起），用tokio::sync::Mutex/RwLock/Channel</li>
 </ul>
-<pre tabindex="0"><code>pub struct SystemInfoManager&lt;T: KvStore&gt; {
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">pub struct SystemInfoManager&lt;T: KvStore&gt; {
     replica_epoch_allocator: tokio::sync::Mutex&lt;IdAllocator&lt;T&gt;&gt;,
 }
 
@@ -211,7 +211,7 @@ impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
 <li>tokio::select!，类似go中的select {}</li>
 <li>tokio_util::sync::CancellationToken</li>
 </ul>
-<pre tabindex="0"><code>impl TabletReplicaController {
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">impl TabletReplicaController {
     pub fn run(self: Arc&lt;Self&gt;) {
         lust::spawn({
             async move {
@@ -265,7 +265,7 @@ impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
 <ul>
 <li>在编译期间根据传入的不同flag选择不同的实现，典型场景：跑测试时持久化store层可以是内存mock版、或者其他外部存储，我们希望复用测试用例，在跑本地单测时使用内存mock版，而在跑回归测试时使用线上外部存储的版本</li>
 </ul>
-<pre tabindex="0"><code>(1) 在Cargo.toml中定义features
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">(1) 在Cargo.toml中定义features
 [features]
 mock_meta_store = [] # 存储使用内存mock形式，主要用于单测
 (2) 在代码中添加条件编译的实现
@@ -276,7 +276,7 @@ pub type MetaStoreType = mock::MockMetaStore;
 (3) 编译/测试/运行时指定特定features flag
 cargo test/build/run --features &quot;mock_meta_store&quot;
 </code></pre><h1 id="enum默认值">Enum默认值</h1>
-<pre tabindex="0"><code>#[derive(Debug, Clone, Default, Eq, PartialEq)]
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">#[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub enum TabletTaskType {
     #[default] // 加此标注即可
     Invalid,
@@ -291,7 +291,7 @@ pub enum TabletTaskType {
 <ul>
 <li>scopeguard这个crate里：scopeguard::defer!、scopeguard::guard，简单场景可以使用defer!即可，guard实测在一些宏的场景下不适用（guard会改变传入其中的类型，变成类似智能指针的东西）</li>
 </ul>
-<pre tabindex="0"><code>use scopeguard::defer;
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">use scopeguard::defer;
 
 fn some_func() {
     ....
@@ -305,7 +305,7 @@ fn some_func() {
 <li>entry访问方式
 一行代码方便实现“key不存在则插入默认值再修改”</li>
 </ul>
-<pre tabindex="0"><code> ro_num_diff_by_idc
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}"> ro_num_diff_by_idc
      .entry(table_name.clone())
      .or_default()
      .insert(*tablet_id, tablet_ro_scale_info);
@@ -315,14 +315,14 @@ fn some_func() {
 <ul>
 <li>预分配</li>
 </ul>
-<pre tabindex="0"><code>let v = Vec::with_capacity(1024);
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">let v = Vec::with_capacity(1024);
 let v = vec![-1, 1024]; // 长度1024，每个元素初始化值为-1
 let v = (0..1024).collect(); // 长度1023，元素为[0, 1024)
 </code></pre><ul>
 <li>Vec<!-- raw HTML omitted --> to Vec<!-- raw HTML omitted -->
 函数式编程链式写法，更简洁</li>
 </ul>
-<pre tabindex="0"><code>vec_u64.into_iter().map(|n| n as i64).collect()
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">vec_u64.into_iter().map(|n| n as i64).collect()
 </code></pre><h1 id="测试的组织">测试的组织</h1>
 <ul>
 <li>mod、crate、package
@@ -337,7 +337,7 @@ let v = (0..1024).collect(); // 长度1023，元素为[0, 1024)
 </ul>
 </li>
 </ul>
-<pre tabindex="0"><code>// Cargo.toml中加入集成测试模块的定义
+<pre tabindex="0"><code class="language-{.line-numbers}" data-lang="{.line-numbers}">// Cargo.toml中加入集成测试模块的定义
 [[test]]
 name = &quot;integration&quot;
 path = &quot;src/tests/integration/mod.rs&quot;
