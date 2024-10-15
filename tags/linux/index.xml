@@ -4,19 +4,16 @@
     <title>Linux on </title>
     <link>https://feilengcui008.github.io/tags/linux/</link>
     <description>Recent content in Linux on </description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 21 Sep 2017 16:32:02 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 21 Sep 2017 16:32:02 +0800</lastBuildDate>
+    <atom:link href="https://feilengcui008.github.io/tags/linux/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>ABI</title>
       <link>https://feilengcui008.github.io/post/abi/</link>
       <pubDate>Thu, 21 Sep 2017 16:32:02 +0800</pubDate>
-      
       <guid>https://feilengcui008.github.io/post/abi/</guid>
-      <description>ABI指应用二进制接口，规定了二进制程序两个模块之间或者二进制程序与操作系统之间的接口，这里主要关注调用规范call convention。不同的体系结构、操作系统、编程语言、每种编程语言的不同编译器实现基本都有自己规定或者遵循的ABI和调用规范。另外，也可通过FFI规范实现跨编程语言的过程调用，比如Python/Java/Go等提供了C的FFI，这样通过C实现互相调用。
-Linux在x86_64和i386下的ABI:
- x86下的调用规范 Linux i386 and x86_64 call convention x86_64下用户态程序和系统调用ABI i386下用户态和系统调用ABI  这里就不详细解释不同的ABI和调用规范了，可以通过简单的C/C++程序和内核代码分别验证用户态和系统调用的规范。另外，对于类似Go语言有自己的一套函数调用规范的，也可以通过生成的汇编去验证。</description>
+      <description>&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Application_binary_interface&#34;&gt;ABI&lt;/a&gt;指应用二进制接口，规定了二进制程序两个模块之间或者二进制程序与操作系统之间的接口，这里主要关注&lt;a href=&#34;https://en.wikipedia.org/wiki/Calling_convention&#34;&gt;调用规范call convention&lt;/a&gt;。不同的体系结构、操作系统、编程语言、每种编程语言的不同编译器实现基本都有自己规定或者遵循的ABI和调用规范。另外，也可通过&lt;a href=&#34;https://en.wikipedia.org/wiki/Foreign_function_interface&#34;&gt;FFI&lt;/a&gt;规范实现跨编程语言的过程调用，比如Python/Java/Go等提供了C的FFI，这样通过C实现互相调用。&lt;/p&gt;&#xA;&lt;p&gt;Linux在x86_64和i386下的ABI:&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/X86_calling_conventions&#34;&gt;x86下的调用规范&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;https://stackoverflow.com/questions/2535989/what-are-the-calling-conventions-for-unix-linux-system-calls-on-x86-64&#34;&gt;Linux i386 and x86_64 call convention&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;http://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf&#34;&gt;x86_64下用户态程序和系统调用ABI&lt;/a&gt;&lt;/li&gt;&#xA;&lt;li&gt;&lt;a href=&#34;http://refspecs.linuxfoundation.org/elf/abi386-4.pdf&#34;&gt;i386下用户态和系统调用ABI&lt;/a&gt;&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;p&gt;这里就不详细解释不同的ABI和调用规范了，可以通过简单的C/C++程序和内核代码分别验证用户态和系统调用的规范。另外，对于类似Go语言有自己的一套函数&lt;a href=&#34;https://github.com/golang/go/issues/16922&#34;&gt;调用规范&lt;/a&gt;的，也可以通过生成的汇编去验证。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

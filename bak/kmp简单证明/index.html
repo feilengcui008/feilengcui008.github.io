@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>KMP简单证明</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -104,7 +104,6 @@
     }
     return -1;
   }
-
 </code></pre><p>分析朴素算法我们会发现，实际上对于模式串某个不匹配的位置，我们没有充分利用不匹配时产生的信息，或者说不匹配位置之前
 的已匹配的相同前缀的信息。</p>
 <h4 id="模式串不含有相同字符">模式串不含有相同字符</h4>
@@ -227,11 +226,10 @@ KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
       if (j != 0) {
         i += (j - next[j - 1]);
       }
-      //std::cout &lt;&lt; &quot;j:&quot; &lt;&lt; j &lt;&lt; &quot; i:&quot; &lt;&lt; i &lt;&lt; std::endl;
+      //std::cout &lt;&lt; &#34;j:&#34; &lt;&lt; j &lt;&lt; &#34; i:&#34; &lt;&lt; i &lt;&lt; std::endl;
     }
     return -1;
   }
-
 </code></pre>
   </div>
 </article>
@@ -240,8 +238,8 @@ KMP所做的优化挺类似的，下面是代码以及简单证明：</p>
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

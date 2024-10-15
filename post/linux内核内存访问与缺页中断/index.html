@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核内存访问与缺页中断</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -130,7 +130,7 @@ page fault的处理过程如下：在用户空间上下文和内核上下文下�
  *
  * This function must have noinline because both callers
  * {,trace_}do_page_fault() have notrace on. Having this an actual function
- * guarantees there's a function trace entry.
+ * guarantees there&#39;s a function trace entry.
  */
 
 //处理缺页中断
@@ -161,7 +161,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
 
   /*
    * We fault-in kernel-space virtual memory on-demand. The
-   * 'reference' page table is init_mm.pgd.
+   * &#39;reference&#39; page table is init_mm.pgd.
    *
    * NOTE! We MUST NOT take any locks for this case. We may
    * be in an interrupt or a critical region, and should
@@ -187,11 +187,11 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
     if (spurious_fault(error_code, address))
       return;
 
-    /* kprobes don't want to hook the spurious faults: */
+    /* kprobes don&#39;t want to hook the spurious faults: */
     if (kprobes_fault(regs))
       return;
     /*
-     * Don't take the mm semaphore here. If we fixup a prefetch
+     * Don&#39;t take the mm semaphore here. If we fixup a prefetch
      * fault we could otherwise deadlock:
      */
     bad_area_nosemaphore(regs, error_code, address);
@@ -201,7 +201,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
 
 
 
-  /* kprobes don't want to hook the spurious faults: */
+  /* kprobes don&#39;t want to hook the spurious faults: */
   if (unlikely(kprobes_fault(regs)))
     return;
 
@@ -214,7 +214,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
   }
 
   /*
-   * If we're in an interrupt, have no user context or are running
+   * If we&#39;re in an interrupt, have no user context or are running
    * in an atomic region then we must not take the fault:
    */
 
@@ -225,7 +225,7 @@ __do_page_fault(struct pt_regs *regs, unsigned long error_code,
   }
 
   /*
-   * It's safe to allow irq's after cr2 has been saved and the
+   * It&#39;s safe to allow irq&#39;s after cr2 has been saved and the
    * vmalloc fault has been handled.
    *
    * User-mode registers count as a user access even for any
@@ -272,7 +272,7 @@ retry:
   } else {
     /*
      * The above down_read_trylock() might have succeeded in
-     * which case we'll have missed the might_sleep() from
+     * which case we&#39;ll have missed the might_sleep() from
      * down_read():
      */
     might_sleep();
@@ -303,7 +303,7 @@ retry:
     /*
      * Accessing the stack below %sp is always a bug.
      * The large cushion allows instructions like enter
-     * and pusha to work. (&quot;enter $65535, $31&quot; pushes
+     * and pusha to work. (&#34;enter $65535, $31&#34; pushes
      * 32 pointers and then decrements %sp by 65535.)
      */
     if (unlikely(address + 65536 + 32 * sizeof(unsigned long) &lt; regs-&gt;sp)) {
@@ -331,7 +331,7 @@ good_area:
   }
 
   /*
-   * If for any reason at all we couldn't handle the fault,
+   * If for any reason at all we couldn&#39;t handle the fault,
    * make sure we exit gracefully rather than endlessly redo
    * the fault.  Since we never set FAULT_FLAG_RETRY_NOWAIT, if
    * we get VM_FAULT_RETRY back, the mmap_sem has been unlocked.
@@ -393,8 +393,8 @@ NOKPROBE_SYMBOL(__do_page_fault);
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

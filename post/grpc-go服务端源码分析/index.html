@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>gRPC-Go服务端源码分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -174,7 +174,7 @@ func NewServer(opt ...ServerOption) *Server {
   s.ctx, s.cancel = context.WithCancel(context.Background())
   if EnableTracing {
     _, file, line, _ := runtime.Caller(1)
-    s.events = trace.NewEventLog(&quot;grpc.Server&quot;, fmt.Sprintf(&quot;%s:%d&quot;, file, line))
+    s.events = trace.NewEventLog(&#34;grpc.Server&#34;, fmt.Sprintf(&#34;%s:%d&#34;, file, line))
   }
   return s
 }
@@ -233,7 +233,6 @@ type options struct {
   keepaliveParams keepalive.ServerParameters
   keepalivePolicy keepalive.EnforcementPolicy
 }
-
 </code></pre><ul>
 <li>注册Service</li>
 </ul>
@@ -244,7 +243,7 @@ func (s *Server) RegisterService(sd *ServiceDesc, ss interface{}) {
   ht := reflect.TypeOf(sd.HandlerType).Elem()
   st := reflect.TypeOf(ss)
   if !st.Implements(ht) {
-    grpclog.Fatalf(&quot;grpc: Server.RegisterService found the handler of type %v that does not satisfy %v&quot;, st, ht)
+    grpclog.Fatalf(&#34;grpc: Server.RegisterService found the handler of type %v that does not satisfy %v&#34;, st, ht)
   }
   s.register(sd, ss)
 }
@@ -253,7 +252,7 @@ func (s *Server) register(sd *ServiceDesc, ss interface{}) {
   /* ... */
   // 检查是否已注册
   if _, ok := s.m[sd.ServiceName]; ok {
-    grpclog.Fatalf(&quot;grpc: Server.RegisterService found duplicate service registration for %q&quot;, sd.ServiceName)
+    grpclog.Fatalf(&#34;grpc: Server.RegisterService found duplicate service registration for %q&#34;, sd.ServiceName)
   }
   // 实例化一个服务
   srv := &amp;service{
@@ -280,20 +279,20 @@ func (s *Server) register(sd *ServiceDesc, ss interface{}) {
 // 一个由protobuf grcp-go插件生成的sd例子
 var _Greeter_serviceDesc = grpc.ServiceDesc{
   // 服务名
-  ServiceName: &quot;app.Greeter&quot;,
+  ServiceName: &#34;app.Greeter&#34;,
   // 此服务的处理类型(通常为实现某服务接口的具体实现结构体)
   HandlerType: (*GreeterServer)(nil),
   // 单次方法
   Methods: []grpc.MethodDesc{
     {
       // 方法名
-      MethodName: &quot;SayHello&quot;,
+      MethodName: &#34;SayHello&#34;,
       // 最终调用的对应/service/method的方法
       Handler:    _Greeter_SayHello_Handler,
     },
   },
   Streams:  []grpc.StreamDesc{},
-  Metadata: &quot;app.proto&quot;,
+  Metadata: &#34;app.proto&#34;,
 }
 
 // 要注意的是protobuf的gRPC-Go插件为我们生成的MethodDesc中的Handler
@@ -355,7 +354,7 @@ func _Greeter_SayHello_Handler(srv interface{}, stream grpc.ServerStream) error 
     // 重置延时
     tempDelay = 0
     // Start a new goroutine to deal with rawConn
-    // so we don't stall this Accept loop goroutine.
+    // so we don&#39;t stall this Accept loop goroutine.
     // 每个新的tcp连接使用单独的goroutine处理
     go s.handleRawConn(rawConn)
   }
@@ -401,7 +400,7 @@ func (s *Server) serveHTTP2Transport(c net.Conn, authInfo credentials.AuthInfo) 
   }
   // 返回实现了ServerTransport接口的http2server
   // 接口规定了HandleStream, Write等方法
-  st, err := transport.NewServerTransport(&quot;http2&quot;, c, config)
+  st, err := transport.NewServerTransport(&#34;http2&#34;, c, config)
   /* ... */
   // 加入每个连接的ServerTransport
   if !s.addConn(st) {
@@ -420,7 +419,7 @@ func newHTTP2Server(conn net.Conn, config *ServerConfig) (_ ServerTransport, err
   // 初始的配置帧
   // Send initial settings as connection preface to client.
   var settings []http2.Setting
-  // TODO(zhaoq): Have a better way to signal &quot;no limit&quot; because 0 is
+  // TODO(zhaoq): Have a better way to signal &#34;no limit&#34; because 0 is
   // permitted in the HTTP2 spec.
   // 流的最大数量
   maxStreams := config.MaxStreams
@@ -439,12 +438,12 @@ func newHTTP2Server(conn net.Conn, config *ServerConfig) (_ ServerTransport, err
       Val: uint32(initialWindowSize)})
   }
   if err := framer.writeSettings(true, settings...); err != nil {
-    return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+    return nil, connectionErrorf(true, err, &#34;transport: %v&#34;, err)
   }
   // Adjust the connection flow control window if needed.
   if delta := uint32(initialConnWindowSize - defaultWindowSize); delta &gt; 0 {
     if err := framer.writeWindowUpdate(true, 0, delta); err != nil {
-      return nil, connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+      return nil, connectionErrorf(true, err, &#34;transport: %v&#34;, err)
     }
   }
   // tcp连接的KeepAlive相关参数
@@ -530,13 +529,12 @@ func (s *Server) serveStreams(st transport.ServerTransport) {
     if !EnableTracing {
       return ctx
     }
-    tr := trace.New(&quot;grpc.Recv.&quot;+methodFamily(method), method)
+    tr := trace.New(&#34;grpc.Recv.&#34;+methodFamily(method), method)
     return trace.NewContext(ctx, tr)
   })
   // 等待HandleStream结束，除非客户端的连接由于错误发生需要关闭，一般不会到这
   wg.Wait()
 }
-
 </code></pre><ul>
 <li>连接的处理细节(http2连接的建立)</li>
 </ul>
@@ -547,12 +545,12 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
   // 建立一个http2连接之后，之后的所有stream复用此连接
   preface := make([]byte, len(clientPreface))
   if _, err := io.ReadFull(t.conn, preface); err != nil {
-    grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to receive the preface from client: %v&quot;, err)
+    grpclog.Printf(&#34;transport: http2Server.HandleStreams failed to receive the preface from client: %v&#34;, err)
     t.Close()
     return
   }
   if !bytes.Equal(preface, clientPreface) {
-    grpclog.Printf(&quot;transport: http2Server.HandleStreams received bogus greeting from client: %q&quot;, preface)
+    grpclog.Printf(&#34;transport: http2Server.HandleStreams received bogus greeting from client: %q&#34;, preface)
     t.Close()
     return
   }
@@ -587,7 +585,7 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
         t.Close()
         return
       }
-      grpclog.Printf(&quot;transport: http2Server.HandleStreams failed to read frame: %v&quot;, err)
+      grpclog.Printf(&#34;transport: http2Server.HandleStreams failed to read frame: %v&#34;, err)
       t.Close()
       return
     }
@@ -616,21 +614,20 @@ func (t *http2Server) HandleStreams(handle func(*Stream), traceCtx func(context.
     case *http2.GoAwayFrame:
       // TODO: Handle GoAway from the client appropriately.
     default:
-      grpclog.Printf(&quot;transport: http2Server.HandleStreams found unhandled frame type %v.&quot;, frame)
+      grpclog.Printf(&#34;transport: http2Server.HandleStreams found unhandled frame type %v.&#34;, frame)
     }
   }
 }
-
 </code></pre><ul>
 <li>新请求的处理细节(新流的打开和帧数据的处理)</li>
 </ul>
 <pre tabindex="0"><code>// 解析流，提取服务名，方法名等信息，handleStream实现的是stream的业务逻辑处理
 func (s *Server) handleStream(t transport.ServerTransport, stream *transport.Stream, trInfo *traceInfo) {
   sm := stream.Method()
-  if sm != &quot;&quot; &amp;&amp; sm[0] == '/' {
+  if sm != &#34;&#34; &amp;&amp; sm[0] == &#39;/&#39; {
     sm = sm[1:]
   }
-  pos := strings.LastIndex(sm, &quot;/&quot;)
+  pos := strings.LastIndex(sm, &#34;/&#34;)
   /* ... */
   // 服务名
   service := sm[:pos]
@@ -703,11 +700,11 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
       if len(req) &gt; s.opts.maxMsgSize {
         // TODO: Revisit the error code. Currently keep it consistent with
         // java implementation.
-        return status.Errorf(codes.Internal, &quot;grpc: server received a message of %d bytes exceeding %d limit&quot;, len(req), s.opts.maxMsgSize)
+        return status.Errorf(codes.Internal, &#34;grpc: server received a message of %d bytes exceeding %d limit&#34;, len(req), s.opts.maxMsgSize)
       }
       // 解码
       if err := s.opts.codec.Unmarshal(req, v); err != nil {
-        return status.Errorf(codes.Internal, &quot;grpc: error unmarshalling request: %v&quot;, err)
+        return status.Errorf(codes.Internal, &#34;grpc: error unmarshalling request: %v&#34;, err)
       }
       /* ... */
     }
@@ -729,7 +726,7 @@ func (s *Server) processUnaryRPC(t transport.ServerTransport, stream *transport.
     // Should the logging be in WriteStatus?  Should we ignore the WriteStatus
     // error or allow the stats handler to see it?
     // 发送http响应头，关闭stream
-    return t.WriteStatus(stream, status.New(codes.OK, &quot;&quot;))
+    return t.WriteStatus(stream, status.New(codes.OK, &#34;&#34;))
   }
 }
 
@@ -769,7 +766,7 @@ func (s *Server) processStreamingRPC(t transport.ServerTransport, stream *transp
   }
   /* ... */
   // 注意，业务逻辑的实现函数返回后，最终还是会由服务端关闭流
-  return t.WriteStatus(ss.s, status.New(codes.OK, &quot;&quot;))
+  return t.WriteStatus(ss.s, status.New(codes.OK, &#34;&#34;))
 }
 
 // 发送响应数据，输出写数据时做了流量的控制
@@ -788,7 +785,7 @@ func (t *http2Server) Write(s *Stream, data []byte, opts *Options) (err error) {
   // stream已经关闭了
   if s.state == streamDone {
     s.mu.Unlock()
-    return streamErrorf(codes.Unknown, &quot;the stream has been done&quot;)
+    return streamErrorf(codes.Unknown, &#34;the stream has been done&#34;)
   }
   // 需要写header
   if !s.headerOk {
@@ -861,7 +858,7 @@ func (t *http2Server) Write(s *Stream, data []byte, opts *Options) (err error) {
     // 写到buffer reader中
     if err := t.framer.writeData(forceFlush, s.id, false, p); err != nil {
       t.Close()
-      return connectionErrorf(true, err, &quot;transport: %v&quot;, err)
+      return connectionErrorf(true, err, &#34;transport: %v&#34;, err)
     }
     // flush
     if t.framer.adjustNumWriters(-1) == 0 {
@@ -917,8 +914,8 @@ func (t *http2Server) handleData(f *http2.DataFrame) {
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

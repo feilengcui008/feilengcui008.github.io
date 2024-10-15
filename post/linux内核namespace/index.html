@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核namespace</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -110,9 +110,9 @@
 /* Start function for cloned child */
 static int childFunc(void *arg)
 {
-  const char *binary = &quot;/bin/bash&quot;;
+  const char *binary = &#34;/bin/bash&#34;;
   char *const argv[] = {
-    &quot;/bin/bash&quot;,
+    &#34;/bin/bash&#34;,
     NULL
   };
   char *const envp[] = { NULL };
@@ -131,7 +131,7 @@ static int childFunc(void *arg)
   //int ret = execve(binary, argv, envp);
   int ret = execv(binary, argv);
   if (ret &lt; 0) {
-    errExit(&quot;execve error&quot;);
+    errExit(&#34;execve error&#34;);
   }
   return ret;
 }
@@ -145,23 +145,22 @@ int main(int argc, char *argv[])
   pid_t pid;
   stack = malloc(STACK_SIZE);
   if (stack == NULL)
-    errExit(&quot;malloc&quot;);
+    errExit(&#34;malloc&#34;);
   stackTop = stack + STACK_SIZE;  /* Assume stack grows downward */
 
   //pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | SIGCHLD, NULL);
   pid = clone(childFunc, stackTop, CLONE_NEWUTS | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC | SIGCHLD, NULL);
 //pid = clone(childFunc, stackTop, CLONE_NEWUTS | //CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWUSER | CLONE_NEWIPC //| CLONE_NEWNET | SIGCHLD, NULL);
   if (pid == -1)
-    errExit(&quot;clone&quot;);
-  printf(&quot;clone() returned %ld\n&quot;, (long) pid);
+    errExit(&#34;clone&#34;);
+  printf(&#34;clone() returned %ld\n&#34;, (long) pid);
 
   if (waitpid(pid, NULL, 0) == -1)  
-    errExit(&quot;waitpid&quot;);
-  printf(&quot;child has terminated\n&quot;);
+    errExit(&#34;waitpid&#34;);
+  printf(&#34;child has terminated\n&#34;);
 
   exit(EXIT_SUCCESS);
 }
-
 </code></pre><pre tabindex="0"><code>// 代码2: 使用setns加入新进程
 #define _GNU_SOURCE  // ?
 #include &lt;stdio.h&gt;
@@ -226,7 +225,7 @@ CLONE_FILES | CLONE_FS | CLONE_NEWCGROUP | CLONE_NEWIPC | CLONE_NEWNET
 #define MAX_PROCPATH_LEN 1024
 
 #define errorExit(msg) \
-  do { fprintf(stderr, &quot;%s in file %s in line %d\n&quot;, msg, __FILE__, __LINE__);\
+  do { fprintf(stderr, &#34;%s in file %s in line %d\n&#34;, msg, __FILE__, __LINE__);\
     exit(EXIT_FAILURE); } while (0)
 
 void printInfo();
@@ -235,66 +234,66 @@ int openAndSetns(const char *path);
 int main(int argc, char *argv[])
 {
   if (argc &lt; 2) {
-    fprintf(stdout, &quot;usage : execname pid(find namespaces of this process)\n&quot;);
+    fprintf(stdout, &#34;usage : execname pid(find namespaces of this process)\n&#34;);
     return 0;
   }
   printInfo();
 
-  fprintf(stdout, &quot;---- setns for uts ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for uts ----\n&#34;);
   char uts[MAX_PROCPATH_LEN];
-  snprintf(uts, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/uts&quot;, argv[1]);
+  snprintf(uts, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/uts&#34;, argv[1]);
   openAndSetns(uts);
   printInfo();
 
-  fprintf(stdout, &quot;---- setns for user ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for user ----\n&#34;);
   char user[MAX_PROCPATH_LEN];
-  snprintf(user, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/user&quot;, argv[1]);
+  snprintf(user, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/user&#34;, argv[1]);
   openAndSetns(user);
   printInfo();
 
   // 注意pid namespace的不同行为，只有后续创建的子进程进入setns设置
   // 的新的pid namespace，本进程不会改变
-  fprintf(stdout, &quot;---- setns for pid ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for pid ----\n&#34;);
   char pidpath[MAX_PROCPATH_LEN];
-  snprintf(pidpath, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/pid&quot;, argv[1]);
+  snprintf(pidpath, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/pid&#34;, argv[1]);
   openAndSetns(pidpath);
   printInfo();
 
 
-  fprintf(stdout, &quot;---- setns for ipc ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for ipc ----\n&#34;);
   char ipc[MAX_PROCPATH_LEN];
-  snprintf(ipc, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/ipc&quot;, argv[1]);
+  snprintf(ipc, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/ipc&#34;, argv[1]);
   openAndSetns(ipc);
   printInfo();
 
-  fprintf(stdout, &quot;---- setns for net ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for net ----\n&#34;);
   char net[MAX_PROCPATH_LEN];
-  snprintf(net, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/net&quot;, argv[1]);
+  snprintf(net, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/net&#34;, argv[1]);
   openAndSetns(net);
   printInfo();
 
   // 注意mnt namespace需要放在其他后面，避免mnt namespace改变后
   // 找不到/proc/pid/ns下的文件
-  fprintf(stdout, &quot;---- setns for mount ----\n&quot;);
+  fprintf(stdout, &#34;---- setns for mount ----\n&#34;);
   char mount[MAX_PROCPATH_LEN];
-  snprintf(mount, MAX_PROCPATH_LEN, &quot;/proc/%s/ns/mnt&quot;, argv[1]);
+  snprintf(mount, MAX_PROCPATH_LEN, &#34;/proc/%s/ns/mnt&#34;, argv[1]);
   openAndSetns(mount);
   printInfo();
 
   // 测试子进程的pid namespace
   int ret = fork();
   if (-1 == ret) {
-    errorExit(&quot;failed to fork&quot;);
+    errorExit(&#34;failed to fork&#34;);
   } else if (ret == 0) {
-    fprintf(stdout, &quot;********\n&quot;);
-    fprintf(stdout, &quot;in child process\n&quot;);
+    fprintf(stdout, &#34;********\n&#34;);
+    fprintf(stdout, &#34;in child process\n&#34;);
     printInfo();
-    fprintf(stdout, &quot;********\n&quot;);
+    fprintf(stdout, &#34;********\n&#34;);
     for (;;) {
       sleep(5);
     }
   } else {
-    fprintf(stdout, &quot;child pid : %d\n&quot;, ret);
+    fprintf(stdout, &#34;child pid : %d\n&#34;, ret);
   }
   for (;;) {
     sleep(5);
@@ -316,26 +315,25 @@ void printInfo()
   gid = getgid();
   // uts namespace 
   uname(&amp;uts);
-  fprintf(stdout, &quot;pid : %d\n&quot;, pid);
-  fprintf(stdout, &quot;uid : %d\n&quot;, uid);
-  fprintf(stdout, &quot;gid : %d\n&quot;, gid);
-  fprintf(stdout, &quot;hostname : %s\n&quot;, uts.nodename);
+  fprintf(stdout, &#34;pid : %d\n&#34;, pid);
+  fprintf(stdout, &#34;uid : %d\n&#34;, uid);
+  fprintf(stdout, &#34;gid : %d\n&#34;, gid);
+  fprintf(stdout, &#34;hostname : %s\n&#34;, uts.nodename);
 }
 
 int openAndSetns(const char *path)
 {
   int ret = open(path, O_RDONLY, 0);
   if (-1 == ret) {
-    fprintf(stderr, &quot;%s\n&quot;, strerror(errno));
-    errorExit(&quot;failed to open fd&quot;);
+    fprintf(stderr, &#34;%s\n&#34;, strerror(errno));
+    errorExit(&#34;failed to open fd&#34;);
   }
   if (-1 == (ret = setns(ret, 0))) {
-    fprintf(stderr, &quot;%s\n&quot;, strerror(errno));
-    errorExit(&quot;failed to setns&quot;);
+    fprintf(stderr, &#34;%s\n&#34;, strerror(errno));
+    errorExit(&#34;failed to setns&#34;);
   }
   return ret;
 }
-
 </code></pre><hr>
 <h3 id="3-测试效果">3. 测试效果</h3>
 <ul>
@@ -622,7 +620,6 @@ struct pid
   struct rcu_head rcu;
   struct upid numbers[1];
 };
-
 </code></pre><ul>
 <li>setns系统调用的实现</li>
 </ul>
@@ -736,8 +733,8 @@ SYSCALL_DEFINE1(unshare, unsigned long, unshare_flags)
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

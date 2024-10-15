@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Go的context包实现分析</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -110,7 +110,6 @@
   // 只用于valueCtx
   Value(key interface{}) interface{}
 }
-
 </code></pre><ul>
 <li>几种主要Context的实现</li>
 </ul>
@@ -148,7 +147,7 @@ func (c *cancelCtx) cancel(removeFromParent bool, err error) {
     close(c.done)
   }
   for child := range c.children {
-    // NOTE: acquiring the child's lock while holding parent's lock.
+    // NOTE: acquiring the child&#39;s lock while holding parent&#39;s lock.
     // 不能将子ctx从当前移除，由于移除需要拿当前ctx的锁
     child.cancel(false, err)
   }
@@ -214,15 +213,14 @@ func WithTimeout(parent Context, timeout time.Duration) (Context, CancelFunc) {
   // 直接使用WithDeadline的实现即可
   return WithDeadline(parent, time.Now().Add(timeout))
 }
-
 </code></pre><hr>
 <h2 id="3-简单例子">3. 简单例子</h2>
 <pre tabindex="0"><code>package main
 
 import (
-  &quot;context&quot;
-  &quot;fmt&quot;
-  &quot;time&quot;
+  &#34;context&#34;
+  &#34;fmt&#34;
+  &#34;time&#34;
 )
 
 func OuterLogicWithContext(ctx context.Context, fn func(ctx context.Context) error) error {
@@ -230,7 +228,7 @@ func OuterLogicWithContext(ctx context.Context, fn func(ctx context.Context) err
   for {
     select {
     case &lt;-ctx.Done():
-      fmt.Println(&quot;OuterLogicWithContext ended&quot;)
+      fmt.Println(&#34;OuterLogicWithContext ended&#34;)
       return ctx.Err()
     }
   }
@@ -244,7 +242,7 @@ Loop:
       break Loop
     }
   }
-  fmt.Println(&quot;InnerLogicWithContext ended&quot;)
+  fmt.Println(&#34;InnerLogicWithContext ended&#34;)
   return ctx.Err()
 }
 
@@ -257,7 +255,7 @@ func main() {
   time.Sleep(time.Second * 3)
   // has been canceled by timer
   cancel()
-  fmt.Println(&quot;main ended&quot;)
+  fmt.Println(&#34;main ended&#34;)
 }
 </code></pre>
   </div>
@@ -267,8 +265,8 @@ func main() {
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

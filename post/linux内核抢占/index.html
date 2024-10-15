@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核抢占</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -205,7 +205,6 @@ need_resched:
   if (need_resched())
     goto need_resched;
 }
-
 </code></pre><ul>
 <li>__preempt_count的相关操作</li>
 </ul>
@@ -311,7 +310,6 @@ static __always_inline bool need_resched(void)
 
 // 是否可抢占 : 抢占计数为0并且没有处在关闭抢占的环境中
 # define preemptible()  (preempt_count() == 0 &amp;&amp; !irqs_disabled())
-
 </code></pre><hr>
 <h4 id="3-系统调用和中断处理流程的实现以及抢占的影响">3. 系统调用和中断处理流程的实现以及抢占的影响</h4>
 <p>(arch/x86/kernel/entry_64.S)</p>
@@ -477,7 +475,6 @@ int_restore_rest:
   jmp int_with_check  // 再次检查thread_info flags
   CFI_ENDPROC
 END(system_call)
-
 </code></pre><pre tabindex="0"><code>// 中断入口基本流程
 
 // 调用do_IRQ的函数wrapper
@@ -594,7 +591,6 @@ ENTRY(retint_kernel)
 #endif
   CFI_ENDPROC
 END(common_interrupt)
-
 </code></pre><hr>
 <h4 id="4-抢占与smp并发安全">4. 抢占与SMP并发安全</h4>
 <ul>
@@ -622,8 +618,8 @@ END(common_interrupt)
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

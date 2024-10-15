@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Python退出时hang住的问题</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -100,7 +100,7 @@ import commands
 # but child process is blocked by writing pipe
 def testSubprocessCallPipe():
     # call: just Popen().wait()
-    p = subprocess.Popen([&quot;python&quot;, &quot;run.py&quot;], 
+    p = subprocess.Popen([&#34;python&#34;, &#34;run.py&#34;], 
         stdin=subprocess.PIPE, 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE)
@@ -111,10 +111,10 @@ def testSubprocessCallPipe():
 # will not hang since the parent process which
 # call communicate will poll or thread to comsume
 # the pipe buffer, so the child process can write
-# all it's data to stdout or stderr pipe and it will
+# all it&#39;s data to stdout or stderr pipe and it will
 # not be blocked.
 def testSubprocessCommunicate():
-    p = subprocess.Popen([&quot;python&quot;, &quot;run.py&quot;], 
+    p = subprocess.Popen([&#34;python&#34;, &#34;run.py&#34;], 
         stdin=subprocess.PIPE, 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE)
@@ -122,12 +122,12 @@ def testSubprocessCommunicate():
 
 
 # will not hang since sys.stdout and sys.stderr 
-# don't have 64K default buffer limitation, child
-# process can write all it's data to stdout or 
+# don&#39;t have 64K default buffer limitation, child
+# process can write all it&#39;s data to stdout or 
 # stderr fd and exit
 def testSubprocessCallStdout():
     # call: just Popen().wait()
-    p = subprocess.Popen([&quot;python&quot;, &quot;run.py&quot;], 
+    p = subprocess.Popen([&#34;python&#34;, &#34;run.py&#34;], 
         stdin=sys.stdin, 
         stdout=sys.stdout, 
         stderr=sys.stderr)
@@ -139,10 +139,10 @@ def testSubprocessCallStdout():
 def testSubprocessCallFile():
     stdout = tempfile.mktemp()
     stderr = tempfile.mktemp()
-    print &quot;stdout file %s&quot; % (stdout,), &quot;stderr file %s&quot; % (stderr,)
-    stdout = open(stdout, &quot;w&quot;)
-    stderr = open(stderr, &quot;w&quot;)
-    p = subprocess.Popen([&quot;python&quot;, &quot;run.py&quot;], 
+    print &#34;stdout file %s&#34; % (stdout,), &#34;stderr file %s&#34; % (stderr,)
+    stdout = open(stdout, &#34;w&#34;)
+    stderr = open(stderr, &#34;w&#34;)
+    p = subprocess.Popen([&#34;python&#34;, &#34;run.py&#34;], 
         stdin=None, 
         stdout=stdout, 
         stderr=stderr)
@@ -152,26 +152,26 @@ def testSubprocessCallFile():
 
 print os.getpid()
 # not hang
-print &quot;use file&quot;
+print &#34;use file&#34;
 testSubprocessCallFile()
 # not hang
-print &quot;use sys.stdout and sys.stderr&quot;
+print &#34;use sys.stdout and sys.stderr&#34;
 testSubprocessCallStdout()
 # not hang
-print &quot;use pipe and communicate&quot;
+print &#34;use pipe and communicate&#34;
 testSubprocessCommunicate()
 # hang
-print &quot;use pipe and call directly&quot;
+print &#34;use pipe and call directly&#34;
 testSubprocessCallPipe()
 </code></pre><pre tabindex="0"><code># run.py
 import os
 
 print os.getpid()
 
-string = &quot;&quot;
+string = &#34;&#34;
 # &gt; 64k will hang
 for i in range(1024 * 64 - 4):
-    string = string + &quot;c&quot;
+    string = string + &#34;c&#34;
 # flush to my stdout which might 
 # be sys.stdout/pipe/fd...
 print string
@@ -203,14 +203,14 @@ class TestClassA(object):
     timer = None
     count = 0
     def __del__(self):
-        print &quot;called del&quot;
+        print &#34;called del&#34;
         if self.timer is not None:
             self.timer.cancel()
 
     def new_timer(self):
         # current reference 3 + getrefcount 1 = 4
-        print &quot;in new_timer: %d&quot; % (sys.getrefcount(self))
-        print &quot;ffff&quot;
+        print &#34;in new_timer: %d&#34; % (sys.getrefcount(self))
+        print &#34;ffff&#34;
         self.count += 1
         # my father timer thread exit, ref count -1, but start
         # a new thread will make it still 3
@@ -223,9 +223,9 @@ class TestClassA(object):
 
 def test():
     t = TestClassA()
-    print &quot;enter test: %d&quot; % (sys.getrefcount(t),)  # 2
+    print &#34;enter test: %d&#34; % (sys.getrefcount(t),)  # 2
     t.start_timer() # pass ref to a new timer thread through self.new_timer: 3
-    print &quot;before out test: %d&quot; % (sys.getrefcount(t),) # 3
+    print &#34;before out test: %d&#34; % (sys.getrefcount(t),) # 3
 
 
 # approach 2
@@ -233,17 +233,17 @@ class TestClassB(object):
     timer = None
     count = 0
     def __del__(self):
-        print &quot;called del&quot;
+        print &#34;called del&#34;
 
 def func(*ins):
-    print &quot;fffff&quot;
+    print &#34;fffff&#34;
     ins[0].count += 1
     ins[0].timer = threading.Timer(1, func, ins) # will increase reference count of ins
     ins[0].timer.start()
 
 def test_in_scope():
     t = TestClassB()
-    print &quot;enter test_in_scope: %d&quot; % (sys.getrefcount(t))
+    print &#34;enter test_in_scope: %d&#34; % (sys.getrefcount(t))
     t.timer = threading.Timer(1, func, (t,))
     t.timer.start()
     while t.count &lt; 4:
@@ -257,43 +257,43 @@ def test_in_scope():
     # if we interrupt or raise some other exceptions and not catch that,
     # will hang
     t.timer.cancel()
-    print &quot;before exit test_in_scope: %d&quot; % (sys.getrefcount(t))
+    print &#34;before exit test_in_scope: %d&#34; % (sys.getrefcount(t))
 
 
 # approachh 3
 def test_closure():
     t = TestClassA()
-    print &quot;enter test_closure: %d&quot; % (sys.getrefcount(t),)
+    print &#34;enter test_closure: %d&#34; % (sys.getrefcount(t),)
     def func_inner():
-        print &quot;ffffffff&quot;
+        print &#34;ffffffff&#34;
         t.timer = threading.Timer(1, func_inner) # will increase reference count
         t.count += 1
         t.timer.start()
-        print &quot;in func: %d&quot; % (sys.getrefcount(t))
+        print &#34;in func: %d&#34; % (sys.getrefcount(t))
     t.timer = threading.Timer(1, func_inner)
     t.timer.start()
-    print &quot;before out test_closure: %d&quot; % (sys.getrefcount(t),)
+    print &#34;before out test_closure: %d&#34; % (sys.getrefcount(t),)
 
 
 
-#print &quot;================= test approach 1 ===============&quot;
-#print &quot;before test&quot;
+#print &#34;================= test approach 1 ===============&#34;
+#print &#34;before test&#34;
 #test()
-#print &quot;after test&quot;
+#print &#34;after test&#34;
 
-print &quot;================= test approach 2 ===============&quot;
-print &quot;before test_in_scope&quot;
+print &#34;================= test approach 2 ===============&#34;
+print &#34;before test_in_scope&#34;
 test_in_scope()
-print &quot;after test_in_scope&quot;
+print &#34;after test_in_scope&#34;
 
 
-#print &quot;================= test approach 3 ================&quot;
-#print &quot;before test_closure&quot;
+#print &#34;================= test approach 3 ================&#34;
+#print &#34;before test_closure&#34;
 #test_closure()
-#print &quot;after test_closure&quot;
+#print &#34;after test_closure&#34;
 
 
-print &quot;before exit main thread, it will wait and join all other threads&quot;
+print &#34;before exit main thread, it will wait and join all other threads&#34;
 sys.exit()
 </code></pre>
   </div>
@@ -303,8 +303,8 @@ sys.exit()
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

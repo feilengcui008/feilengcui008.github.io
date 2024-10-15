@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Go的自举</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -104,7 +104,7 @@
 <pre tabindex="0"><code>// make.bash
 # 编译cmd/dist，需要在host os和host arch下编译(dist需要在本地机器运行)，因此这里把环境变量清掉了
 # 注意在bash中，单行的环境变量只影响后面的命令，不会覆盖外部环境变量!!!
-GOROOT=&quot;$GOROOT_BOOTSTRAP&quot; GOOS=&quot;&quot; GOARCH=&quot;&quot; &quot;$GOROOT_BOOTSTRAP/bin/go&quot; build -o cmd/dist/dist ./cmd/dist
+GOROOT=&#34;$GOROOT_BOOTSTRAP&#34; GOOS=&#34;&#34; GOARCH=&#34;&#34; &#34;$GOROOT_BOOTSTRAP/bin/go&#34; build -o cmd/dist/dist ./cmd/dist
 </code></pre><ul>
 <li>生成bootstrap二进制文件和库</li>
 </ul>
@@ -120,17 +120,17 @@ eval $(./cmd/dist/dist env -p || echo FAIL=true)
 </ul>
 <pre tabindex="0"><code>// make.bash
 // std, cmd, all在go里有特殊的含义，这里重新编译了所有标准库和默认工具的二进制程序
-if [ &quot;$GOHOSTARCH&quot; != &quot;$GOARCH&quot; -o &quot;$GOHOSTOS&quot; != &quot;$GOOS&quot; ]; then
-  echo &quot;##### Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH.&quot;
+if [ &#34;$GOHOSTARCH&#34; != &#34;$GOARCH&#34; -o &#34;$GOHOSTOS&#34; != &#34;$GOOS&#34; ]; then
+  echo &#34;##### Building packages and commands for host, $GOHOSTOS/$GOHOSTARCH.&#34;
   # 重置GOOS和GOARCH环境变量，不会影响外层的环境变量
   CC=$CC GOOS=$GOHOSTOS GOARCH=$GOHOSTARCH \
-    &quot;$GOTOOLDIR&quot;/go_bootstrap install -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
+    &#34;$GOTOOLDIR&#34;/go_bootstrap install -gcflags &#34;$GO_GCFLAGS&#34; -ldflags &#34;$GO_LDFLAGS&#34; -v std cmd
   echo
 fi
 </code></pre><ul>
 <li>生成目标平台的Go</li>
 </ul>
-<pre tabindex="0"><code>CC=$CC_FOR_TARGET &quot;$GOTOOLDIR&quot;/go_bootstrap install $GO_FLAGS -gcflags &quot;$GO_GCFLAGS&quot; -ldflags &quot;$GO_LDFLAGS&quot; -v std cmd
+<pre tabindex="0"><code>CC=$CC_FOR_TARGET &#34;$GOTOOLDIR&#34;/go_bootstrap install $GO_FLAGS -gcflags &#34;$GO_GCFLAGS&#34; -ldflags &#34;$GO_LDFLAGS&#34; -v std cmd
 </code></pre><ul>
 <li>dist bootstrap逻辑</li>
 </ul>
@@ -159,8 +159,8 @@ dist的bootstrap逻辑不具体分析了，基本过程是先编译好asm, compi
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

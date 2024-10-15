@@ -4,20 +4,16 @@
     <title>Kubernetes on </title>
     <link>https://feilengcui008.github.io/categories/kubernetes/</link>
     <description>Recent content in Kubernetes on </description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/kubernetes/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate>
+    <atom:link href="https://feilengcui008.github.io/categories/kubernetes/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>有状态服务托管的两种模式</title>
       <link>https://feilengcui008.github.io/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/</link>
       <pubDate>Sat, 22 Feb 2020 15:44:41 +0800</pubDate>
-      
       <guid>https://feilengcui008.github.io/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/</guid>
-      <description>通常情况下，PaaS托管的大部分负载都是无状态应用。但是对于一些依赖数据的特殊应用（比如分布式文件系统、zk、mysql），PaaS也应当提供相应的扩展能力，支持这些应用的托管。本质上讲，PaaS支持不同类型的工作负载托管的核心在策略，类似K8S的controller，这些策略适配了不同工作负载的工作方式。对于有状态应用托管，有两种方式。
-Operator 基于K8S的CRD，工作负载的策略以一个Operator的形式实现。这种方式策略的所有逻辑完全实现在PaaS内部，对于不同的有状态应用，PaaS可能需要实现不同的Operator。
-回调 策略由业务自身实现，以Server回调接口的形式暴露给PaaS，PaaS实现删除容器时的回调逻辑，负责通知业务当前容器的状态，由业务的策略Server负责自身业务状态的处理（比如数据搬迁），给PaaS返回成功后，PaaS才真正删除容器。这种方式的好处是，回调机制对于有状态应用是完全通用的，且对于大公司来说，内部大部分有状态应用（比如文件系统、数据库）都已经有了自己的管控系统，只需要实现一个旁路的策略Server即可，成本不高。
-当然，基于回调的业务逻辑Server如果由PaaS来实现，其实就很类似Operator了。</description>
+      <description>&lt;p&gt;通常情况下，PaaS托管的大部分负载都是无状态应用。但是对于一些依赖数据的特殊应用（比如分布式文件系统、zk、mysql），PaaS也应当提供相应的扩展能力，支持这些应用的托管。本质上讲，PaaS支持不同类型的工作负载托管的核心在策略，类似K8S的controller，这些策略适配了不同工作负载的工作方式。对于有状态应用托管，有两种方式。&lt;/p&gt;&#xA;&lt;h2 id=&#34;operator&#34;&gt;Operator&lt;/h2&gt;&#xA;&lt;p&gt;基于K8S的CRD，工作负载的策略以一个Operator的形式实现。这种方式策略的所有逻辑完全实现在PaaS内部，对于不同的有状态应用，PaaS可能需要实现不同的Operator。&lt;/p&gt;&#xA;&lt;h2 id=&#34;回调&#34;&gt;回调&lt;/h2&gt;&#xA;&lt;p&gt;策略由业务自身实现，以Server回调接口的形式暴露给PaaS，PaaS实现删除容器时的回调逻辑，负责通知业务当前容器的状态，由业务的策略Server负责自身业务状态的处理（比如数据搬迁），给PaaS返回成功后，PaaS才真正删除容器。这种方式的好处是，回调机制对于有状态应用是完全通用的，且对于大公司来说，内部大部分有状态应用（比如文件系统、数据库）都已经有了自己的管控系统，只需要实现一个旁路的策略Server即可，成本不高。&lt;/p&gt;&#xA;&lt;p&gt;当然，基于回调的业务逻辑Server如果由PaaS来实现，其实就很类似Operator了。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

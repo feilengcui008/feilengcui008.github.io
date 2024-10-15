@@ -4,17 +4,16 @@
     <title>效率工具 on </title>
     <link>https://feilengcui008.github.io/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7/</link>
     <description>Recent content in 效率工具 on </description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 06 Jun 2017 15:13:08 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 06 Jun 2017 15:13:08 +0800</lastBuildDate>
+    <atom:link href="https://feilengcui008.github.io/categories/%E6%95%88%E7%8E%87%E5%B7%A5%E5%85%B7/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>迁移到Hugo</title>
       <link>https://feilengcui008.github.io/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</link>
       <pubDate>Tue, 06 Jun 2017 15:13:08 +0800</pubDate>
-      
       <guid>https://feilengcui008.github.io/post/%E8%BF%81%E7%A7%BB%E5%88%B0hugo/</guid>
-      <description>之前一直使用hexo作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器hugo，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多。因此决定切换到hugo，顺便将之前基于fexo改的hexo主题移植到hugo上了，代码仓库在simpost-theme。</description>
+      <description>&lt;p&gt;之前一直使用&lt;a href=&#34;https://hexo.io/&#34;&gt;hexo&lt;/a&gt;作为markdown的静态页面生成器，各种主题插件支持也很完善，但是其缺点是一大堆nodejs的依赖，而且生成速度非常慢。最近发现一个Go写的静态页面生成器&lt;a href=&#34;https://gohugo.io/&#34;&gt;hugo&lt;/a&gt;，由于直接编译生成一个二进制文件，所以解决了包依赖的问题，实测其生成速度确实比hexo快太多。因此决定切换到hugo，顺便将之前基于&lt;a href=&#34;https://github.com/forsigner/fexo&#34;&gt;fexo&lt;/a&gt;改的hexo主题移植到hugo上了，代码仓库在&lt;a href=&#34;https://github.com/feilengcui008/toys/tree/master/simpost-theme&#34;&gt;simpost-theme&lt;/a&gt;。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

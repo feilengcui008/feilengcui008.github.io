@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核栈与thread_info</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -143,7 +143,6 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 		  THREAD_SIZE - KERNEL_STACK_OFFSET);
     /* ... */
 } 
-
 </code></pre><p>但是Linux内核引入percpu变量之后，逐渐通过percpu变量来实现current宏，并且从Linux 4.1开始，x86移除了kernel_stack，并逐渐开始简化thread_info结构体，直到Linux 4.9彻底不再通过thread_info获取task_struct指针，而是直接通过current_struct percpu变量存放task_struct的指针，具体可参见<a href="https://github.com/torvalds/linux/commit/15f4eae70d365bba26854c90b6002aaabb18c8aa">此commit</a></p>
 <pre tabindex="0"><code>// 以Linux 3.19.3 x86的源码为例
 
@@ -164,7 +163,6 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
     this_cpu_write(current_task, next_p);
     /* ... */
 } 
-
 </code></pre>
   </div>
 </article>
@@ -173,8 +171,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

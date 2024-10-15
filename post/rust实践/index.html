@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Rust实践</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -149,7 +149,7 @@ tokio::spawn({
     if self.partitions.read().unwrap().get(&amp;table_name).is_some() {
        // 手动构造TabletManagerError，errmsg中注入更多信息
        return Err(TabletManagerError::new(&amp;format!(
-           &quot;{}:table {table_name} partitions already exist, can not init again&quot;,
+           &#34;{}:table {table_name} partitions already exist, can not init again&#34;,
            ManagerErrorKind::TableAlreadyExist,
        )));
     }
@@ -157,7 +157,7 @@ tokio::spawn({
     // map_err打印错误信息
     let rw_replica_val = serde_json::to_string(&amp;rw_replica_route_info).map_err(|err| {
         tracing::error!(
-            &quot;init tablet serialize rw replica data failed {err}, {table_name} {tablet_id}&quot;
+            &#34;init tablet serialize rw replica data failed {err}, {table_name} {tablet_id}&#34;
         );
         err
     })?; // ?;错误快速返回，并由于TabletManagerError实现了From，这里会自动转换json错误为TabletManagerError
@@ -166,7 +166,7 @@ tokio::spawn({
 
 impl From&lt;serde_json::Error&gt; for TabletManagerError {
     fn from(e: serde_json::Error) -&gt; Self {
-        TabletManagerError::new(&quot;SystemError:serde json error&quot;)
+        TabletManagerError::new(&#34;SystemError:serde json error&#34;)
     }
 }
 </code></pre><ul>
@@ -179,7 +179,7 @@ pub async fn on_leader_start(&amp;self) -&gt; Result&lt;()&gt; {
         .await
         .map_err(|err| {
             // 构造anyhow::Error
-            anyhow::format_err!(&quot;call tablet task manager on leader start failed {err}&quot;,)
+            anyhow::format_err!(&#34;call tablet task manager on leader start failed {err}&#34;,)
     })
 }
 </code></pre><h1 id="stdsync--tokiosync">std::sync &amp; tokio::sync</h1>
@@ -195,7 +195,7 @@ impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
         // replica_epoch_allocator跨await，需要使用异步版本的Mutex，否则可能导致线程hang
         let mut id_allocator = self.replica_epoch_allocator.lock().await;
         let new_id = id_allocator.alloc_id().await.map_err(|err| {
-            let err_msg = format!(&quot;alloc replica epoch failed {err}&quot;);
+            let err_msg = format!(&#34;alloc replica epoch failed {err}&#34;);
             tracing::error!(err_msg);
             SystemInfoManagerError::new(&amp;err_msg)
         })?;
@@ -223,26 +223,26 @@ impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
                     let enabled = get_config().enable_tablet_replica_reconcile_controller;
                     tokio::select! {
                         _ = cloned_token.cancelled() =&gt; {
-                            tracing::info!(&quot;tablet replica reconcile controller exit on stop signal&quot;);
+                            tracing::info!(&#34;tablet replica reconcile controller exit on stop signal&#34;);
                             return;
                         }
                         _ = tokio::time::sleep(interval) =&gt; {
                             tick_count += 1;
                             if !self.base.election_info.is_leader() {
-                                tracing::info!(&quot;tablet replica reconcile controller not on leader, just skip&quot;);
+                                tracing::info!(&#34;tablet replica reconcile controller not on leader, just skip&#34;);
                                 continue;
                             }
                             if !enabled {
-                                tracing::info!(&quot;tablet replica reconcile controller not enabled, just skip&quot;);
+                                tracing::info!(&#34;tablet replica reconcile controller not enabled, just skip&#34;);
                                 continue;
                             }
                             if let Err(err) = self.do_tablet_replica_reconcile().await {
                                 metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_FAIL_COUNT).emit(tags![], 1);
-                                tracing::error!(&quot;do tablet replica reconcile failed {err}, tick {tick_count}&quot;);
+                                tracing::error!(&#34;do tablet replica reconcile failed {err}, tick {tick_count}&#34;);
                                 continue;
                             }
                             metrics(metric::defs::TABLET_REPLICA_CONTROLLER_RECONCILE_SUCCEED_COUNT).emit(tags![], 1);
-                            tracing::debug!(&quot;do tablet replica reconcile success, tick {tick_count}&quot;);
+                            tracing::debug!(&#34;do tablet replica reconcile success, tick {tick_count}&#34;);
                         }
                     }
                 }
@@ -269,12 +269,12 @@ impl&lt;T: KvStore&gt; SystemInfoManager&lt;T&gt; {
 [features]
 mock_meta_store = [] # 存储使用内存mock形式，主要用于单测
 (2) 在代码中添加条件编译的实现
-#[cfg(not(feature = &quot;mock_meta_store&quot;))]
+#[cfg(not(feature = &#34;mock_meta_store&#34;))]
 pub type MetaStoreType = meta::GS3BasedKvStore;
-#[cfg(feature = &quot;mock_meta_store&quot;)]
+#[cfg(feature = &#34;mock_meta_store&#34;)]
 pub type MetaStoreType = mock::MockMetaStore;
 (3) 编译/测试/运行时指定特定features flag
-cargo test/build/run --features &quot;mock_meta_store&quot;
+cargo test/build/run --features &#34;mock_meta_store&#34;
 </code></pre><h1 id="enum默认值">Enum默认值</h1>
 <pre tabindex="0"><code>#[derive(Debug, Clone, Default, Eq, PartialEq)]
 pub enum TabletTaskType {
@@ -339,9 +339,9 @@ let v = (0..1024).collect(); // 长度1023，元素为[0, 1024)
 </ul>
 <pre tabindex="0"><code>// Cargo.toml中加入集成测试模块的定义
 [[test]]
-name = &quot;integration&quot;
-path = &quot;src/tests/integration/mod.rs&quot;
-test = &quot;false&quot; // 默认不运行
+name = &#34;integration&#34;
+path = &#34;src/tests/integration/mod.rs&#34;
+test = &#34;false&#34; // 默认不运行
 
 // 参考的项目组织结构
 ├── build.rs // 控制编译行为的脚本
@@ -375,7 +375,7 @@ test = &quot;false&quot; // 默认不运行
     │   ├── mock.rs
     │   └── mod.rs
     └── tests // 集成测试、故障注入测试等，通常运行时间相比单测较长
-            └── integration // 集成测试，所有测试函数以&quot;integration_test&quot;开头
+            └── integration // 集成测试，所有测试函数以&#34;integration_test&#34;开头
                 ├── cluster.rs
                 ├── common.rs
                 ├── controller.rs
@@ -390,8 +390,8 @@ test = &quot;false&quot; // 默认不运行
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

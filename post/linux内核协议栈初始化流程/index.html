@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核协议栈初始化流程</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -93,7 +93,7 @@
 <p>2.开始</p>
 <p>开始分析前，这里有些小技巧可以快速定位到主要的初始化函数，在分析其他子系统源码时也可以采用这个技巧</p>
 <pre tabindex="0"><code>grep _initcall socket.c
-find ./core/ -name &quot;*.c&quot; |xargs cat | grep _initcall
+find ./core/ -name &#34;*.c&#34; |xargs cat | grep _initcall
 grep net_inuse_init tags
 </code></pre><p><img src="http://img.blog.csdn.net/20151030132956270" alt="这里写图片描述">
 <img src="http://img.blog.csdn.net/20151030140301037" alt="这里写图片描述"></p>
@@ -114,16 +114,16 @@ pure_initcall(net_ns_init);
   //net namespace相关
 #ifdef CONFIG_NET_NS
   //分配slab缓存
-  net_cachep = kmem_cache_create(&quot;net_namespace&quot;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL);
+  net_cachep = kmem_cache_create(&#34;net_namespace&#34;, sizeof(struct net),SMP_CACHE_BYTES,SLAB_PANIC, NULL);
 
   /* Create workqueue for cleanup */
-  netns_wq = create_singlethread_workqueue(&quot;netns&quot;);
+  netns_wq = create_singlethread_workqueue(&#34;netns&#34;);
   if (!netns_wq)
-    panic(&quot;Could not create netns workq&quot;);
+    panic(&#34;Could not create netns workq&#34;);
 #endif
   ng = net_alloc_generic();
   if (!ng)
-    panic(&quot;Could not allocate generic netns&quot;);
+    panic(&#34;Could not allocate generic netns&#34;);
 
   rcu_assign_pointer(init_net.gen, ng);
   mutex_lock(&amp;net_mutex);
@@ -131,7 +131,7 @@ pure_initcall(net_ns_init);
     //设置net结构的初始namespace
     //对每个pernet_list中注册的pernet operation，调用其初始化net中的对应数据对象
   if (setup_net(&amp;init_net, &amp;init_user_ns))
-    panic(&quot;Could not setup the initial network namespace&quot;);
+    panic(&#34;Could not setup the initial network namespace&#34;);
 
   rtnl_lock();
     //加入初始net结构的list中
@@ -211,7 +211,7 @@ static struct pernet_operations net_inuse_ops = {
 static __init int net_inuse_init(void)
 {
   if (register_pernet_subsys(&amp;net_inuse_ops))
-    panic(&quot;Cannot initialize net inuse counters&quot;);
+    panic(&#34;Cannot initialize net inuse counters&#34;);
   return 0;
 }
 </code></pre><ul>
@@ -243,13 +243,13 @@ static const struct file_operations proto_seq_fops = {
 static __net_init int proto_init_net(struct net *net)
 {
     //创建/proc/net/protocols
-  if (!proc_create(&quot;protocols&quot;, S_IRUGO, net-&gt;proc_net, &amp;proto_seq_fops))
+  if (!proc_create(&#34;protocols&#34;, S_IRUGO, net-&gt;proc_net, &amp;proto_seq_fops))
     return -ENOMEM;
   return 0;
 }
 static __net_exit void proto_exit_net(struct net *net)
 {
-  remove_proc_entry(&quot;protocols&quot;, net-&gt;proc_net);
+  remove_proc_entry(&#34;protocols&#34;, net-&gt;proc_net);
 }
 static __net_initdata struct pernet_operations proto_net_ops = {
   .init = proto_init_net,
@@ -340,7 +340,7 @@ out:
 //主要是建立sysctl中与net相关的一些配置参数（见下图）
 static __init int sysctl_core_init(void)
 {
-  register_net_sysctl(&amp;init_net, &quot;net/core&quot;, net_core_table);
+  register_net_sysctl(&amp;init_net, &#34;net/core&#34;, net_core_table);
   return register_pernet_subsys(&amp;sysctl_core_ops);
 }
 
@@ -358,7 +358,7 @@ static __net_init int sysctl_core_net_init(struct net *net)
       tbl[0].procname = NULL;
     }
   }
-  net-&gt;core.sysctl_hdr = register_net_sysctl(net, &quot;net/core&quot;, tbl);
+  net-&gt;core.sysctl_hdr = register_net_sysctl(net, &#34;net/core&#34;, tbl);
   if (net-&gt;core.sysctl_hdr == NULL)
     goto err_reg;
   return 0;
@@ -380,7 +380,6 @@ static __net_initdata struct pernet_operations sysctl_core_ops = {
   .init = sysctl_core_net_init,
   .exit = sysctl_core_net_exit,
 };
-
 </code></pre><p><img src="http://img.blog.csdn.net/20151030152109181" alt="这里写图片描述"></p>
 <hr>
 <p>4.总结
@@ -396,8 +395,8 @@ static __net_initdata struct pernet_operations sysctl_core_ops = {
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

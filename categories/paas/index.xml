@@ -4,33 +4,23 @@
     <title>PaaS on </title>
     <link>https://feilengcui008.github.io/categories/paas/</link>
     <description>Recent content in PaaS on </description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate><atom:link href="https://feilengcui008.github.io/categories/paas/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sat, 22 Feb 2020 15:44:41 +0800</lastBuildDate>
+    <atom:link href="https://feilengcui008.github.io/categories/paas/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>有状态服务托管的两种模式</title>
       <link>https://feilengcui008.github.io/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/</link>
       <pubDate>Sat, 22 Feb 2020 15:44:41 +0800</pubDate>
-      
       <guid>https://feilengcui008.github.io/post/%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1%E6%89%98%E7%AE%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%A8%A1%E5%BC%8F/</guid>
-      <description>通常情况下，PaaS托管的大部分负载都是无状态应用。但是对于一些依赖数据的特殊应用（比如分布式文件系统、zk、mysql），PaaS也应当提供相应的扩展能力，支持这些应用的托管。本质上讲，PaaS支持不同类型的工作负载托管的核心在策略，类似K8S的controller，这些策略适配了不同工作负载的工作方式。对于有状态应用托管，有两种方式。
-Operator 基于K8S的CRD，工作负载的策略以一个Operator的形式实现。这种方式策略的所有逻辑完全实现在PaaS内部，对于不同的有状态应用，PaaS可能需要实现不同的Operator。
-回调 策略由业务自身实现，以Server回调接口的形式暴露给PaaS，PaaS实现删除容器时的回调逻辑，负责通知业务当前容器的状态，由业务的策略Server负责自身业务状态的处理（比如数据搬迁），给PaaS返回成功后，PaaS才真正删除容器。这种方式的好处是，回调机制对于有状态应用是完全通用的，且对于大公司来说，内部大部分有状态应用（比如文件系统、数据库）都已经有了自己的管控系统，只需要实现一个旁路的策略Server即可，成本不高。
-当然，基于回调的业务逻辑Server如果由PaaS来实现，其实就很类似Operator了。</description>
+      <description>&lt;p&gt;通常情况下，PaaS托管的大部分负载都是无状态应用。但是对于一些依赖数据的特殊应用（比如分布式文件系统、zk、mysql），PaaS也应当提供相应的扩展能力，支持这些应用的托管。本质上讲，PaaS支持不同类型的工作负载托管的核心在策略，类似K8S的controller，这些策略适配了不同工作负载的工作方式。对于有状态应用托管，有两种方式。&lt;/p&gt;&#xA;&lt;h2 id=&#34;operator&#34;&gt;Operator&lt;/h2&gt;&#xA;&lt;p&gt;基于K8S的CRD，工作负载的策略以一个Operator的形式实现。这种方式策略的所有逻辑完全实现在PaaS内部，对于不同的有状态应用，PaaS可能需要实现不同的Operator。&lt;/p&gt;&#xA;&lt;h2 id=&#34;回调&#34;&gt;回调&lt;/h2&gt;&#xA;&lt;p&gt;策略由业务自身实现，以Server回调接口的形式暴露给PaaS，PaaS实现删除容器时的回调逻辑，负责通知业务当前容器的状态，由业务的策略Server负责自身业务状态的处理（比如数据搬迁），给PaaS返回成功后，PaaS才真正删除容器。这种方式的好处是，回调机制对于有状态应用是完全通用的，且对于大公司来说，内部大部分有状态应用（比如文件系统、数据库）都已经有了自己的管控系统，只需要实现一个旁路的策略Server即可，成本不高。&lt;/p&gt;&#xA;&lt;p&gt;当然，基于回调的业务逻辑Server如果由PaaS来实现，其实就很类似Operator了。&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>PaaS、服务管理和资源管理</title>
       <link>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</link>
       <pubDate>Sun, 08 Dec 2019 13:36:55 +0800</pubDate>
-      
       <guid>https://feilengcui008.github.io/post/paas%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E5%92%8C%E8%B5%84%E6%BA%90%E7%AE%A1%E7%90%86/</guid>
-      <description>PaaS PaaS是什么？怎么做？我想现在也没有一个公司或者开源项目能够给出统一的回答。PaaS本身就应该是面向场景的，它需要上层模型（应用模型和workflow），即使是各公司内部的PaaS也都受限于各种原因（业务场景、研发流程、IDC等）在上层模型上有自己的特点，简单给k8s什么的加个ui，还是大量照搬k8s原生的概念（比如deployment）绝不是一个理想易用的PaaS，典型例子openshift。K8s这些概念抽象得很好，但是并不是研发和运维共同native，而是运维native的，对研发来说并不是最好的概念。对于研发来说，我可能要上线的是一个应用，而不是一个deployment，概念的区别和定位一下就出来了。
-公司搞一个”通用“的统一PaaS就够了吗？显然不是。业务场景的多样性和复杂性，以及它们对研发运维流程的特殊要求，决定了垂类PaaS必定会存在的，比如机器学习平台。我可能底层还是基于公司的统一的PaaS，但是上层模型一定是不一样的，搞机器学习的算法工程师一定是需要一套顺手的workflow的，这一套workflow跟通常的研发相比，一定是有自己的特定要求的。其他垂类PaaS，比如针对web类型应用的，针对异构计算的，针对金融场景的&amp;hellip;&amp;hellip;
-服务管理 服务这个词概念很模糊，这里定义为一组容器，类似k8s的deployment或者service的概念，这里重点在管理。一组容器在那了，它可能由于机器节点宕机、网络故障、程序bug变得异常，我们需要修复；另外，容器资源随着业务流量的增减也需要自适应地变更，这些本质上都是在做一组容器（即服务）的管理，如何自动化地做这些事情？策略化。K8s的各种controller以及很多概念本质上就是各种服务管理策略，是面向自动化运维的，而不是面向研发。
-资源管理 容器创建、调度、状态，机器节点的管理，网络，quota配额，混部资源QOS，单机隔离&amp;hellip;&amp;hellip;这些才是资源管理的事情。资源管理把最基本的管好了，服务管理在策略层面去做更多的事情，分工明确，皆大欢喜。
-总结 给k8s加个ui一定不是个理想易用的PaaS（可能小公司无所谓），无论统一的PaaS还是垂类的PaaS一定需要有上层模型。另外，实际上k8s把资源管理和服务管理都做了，另一种思路是服务管理其实可以到更上层一些或者外围来做。广义PaaS摊子可以很大，中间这一层不好做，用户客服问题会非常之多，垂类PaaS或者更往下的资源管理相对好些。</description>
+      <description>&lt;h2 id=&#34;paas&#34;&gt;PaaS&lt;/h2&gt;&#xA;&lt;p&gt;PaaS是什么？怎么做？我想现在也没有一个公司或者开源项目能够给出统一的回答。PaaS本身就应该是面向场景的，它需要上层模型（应用模型和workflow），即使是各公司内部的PaaS也都受限于各种原因（业务场景、研发流程、IDC等）在上层模型上有自己的特点，简单给k8s什么的加个ui，还是大量照搬k8s原生的概念（比如deployment）绝不是一个理想易用的PaaS，典型例子openshift。K8s这些概念抽象得很好，但是并不是研发和运维共同native，而是运维native的，对研发来说并不是最好的概念。对于研发来说，我可能要上线的是一个应用，而不是一个deployment，概念的区别和定位一下就出来了。&lt;/p&gt;&#xA;&lt;p&gt;公司搞一个”通用“的统一PaaS就够了吗？显然不是。业务场景的多样性和复杂性，以及它们对研发运维流程的特殊要求，决定了垂类PaaS必定会存在的，比如机器学习平台。我可能底层还是基于公司的统一的PaaS，但是上层模型一定是不一样的，搞机器学习的算法工程师一定是需要一套顺手的workflow的，这一套workflow跟通常的研发相比，一定是有自己的特定要求的。其他垂类PaaS，比如针对web类型应用的，针对异构计算的，针对金融场景的&amp;hellip;&amp;hellip;&lt;/p&gt;&#xA;&lt;h2 id=&#34;服务管理&#34;&gt;服务管理&lt;/h2&gt;&#xA;&lt;p&gt;服务这个词概念很模糊，这里定义为一组容器，类似k8s的deployment或者service的概念，这里重点在管理。一组容器在那了，它可能由于机器节点宕机、网络故障、程序bug变得异常，我们需要修复；另外，容器资源随着业务流量的增减也需要自适应地变更，这些本质上都是在做一组容器（即服务）的管理，如何自动化地做这些事情？策略化。K8s的各种controller以及很多概念本质上就是各种服务管理策略，是面向自动化运维的，而不是面向研发。&lt;/p&gt;&#xA;&lt;h2 id=&#34;资源管理&#34;&gt;资源管理&lt;/h2&gt;&#xA;&lt;p&gt;容器创建、调度、状态，机器节点的管理，网络，quota配额，混部资源QOS，单机隔离&amp;hellip;&amp;hellip;这些才是资源管理的事情。资源管理把最基本的管好了，服务管理在策略层面去做更多的事情，分工明确，皆大欢喜。&lt;/p&gt;&#xA;&lt;h2 id=&#34;总结&#34;&gt;总结&lt;/h2&gt;&#xA;&lt;p&gt;给k8s加个ui一定不是个理想易用的PaaS（可能小公司无所谓），无论统一的PaaS还是垂类的PaaS一定需要有上层模型。另外，实际上k8s把资源管理和服务管理都做了，另一种思路是服务管理其实可以到更上层一些或者外围来做。广义PaaS摊子可以很大，中间这一层不好做，用户客服问题会非常之多，垂类PaaS或者更往下的资源管理相对好些。&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

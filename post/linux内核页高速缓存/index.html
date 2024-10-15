@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核页高速缓存</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -239,7 +239,7 @@ generic_file_read_iter(struct kiocb *iocb, struct iov_iter *iter)
     /*
      * Btrfs can have a short DIO read if we encounter
      * compressed extents, so if there was an error, or if
-     * we've already read everything we wanted to, or if
+     * we&#39;ve already read everything we wanted to, or if
      * there was a short read because we hit EOF, go ahead
      * and return.  Otherwise fallthrough to buffered io for
      * the rest of the read.
@@ -402,7 +402,7 @@ readpage_error:
 
 no_cached_page:
     /*
-     * Ok, it wasn't cached, so we need to create a new
+     * Ok, it wasn&#39;t cached, so we need to create a new
      * page..
      */
     //从冷页面链表中拿一个page
@@ -437,8 +437,8 @@ no_cached_page:
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

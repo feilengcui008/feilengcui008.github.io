@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux内核协议栈socket接口层</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -171,7 +171,6 @@ struct proto {
 
   /*省略部分*/
 };
-
 </code></pre><p>同时附上其他几个关键结构体：</p>
 <pre tabindex="0"><code>//bsd socket层
 //include/linux/net.h
@@ -447,7 +446,7 @@ SYSCALL_DEFINE4(accept4, int, fd, struct sockaddr __user *, upeer_sockaddr,
   newsock-&gt;ops = sock-&gt;ops;
 
   /*
-   * We don't need try_module_get here, as the listening socket (sock)
+   * We don&#39;t need try_module_get here, as the listening socket (sock)
    * has the protocol module (sock-&gt;ops-&gt;owner) held.
    */
   __module_get(newsock-&gt;ops-&gt;owner);
@@ -563,7 +562,7 @@ struct sock *inet_csk_accept(struct sock *sk, int flags, int *err)
     spin_lock_bh(&amp;queue-&gt;fastopenq-&gt;lock);
     if (tcp_rsk(req)-&gt;listener) {
       /* We are still waiting for the final ACK from 3WHS
-       * so can't free req now. Instead, we set req-&gt;sk to
+       * so can&#39;t free req now. Instead, we set req-&gt;sk to
        * NULL to signify that the child socket is taken
        * so reqsk_fastopen_remove() will free the req
        * when 3WHS finishes (or is aborted).
@@ -635,8 +634,8 @@ static int inet_csk_wait_for_connect(struct sock *sk, long timeo)
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     

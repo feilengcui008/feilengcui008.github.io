@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="feilengcui008">
-<meta name="generator" content="Hugo 0.90.0-DEV" />
+<meta name="generator" content="Hugo 0.135.0">
 <title>Linux下x86_64进程地址空间布局</title>
 <link rel="shortcut icon" href="https://feilengcui008.github.io/images/favicon.ico">
 <link rel="stylesheet" href="https://feilengcui008.github.io/css/styles.css">
@@ -149,13 +149,13 @@ int main(int argc, char **argv)
     struct timeval tv;
     int ret;
     if ((ret=gettimeofday(&amp;tv, NULL))&lt;0) {
-        fprintf(stderr, &quot;gettimeofday call failed\n&quot;);
+        fprintf(stderr, &#34;gettimeofday call failed\n&#34;);
     }else{
-        fprintf(stdout, &quot;seconds:%ld\n&quot;, (long int)tv.tv_sec);
+        fprintf(stdout, &#34;seconds:%ld\n&#34;, (long int)tv.tv_sec);
     }
 
-    fprintf(stdout, &quot;pid:%d\n&quot;, (int)getpid());
-    fprintf(stdout, &quot;thread id:%d\n&quot;, (int)syscall(SYS_gettid));
+    fprintf(stdout, &#34;pid:%d\n&#34;, (int)getpid());
+    fprintf(stdout, &#34;thread id:%d\n&#34;, (int)syscall(SYS_gettid));
     return 0;
 }
 </code></pre><p>编译为可执行文件后，我们可以用strace来验证：</p>
@@ -189,13 +189,13 @@ grep gettimeofday temp
 
 void *routine(void *args)
 {
-  fprintf(stdout, &quot;========\n&quot;);
+  fprintf(stdout, &#34;========\n&#34;);
   char arr[10000];
-  fprintf(stdout, &quot;temp var arr address in child thread : %p\n&quot;, arr);
+  fprintf(stdout, &#34;temp var arr address in child thread : %p\n&#34;, arr);
   char arr1[10000];
-  fprintf(stdout, &quot;temp var arr1 address in child thread : %p\n&quot;, arr1);
+  fprintf(stdout, &#34;temp var arr1 address in child thread : %p\n&#34;, arr1);
 
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr1 - arr);
+  fprintf(stdout, &#34;delta : %ld\n&#34;, arr1 - arr);
 
   for(;;) {
     sleep(5);
@@ -213,16 +213,16 @@ int main(int argc, char *argv[])
   // char bigArr[0x800000 - 10000]; // SEGMENT FAULT
   //char arr1[144000];
   char arr1[144];
-  arr1[0] = 'a';
-  fprintf(stdout, &quot;temp var arr1 address in main thread lower than 139 K : %p\n&quot;, arr1);
+  arr1[0] = &#39;a&#39;;
+  fprintf(stdout, &#34;temp var arr1 address in main thread lower than 139 K : %p\n&#34;, arr1);
   //char arr2[100];
   char arr2[1];
-  fprintf(stdout, &quot;temp var arr2 address in main thread lower than 139 K : %p\n&quot;, arr2);
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr2 - arr1);
+  fprintf(stdout, &#34;temp var arr2 address in main thread lower than 139 K : %p\n&#34;, arr2);
+  fprintf(stdout, &#34;delta : %ld\n&#34;, arr2 - arr1);
   //char arr3[100];
   char arr3[10];
-  fprintf(stdout, &quot;temp var arr3 address in main thread lower than 139 K : %p\n&quot;, arr3);
-  fprintf(stdout, &quot;delta : %ld\n&quot;, arr3 - arr2);
+  fprintf(stdout, &#34;temp var arr3 address in main thread lower than 139 K : %p\n&#34;, arr3);
+  fprintf(stdout, &#34;delta : %ld\n&#34;, arr3 - arr2);
   ret = pthread_create(&amp;pt, NULL, routine, NULL);
   ret = pthread_create(&amp;pt1, NULL, routine, NULL);
   pthread_join(pt, NULL); 
@@ -239,7 +239,7 @@ int main(int argc, char *argv[])
 
 static int test_param = 10;
 module_param(test_param, int, S_IRUGO | S_IWUSR);
-MODULE_PARM_DESC(test_param, &quot;a test parameter&quot;);
+MODULE_PARM_DESC(test_param, &#34;a test parameter&#34;);
 
 
 static int print_all_processes_init(void)
@@ -247,7 +247,7 @@ static int print_all_processes_init(void)
   struct task_struct *p;
   for_each_process(p) {
     if (p-&gt;pid == 1) {
-      printk(KERN_INFO &quot;stack : %p\n&quot;, p-&gt;stack);
+      printk(KERN_INFO &#34;stack : %p\n&#34;, p-&gt;stack);
     }
   };
   return 0;
@@ -255,16 +255,15 @@ static int print_all_processes_init(void)
 
 static void print_all_processes_exit(void)
 {
-  printk(KERN_INFO &quot;unload module print_all_processes\n&quot;);
+  printk(KERN_INFO &#34;unload module print_all_processes\n&#34;);
 }
 
 module_init(print_all_processes_init);
 module_exit(print_all_processes_exit);
 
-MODULE_AUTHOR(&quot;FEILENGCUI&quot;);
-MODULE_LICENSE(&quot;GPL&quot;);
-MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
-
+MODULE_AUTHOR(&#34;FEILENGCUI&#34;);
+MODULE_LICENSE(&#34;GPL&#34;);
+MODULE_DESCRIPTION(&#34;A MODULE PRINT ALL PROCESSES&#34;);
 </code></pre><ul>
 <li>对应init进程的内核栈stack起始地址</li>
 </ul>
@@ -283,8 +282,8 @@ MODULE_DESCRIPTION(&quot;A MODULE PRINT ALL PROCESSES&quot;);
 </div>
 <div class="fexo-comments comments-post">
   <div id="disqus_thread"></div>
-<script type="application/javascript">
-    var disqus_config = function () {
+<script>
+    window.disqus_config = function () {
     
     
     
